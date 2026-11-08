@@ -1,6 +1,6 @@
 # AthleticTracker
 
-Local-only React + TypeScript PWA foundation. Includes disposable storage-test records and versioned JSON export/restore. No fitness features, accounts, backend, analytics services or deployment have been added.
+Local-only React + TypeScript PWA foundation. Includes disposable storage-test records and versioned JSON export/restore. No fitness features, accounts, backend or analytics services have been added. GitHub Pages deployment is configured in `.github/workflows/deploy.yml`.
 
 ## Development
 
@@ -21,7 +21,7 @@ npm run build
 npm run preview
 ```
 
-Open the printed preview URL online and wait for “Available offline on this device”. Offline caching is disabled in the development server. Use browser offline mode and reload the production preview to check caching. iPhone installation requires a reachable HTTPS host; a Mac's ordinary LAN HTTP address is insufficient. Nothing is published yet.
+Open the printed preview URL online and wait for “Available offline on this device”. Offline caching is disabled in the development server. Use browser offline mode and reload the production preview to check caching. iPhone installation requires a reachable HTTPS host; a Mac's ordinary LAN HTTP address is insufficient. Publication requires a public GitHub repository and Pages configured for GitHub Actions; see `docs/iphone-testing.md`.
 
 ## Architecture
 
@@ -42,7 +42,7 @@ Updates prompt for reload rather than activating automatically. Schema upgrades 
 
 ## Version control
 
-A local Git repository is initialized on `main`. No remote is configured. Commit source and `package-lock.json`; never commit `.tools`, `node_modules`, or `dist`. On a different Mac, install a compatible Node LTS and run `npm ci`.
+A local Git repository is initialized on `main`. A GitHub remote will be configured during first publication. Commit source and `package-lock.json`; never commit `.tools`, `node_modules`, or `dist`. On a different Mac, install a compatible Node LTS and run `npm ci`.
 
 ## Foundation verification
 
@@ -60,3 +60,7 @@ The current backup format is `athletic-tracker-backup`, formatVersion 1, with ex
 Restore replaces both tables in one transaction. A failure rolls back all changes. Changes made after the safety snapshot block restore; cancel and restart the flow. Avoid editing in other tabs during restore; a write made after restore completes is a separate operation. There is no automatic cross-tab UI refresh or device sync.
 
 For device verification, an actual iPhone and HTTPS deployment are still required. Fake IndexedDB tests do not prove browser durability under power loss, storage eviction, or OS termination. Browser save confirmation means the storage transaction committed, not a permanent backup.
+
+## GitHub Pages
+
+The deployment base path is `/AthleticTracker/`. Use that path when opening local development or preview. The workflow runs on pushes to `main` and can be started manually in Actions. It runs tests before deploying and uses Node 24. See [iPhone testing instructions](docs/iphone-testing.md). Publishing moves application files only, not local records.

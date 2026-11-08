@@ -3,3 +3,8 @@ dist/
 .tools/
 .DS_Store
 *.local
+
+# Never publish local secrets or exported browser backups.
+.env
+.env.*
+athletic-tracker-*.json
