@@ -1,20 +1,22 @@
 import Dexie, { type Table } from 'dexie'
+import type { AppMetadata, FoundationRecord } from '../../domain/foundation'
 
-interface AppMetadata { key: string; value: string }
-
-// Only setup metadata exists at this stage; no fitness data model yet.
-class AthleticDatabase extends Dexie {
+export class AthleticDatabase extends Dexie {
   metadata!: Table<AppMetadata, string>
-  constructor() {
-    super('athletic-tracker')
+  foundationRecords!: Table<FoundationRecord, string>
+  constructor(name = 'athletic-tracker') {
+    super(name)
     this.version(1).stores({ metadata: '&key' })
+    this.version(2).stores({ metadata: '&key', foundationRecords: '&id, updatedAt' })
+    this.on('versionchange', () => this.close())
   }
 }
 export const db = new AthleticDatabase()
 
-export async function verifyLocalStorage(): Promise<void> {
-  await db.transaction('rw', db.metadata, async () => {
-    const existing = await db.metadata.get('createdAt')
-    if (!existing) await db.metadata.put({ key: 'createdAt', value: new Date().toISOString() })
+export async function verifyLocalStorage(database = db): Promise<void> {
+  await database.transaction('rw', database.metadata, async () => {
+    if (!await database.metadata.get('createdAt')) {
+      await database.metadata.put({ key: 'createdAt', value: new Date().toISOString() })
+    }
   })
 }

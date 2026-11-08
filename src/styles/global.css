@@ -9,3 +9,19 @@ section { background: white; border: 1px solid #cfdbd6; padding: 24px; border-ra
 .note { color: #465e57; font-size: .95rem; }
 button { font: inherit; background: #102a28; color: white; border: 0; border-radius: 8px; padding: 12px 18px; min-height: 44px; cursor: pointer; }
 button:focus-visible { outline: 3px solid #528b78; outline-offset: 4px; }
+
+label { display: block; font-weight: 600; margin: 12px 0 6px; }
+textarea { width: 100%; min-height: 110px; padding: 12px; border: 1px solid #81998f; border-radius: 8px; font: inherit; resize: vertical; }
+textarea:focus-visible, input:focus-visible { outline: 3px solid #528b78; outline-offset: 3px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.secondary { background: #e4ede8; color: #102a28; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+.records { list-style: none; padding: 0; }
+.records li { border-top: 1px solid #cfdbd6; margin-top: 20px; padding-top: 8px; }
+.record-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.file-label { margin-top: 24px; }
+input[type=file] { max-width: 100%; font: inherit; }
+.restore-review { margin-top: 24px; border-top: 2px solid #cfdbd6; }
+.confirmation { font-weight: 400; margin: 20px 0; }
+.confirmation input { width: 22px; height: 22px; vertical-align: middle; }
+.error { color: #8d1d1d; background: #fff0ef; padding: 16px; border-radius: 8px; }
