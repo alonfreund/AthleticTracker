@@ -5,10 +5,10 @@ export function durationText(start: string, end: string) {
   const minutes = Math.max(0, Math.floor((Date.parse(end) - Date.parse(start)) / 60000))
   return minutes >= 60 ? `${Math.floor(minutes / 60)} h ${minutes % 60} min` : `${minutes} min`
 }
-export function WorkoutHistory({ workout, onBack }: { workout: Workout; onBack: () => void }) {
+export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Train' }: { workout: Workout; onBack: () => void; backLabel?: string }) {
   const session = workout.sessions[0]
-  return <section aria-label="Workout details">
-    <button className="secondary" onClick={onBack}>Back to workouts</button>
+  return <section aria-label="Workout details" className="workout-history">
+    <button className="secondary" onClick={onBack}>{backLabel}</button>
     <p className="eyebrow">{session.status === 'cancelled' ? 'CANCELLED WORKOUT' : 'FINISHED WORKOUT'}</p>
     <h2>{session.title}</h2>
     <p>{new Date(session.startedAt).toLocaleString()} · {durationText(session.startedAt, session.endedAt!)}</p>

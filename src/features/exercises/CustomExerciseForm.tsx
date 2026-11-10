@@ -34,7 +34,7 @@ export function CustomExerciseForm({ disabled, onDirty, onSave, onCancel }: {
     })
   }}>
     <h2>Create custom exercise</h2>
-    <p>Define the movement here. Sets and workout logging come later.</p>
+    <p>Choose how this exercise is tracked in your workouts.</p>
     <fieldset disabled={disabled} className="form-fields">
       <label htmlFor="exercise-name">Exercise name</label>
       <input id="exercise-name" value={form.name} maxLength={200} required onChange={event => setForm({ ...form, name: event.target.value })} />

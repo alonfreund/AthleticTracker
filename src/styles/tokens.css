@@ -1,0 +1,55 @@
+/* Semantic roles: future appearance controls can change these without touching data. */
+:root {
+  color-scheme: light;
+  --color-bg: #f5f7fa;
+  --color-surface: #ffffff;
+  --color-surface-soft: #edf2f6;
+  --color-text: #14212e;
+  --color-muted: #526171;
+  --color-border: #d5dee7;
+  --color-input-border: #7b8a99;
+  --color-accent: #0f766e;
+  --color-accent-hover: #0b605a;
+  --color-accent-soft: #e1f3ef;
+  --color-on-accent: #ffffff;
+  --color-success: #166534;
+  --color-success-soft: #eaf6ee;
+  --color-warning: #854d0e;
+  --color-danger: #b42318;
+  --color-danger-soft: #fff0ee;
+  --shadow-bar: 0 -4px 24px rgb(20 33 46 / 5%);
+  --shadow-card: 0 4px 18px rgb(20 33 46 / 4%);
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --text-small: .8125rem;
+  --text-label: .875rem;
+  --text-body: 1rem;
+  --text-section: 1.375rem;
+  --text-title: 2rem;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px;
+  --radius-control: 10px; --radius-card: 18px;
+  --nav-height: max(76px, 4.75rem);
+  --page-width: 760px;
+}
+/* Reference palette, not a shipped theme selector or customisation system. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg: #10161d;
+  --color-surface: #18212b;
+  --color-surface-soft: #222e3a;
+  --color-text: #f1f5f9;
+  --color-muted: #b1becc;
+  --color-border: #344352;
+  --color-input-border: #7f92a5;
+  --color-accent: #5eead4;
+  --color-accent-hover: #8af3e2;
+  --color-accent-soft: #173a38;
+  --color-on-accent: #062d28;
+  --color-success: #86efac;
+  --color-success-soft: #163323;
+  --color-warning: #fcd34d;
+  --color-danger: #fda29b;
+  --color-danger-soft: #3b1c20;
+  --shadow-bar: 0 -4px 24px rgb(0 0 0 / 20%);
+  --shadow-card: none;
+}

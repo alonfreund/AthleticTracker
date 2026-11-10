@@ -17,6 +17,6 @@ export function ExerciseDetail({ exercise, onBack }: { exercise: Exercise; onBac
     </dl>
     <h3>Instructions</h3><p className="multiline">{exercise.instructions || 'No instructions added.'}</p>
     <h3>Notes</h3><p className="multiline">{exercise.notes || 'No notes added.'}</p>
-    <p className="note">Weight will be recorded in kg or lb when workout logging is available. Added weight and assistance are separate from bodyweight.</p>
+    <p className="note">Workouts record weight in kg or lb. Added weight and assistance are separate from bodyweight.</p>
   </article>
 }
