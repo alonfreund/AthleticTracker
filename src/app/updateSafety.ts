@@ -12,11 +12,11 @@ export class UpdateSafety {
   private safety: Safety = { dirty: false, busy: false, restoring: false, loading: true }
   private applying = false
   private listeners = new Set<() => void>()
-  private snapshot = { reason: updateBlockReason(this.safety), applying: false }
+  private snapshot = { ...this.safety, reason: updateBlockReason(this.safety), applying: false }
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener) } }
   getSnapshot = () => this.snapshot
   private emit() {
-    this.snapshot = { reason: updateBlockReason(this.safety), applying: this.applying }
+    this.snapshot = { ...this.safety, reason: updateBlockReason(this.safety), applying: this.applying }
     this.listeners.forEach(listener => listener())
   }
   setSafety(safety: Safety) { this.safety = safety; this.emit() }

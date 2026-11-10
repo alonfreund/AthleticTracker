@@ -25,3 +25,32 @@ input[type=file] { max-width: 100%; font: inherit; }
 .confirmation { font-weight: 400; margin: 20px 0; }
 .confirmation input { width: 22px; height: 22px; vertical-align: middle; }
 .error { color: #8d1d1d; background: #fff0ef; padding: 16px; border-radius: 8px; }
+
+input:not([type=checkbox]):not([type=file]), select { width: 100%; min-height: 44px; font: inherit; color: inherit; background: white; border: 1px solid #81998f; border-radius: 8px; padding: 10px 12px; }
+select:focus-visible, summary:focus-visible { outline: 3px solid #528b78; outline-offset: 3px; }
+.app-nav { display: flex; gap: 10px; margin: 24px 0; }
+.app-nav button { flex: 1; }
+.library-panel { padding: 20px; }
+.library-heading h2 { margin-top: 0; font-size: 1.55rem; }
+.library-heading .eyebrow { margin-top: 0; }
+.filter-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+.exercise-list { list-style: none; padding: 0; }
+.exercise-list li { margin: 12px 0; }
+.exercise-row { width: 100%; text-align: left; background: #f4f7f5; color: #102a28; border: 1px solid #dbe5df; display: grid; gap: 6px; padding: 16px; }
+.exercise-row-top { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+.exercise-row strong { overflow-wrap: anywhere; }
+.badge { font-size: .72rem; background: #deebe3; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+.form-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
+.choices { border: 1px solid #cfdbd6; border-radius: 8px; padding: 12px; margin: 22px 0; min-width: 0; }
+.choices legend { font-weight: 600; padding: 0 4px; }
+.choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; }
+.choice-grid label { display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 400; min-height: 44px; }
+.choice-grid input { width: 20px; height: 20px; flex-shrink: 0; }
+summary { cursor: pointer; padding: 12px 0; min-height: 44px; font-weight: 600; }
+dt { font-weight: 600; margin-top: 16px; }
+dd { margin: 4px 0 0; overflow-wrap: anywhere; }
+.multiline { white-space: pre-wrap; overflow-wrap: anywhere; }
+.exercise-detail h2 { font-size: 1.6rem; overflow-wrap: anywhere; }
+.update-details { border-top: 1px solid #cfdbd6; margin-top: 24px; }
+.update-details section { margin-top: 8px; }
+@media (max-width: 360px) { main { padding-left: 16px; padding-right: 16px; } .choice-grid, .filter-grid { grid-template-columns: 1fr; } }

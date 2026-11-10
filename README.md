@@ -1,6 +1,6 @@
 # AthleticTracker
 
-Local-only React + TypeScript PWA foundation. Includes disposable storage-test records and versioned JSON export/restore. No fitness features, accounts, backend or analytics services have been added. GitHub Pages deployment is configured in `.github/workflows/deploy.yml`.
+Local-first React + TypeScript PWA. Includes disposable storage-test records and versioned JSON export/restore. No fitness features, accounts, backend or analytics services have been added. GitHub Pages deployment is configured in `.github/workflows/deploy.yml`.
 
 ## Development
 
@@ -84,3 +84,15 @@ Backup format v1 and database schema v2 are unchanged. Export validates and chec
 Database schema v3 adds structured strength tables without changing existing records. Backup format v2 includes those tables, unfinished set drafts, timers and full exercise snapshots; old v1 backups are still accepted with empty strength data. Restoring v1 replaces all data and removes any newer workouts. New v2 files require app 0.2.0 or later. Back up before upgrading and avoid downgrading the app against the newer database.
 
 No workout logging screens, catalog seeding, cardio, routines, programmes or analytics are included in this increment. See [the model, rules and test coverage](docs/strength-data-model.md). All 59 tests pass; a local browser update from 0.1.2 preserved a saved record. Future logging operations must enforce the same relationships transactionally.
+
+## Exercise library (0.3.0)
+
+The default screen now provides 12 offline starter movements, search across names/muscles/equipment/categories, combined muscle/equipment/source filters, read-only details and custom creation. The form includes primary/secondary muscles, equipment (including extra equipment IDs), category, instructions, notes, rest defaults and repetition/duration plus explicit load/convention tracking. Actual set values are not entered yet.
+
+Custom exercises are committed to the existing IndexedDB exercises table and included in format-v2 backups. No database migration or new dependency is needed. On library open, a transaction adds only missing reserved starter IDs; it never overwrites existing or archived entries, imported custom exercises or historical snapshots. A restore can intentionally remove exercises; missing starter definitions are added again the next time the library opens. No custom exercises are recreated automatically.
+
+Data & settings contains storage status, the existing test records and backup/restore. App status & updates is always mounted in an expandable panel. Switching screens asks before discarding a draft and is blocked during operations/restore review/update activation. Unsaved custom forms block app-triggered updates but are not recoverable after force-close or OS termination. Save explicitly.
+
+72 automated tests pass, including initialisation, preservation, search, every tracking configuration, failed saves, reopening and custom-exercise backup/restore. The test configuration restricts discovery to tests/ so ignored local verification checkouts cannot duplicate results. Browser verification at iPhone width covered no horizontal overflow, search, custom save/details and reopening with the preview server stopped. Actual iPhone interaction remains device-side.
+
+No exercise editing/archive UI, workout logging, cardio, routines, programmes or analytics has been added. The next stage is the active strength-workout logging flow.
