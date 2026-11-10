@@ -5,6 +5,7 @@ import { readHistory, writeHistory, readBackupStatus } from '../src/data/backup/
 import { createBackup, downloadBackup, MAX_BACKUP_BYTES, parseBackup, restoreBackup, serializeBackup } from '../src/data/backup/backup'
 import { AthleticDatabase, verifyLocalStorage } from '../src/data/db/database'
 import { saveRecord } from '../src/data/repositories/foundation'
+import { emptyStrengthData } from '../src/domain/strength/models'
 import legacy from './fixtures/backup-v1-app-0.0.0.json'
 import emptyLegacy from './fixtures/backup-v1-app-0.1.1-empty.json'
 
@@ -82,8 +83,8 @@ describe('fixed historical backup fixtures', () => {
     await saveRecord('Replaced by historical backup', undefined, value)
     await restoreBackup(parseBackup(JSON.stringify(fixture)), value)
     const exported = await createBackup(value)
-    expect(exported.data).toEqual(fixture.data)
-    expect(parseBackup(serializeBackup(exported)).data).toEqual(fixture.data)
+    expect(exported.data).toEqual({ ...fixture.data, ...emptyStrengthData() })
+    expect(parseBackup(serializeBackup(exported)).data).toEqual({ ...fixture.data, ...emptyStrengthData() })
   })
   it('rejects oversized JSON and validates export before any download', () => {
     expect(() => parseBackup(' '.repeat(MAX_BACKUP_BYTES + 1))).toThrow('10 MB')

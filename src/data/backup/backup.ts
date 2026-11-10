@@ -1,22 +1,26 @@
+import type { Table } from 'dexie'
 import { recordBackupRequest, type BackupStatus } from './status'
 import { APP_VERSION } from '../../app/version'
-import { db, type AthleticDatabase } from '../db/database'
+import { emptyStrengthData, STRENGTH_TABLES, type StrengthData } from '../../domain/strength/models'
+import { validateStrengthData } from '../../domain/strength/validation'
+import { db, BACKUP_TABLES, type AthleticDatabase } from '../db/database'
 import { validateText, type AppMetadata, type FoundationRecord } from '../../domain/foundation'
 
 export const MAX_BACKUP_BYTES = 10 * 1024 * 1024
+export interface BackupData extends StrengthData { metadata: AppMetadata[]; foundationRecords: FoundationRecord[] }
 export interface Backup {
   format: 'athletic-tracker-backup'
-  formatVersion: 1
+  formatVersion: 2
   exportedAt: string
   appVersion: string
-  data: { metadata: AppMetadata[]; foundationRecords: FoundationRecord[] }
+  data: BackupData
 }
 function object(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Expected an object in the backup.')
   return value as Record<string, unknown>
 }
 function keys(value: Record<string, unknown>, expected: string[]) {
-  if (Object.keys(value).length !== expected.length || expected.some(key => !(key in value))) {
+  if (Object.keys(value).length !== expected.length || expected.some(key => !Object.hasOwn(value, key))) {
     throw new Error('Backup contains missing or unsupported fields.')
   }
 }
@@ -33,10 +37,10 @@ function date(value: unknown): string {
 export function validateBackup(value: unknown): Backup {
   const root = object(value)
   if (root.format !== 'athletic-tracker-backup') throw new Error('This is not an AthleticTracker backup.')
-  if (root.formatVersion !== 1) throw new Error('Unsupported backup version. Your data has not been changed.')
+  if (root.formatVersion !== 1 && root.formatVersion !== 2) throw new Error('Unsupported backup version. Your data has not been changed.')
   keys(root, ['format', 'formatVersion', 'exportedAt', 'appVersion', 'data'])
   const data = object(root.data)
-  keys(data, ['metadata', 'foundationRecords'])
+  keys(data, ['metadata', 'foundationRecords', ...(root.formatVersion === 2 ? STRENGTH_TABLES : [])])
   if (!Array.isArray(data.metadata) || !Array.isArray(data.foundationRecords)) throw new Error('Backup tables must be arrays.')
   if (data.metadata.length !== 1) throw new Error('Backup must contain the database creation date.')
   const metadata = data.metadata.map(value => {
@@ -59,7 +63,9 @@ export function validateBackup(value: unknown): Backup {
     if (updatedAt < createdAt) throw new Error('A record was updated before it was created.')
     return { id, text, createdAt, updatedAt }
   })
-  return { format: 'athletic-tracker-backup', formatVersion: 1, exportedAt: date(root.exportedAt), appVersion: string(root.appVersion), data: { metadata, foundationRecords } }
+  const strength = root.formatVersion === 1 ? emptyStrengthData() : Object.fromEntries(STRENGTH_TABLES.map(name => [name, data[name]]))
+  validateStrengthData(strength)
+  return { format: 'athletic-tracker-backup', formatVersion: 2, exportedAt: date(root.exportedAt), appVersion: string(root.appVersion), data: { metadata, foundationRecords, ...structuredClone(strength) } }
 }
 export function parseBackup(text: string): Backup {
   if (new TextEncoder().encode(text).byteLength > MAX_BACKUP_BYTES) throw new Error('Backup exceeds the 10 MB limit for this foundation version.')
@@ -67,26 +73,24 @@ export function parseBackup(text: string): Backup {
   try { value = JSON.parse(text) } catch { throw new Error('The selected file is not valid JSON.') }
   return validateBackup(value)
 }
+async function readData(database: AthleticDatabase): Promise<BackupData> {
+  const entries = await Promise.all(BACKUP_TABLES.map(async name => [name, await database.table(name).toArray()] as const))
+  return Object.fromEntries(entries) as unknown as BackupData
+}
 export async function createBackup(database: AthleticDatabase = db): Promise<Backup> {
-  const data = await database.transaction('r', database.metadata, database.foundationRecords, async () => ({
-    metadata: await database.metadata.toArray(),
-    foundationRecords: await database.foundationRecords.toArray(),
-  }))
-  return validateBackup({ format: 'athletic-tracker-backup', formatVersion: 1, exportedAt: new Date().toISOString(), appVersion: APP_VERSION, data })
+  const data = await database.transaction('r', BACKUP_TABLES.map(name => database.table(name)), () => readData(database))
+  return validateBackup({ format: 'athletic-tracker-backup', formatVersion: 2, exportedAt: new Date().toISOString(), appVersion: APP_VERSION, data })
 }
 export async function restoreBackup(value: unknown, database: AthleticDatabase = db, expectedCurrent?: Backup): Promise<void> {
+  // Validate and detach the complete input before starting any write transaction.
   const backup = validateBackup(value)
-  await database.transaction('rw', database.metadata, database.foundationRecords, async () => {
-    if (expectedCurrent) {
-      const current = { metadata: await database.metadata.toArray(), foundationRecords: await database.foundationRecords.toArray() }
-      if (JSON.stringify(current) !== JSON.stringify(expectedCurrent.data)) {
-        throw new Error('Local data changed after the safety backup. Cancel restore and start again to protect the newer changes.')
-      }
+  const tables: [keyof BackupData, Table][] = BACKUP_TABLES.map(name => [name, database[name]])
+  await database.transaction('rw', tables.map(([, table]) => table), async () => {
+    if (expectedCurrent && JSON.stringify(await readData(database)) !== JSON.stringify(expectedCurrent.data)) {
+      throw new Error('Local data changed after the safety backup. Cancel restore and start again to protect the newer changes.')
     }
-    await database.metadata.clear()
-    await database.foundationRecords.clear()
-    await database.metadata.bulkAdd(backup.data.metadata)
-    await database.foundationRecords.bulkAdd(backup.data.foundationRecords)
+    for (const [, table] of tables) await table.clear()
+    for (const [name, table] of tables) await table.bulkAdd(backup.data[name])
   })
 }
 export function serializeBackup(backup: Backup): string {

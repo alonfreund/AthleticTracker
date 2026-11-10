@@ -92,7 +92,7 @@ export function FoundationPanel() {
       }} />
       {pending && <div className="restore-review">
         <h3>Review replacement</h3>
-        <p>Backup from {new Date(pending.exportedAt).toLocaleString()}: {pending.data.foundationRecords.length} records. This will replace all saved records and metadata on this device. Records will not be merged.</p>
+        <p>Backup from {new Date(pending.exportedAt).toLocaleString()}: {pending.data.foundationRecords.length} test records, {pending.data.sessions.length} workouts and {pending.data.exercises.length} library exercises. This replaces all saved data on this device, including workouts, sets and unfinished drafts. Records will not be merged. Older backups contain no workout data and will remove current workouts.</p>
         <p>Other open tabs must not edit data during restore. Cancel to return to editing.</p>
         <button disabled={applying || busy} onClick={() => void run(async () => { const backup = await createBackup(); setBackupStatus(downloadBackup(backup, 'athletic-tracker-before-restore')); safetyBackup.current = backup; setSafetyReady(true); setMessage('Safety-backup download requested. Check that you have kept the file before confirming replacement.') })}>Download safety backup</button>
         <label className="confirmation"><input type="checkbox" checked={confirmed} disabled={applying || busy || !safetyReady} onChange={event => setConfirmed(event.target.checked)} /> I have kept the safety backup and understand that existing data will be replaced.</label>

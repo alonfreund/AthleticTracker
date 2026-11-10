@@ -1,0 +1,520 @@
+{
+  "format": "athletic-tracker-backup",
+  "formatVersion": 2,
+  "exportedAt": "2026-11-10T03:00:00.000Z",
+  "appVersion": "0.2.0",
+  "data": {
+    "metadata": [
+      {
+        "key": "createdAt",
+        "value": "2026-11-10T03:00:00.000Z"
+      }
+    ],
+    "foundationRecords": [],
+    "exercises": [
+      {
+        "id": "00000000-0000-4000-8000-000000000010",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "revision": 1,
+        "origin": "custom",
+        "name": "Bench press",
+        "primaryMuscleGroupIds": [
+          "chest"
+        ],
+        "secondaryMuscleGroupIds": [
+          "triceps"
+        ],
+        "equipmentIds": [
+          "barbell"
+        ],
+        "category": "strength",
+        "instructions": "Use a controlled movement.",
+        "notes": "Library note",
+        "tracking": {
+          "measurement": "reps",
+          "load": "external",
+          "weightConvention": "total"
+        },
+        "defaultRestSeconds": 90,
+        "archived": false
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000011",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "revision": 1,
+        "origin": "custom",
+        "name": "Plank",
+        "primaryMuscleGroupIds": [
+          "core"
+        ],
+        "secondaryMuscleGroupIds": [],
+        "equipmentIds": [],
+        "category": "strength",
+        "instructions": "Use a controlled movement.",
+        "notes": "Library note",
+        "tracking": {
+          "measurement": "duration",
+          "load": "none",
+          "weightConvention": null
+        },
+        "defaultRestSeconds": 90,
+        "archived": false
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000012",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "revision": 1,
+        "origin": "custom",
+        "name": "Weighted pull-up",
+        "primaryMuscleGroupIds": [
+          "core"
+        ],
+        "secondaryMuscleGroupIds": [],
+        "equipmentIds": [],
+        "category": "strength",
+        "instructions": "Use a controlled movement.",
+        "notes": "Library note",
+        "tracking": {
+          "measurement": "reps",
+          "load": "added",
+          "weightConvention": "total"
+        },
+        "defaultRestSeconds": 90,
+        "archived": false
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000013",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "revision": 1,
+        "origin": "custom",
+        "name": "Assisted pull-up",
+        "primaryMuscleGroupIds": [
+          "core"
+        ],
+        "secondaryMuscleGroupIds": [],
+        "equipmentIds": [],
+        "category": "strength",
+        "instructions": "Use a controlled movement.",
+        "notes": "Library note",
+        "tracking": {
+          "measurement": "reps",
+          "load": "assisted",
+          "weightConvention": "machine-display"
+        },
+        "defaultRestSeconds": 90,
+        "archived": false
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000014",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "revision": 1,
+        "origin": "custom",
+        "name": "Push-up",
+        "primaryMuscleGroupIds": [
+          "core"
+        ],
+        "secondaryMuscleGroupIds": [],
+        "equipmentIds": [],
+        "category": "strength",
+        "instructions": "Use a controlled movement.",
+        "notes": "Library note",
+        "tracking": {
+          "measurement": "reps",
+          "load": "bodyweight",
+          "weightConvention": null
+        },
+        "defaultRestSeconds": 90,
+        "archived": false
+      }
+    ],
+    "sessions": [
+      {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "title": "Recovery example",
+        "status": "active",
+        "startedAt": "2026-11-10T03:00:00.000Z",
+        "endedAt": null,
+        "notes": "Workout notes"
+      }
+    ],
+    "sessionActivities": [
+      {
+        "id": "00000000-0000-4000-8000-000000000002",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "sessionId": "00000000-0000-4000-8000-000000000001",
+        "activityType": "strength",
+        "position": 0
+      }
+    ],
+    "sessionExercises": [
+      {
+        "id": "00000000-0000-4000-8000-000000000020",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "sessionActivityId": "00000000-0000-4000-8000-000000000002",
+        "sourceExerciseId": "00000000-0000-4000-8000-000000000010",
+        "snapshot": {
+          "id": "00000000-0000-4000-8000-000000000010",
+          "createdAt": "2026-11-10T03:00:00.000Z",
+          "updatedAt": "2026-11-10T03:00:00.000Z",
+          "revision": 1,
+          "origin": "custom",
+          "name": "Bench press",
+          "primaryMuscleGroupIds": [
+            "chest"
+          ],
+          "secondaryMuscleGroupIds": [
+            "triceps"
+          ],
+          "equipmentIds": [
+            "barbell"
+          ],
+          "category": "strength",
+          "instructions": "Use a controlled movement.",
+          "notes": "Library note",
+          "tracking": {
+            "measurement": "reps",
+            "load": "external",
+            "weightConvention": "total"
+          },
+          "defaultRestSeconds": 90,
+          "archived": false
+        },
+        "position": 0,
+        "notes": "Session-only note",
+        "restSeconds": 60,
+        "supersetGroupId": "00000000-0000-4000-8000-000000000003"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000021",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "sessionActivityId": "00000000-0000-4000-8000-000000000002",
+        "sourceExerciseId": "00000000-0000-4000-8000-000000000011",
+        "snapshot": {
+          "id": "00000000-0000-4000-8000-000000000011",
+          "createdAt": "2026-11-10T03:00:00.000Z",
+          "updatedAt": "2026-11-10T03:00:00.000Z",
+          "revision": 1,
+          "origin": "custom",
+          "name": "Plank",
+          "primaryMuscleGroupIds": [
+            "core"
+          ],
+          "secondaryMuscleGroupIds": [],
+          "equipmentIds": [],
+          "category": "strength",
+          "instructions": "Use a controlled movement.",
+          "notes": "Library note",
+          "tracking": {
+            "measurement": "duration",
+            "load": "none",
+            "weightConvention": null
+          },
+          "defaultRestSeconds": 90,
+          "archived": false
+        },
+        "position": 1,
+        "notes": "Session-only note",
+        "restSeconds": null,
+        "supersetGroupId": "00000000-0000-4000-8000-000000000003"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000022",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "sessionActivityId": "00000000-0000-4000-8000-000000000002",
+        "sourceExerciseId": "00000000-0000-4000-8000-000000000012",
+        "snapshot": {
+          "id": "00000000-0000-4000-8000-000000000012",
+          "createdAt": "2026-11-10T03:00:00.000Z",
+          "updatedAt": "2026-11-10T03:00:00.000Z",
+          "revision": 1,
+          "origin": "custom",
+          "name": "Weighted pull-up",
+          "primaryMuscleGroupIds": [
+            "core"
+          ],
+          "secondaryMuscleGroupIds": [],
+          "equipmentIds": [],
+          "category": "strength",
+          "instructions": "Use a controlled movement.",
+          "notes": "Library note",
+          "tracking": {
+            "measurement": "reps",
+            "load": "added",
+            "weightConvention": "total"
+          },
+          "defaultRestSeconds": 90,
+          "archived": false
+        },
+        "position": 2,
+        "notes": "Session-only note",
+        "restSeconds": null,
+        "supersetGroupId": null
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000023",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "sessionActivityId": "00000000-0000-4000-8000-000000000002",
+        "sourceExerciseId": "00000000-0000-4000-8000-000000000013",
+        "snapshot": {
+          "id": "00000000-0000-4000-8000-000000000013",
+          "createdAt": "2026-11-10T03:00:00.000Z",
+          "updatedAt": "2026-11-10T03:00:00.000Z",
+          "revision": 1,
+          "origin": "custom",
+          "name": "Assisted pull-up",
+          "primaryMuscleGroupIds": [
+            "core"
+          ],
+          "secondaryMuscleGroupIds": [],
+          "equipmentIds": [],
+          "category": "strength",
+          "instructions": "Use a controlled movement.",
+          "notes": "Library note",
+          "tracking": {
+            "measurement": "reps",
+            "load": "assisted",
+            "weightConvention": "machine-display"
+          },
+          "defaultRestSeconds": 90,
+          "archived": false
+        },
+        "position": 3,
+        "notes": "Session-only note",
+        "restSeconds": null,
+        "supersetGroupId": null
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000024",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "sessionActivityId": "00000000-0000-4000-8000-000000000002",
+        "sourceExerciseId": "00000000-0000-4000-8000-000000000014",
+        "snapshot": {
+          "id": "00000000-0000-4000-8000-000000000014",
+          "createdAt": "2026-11-10T03:00:00.000Z",
+          "updatedAt": "2026-11-10T03:00:00.000Z",
+          "revision": 1,
+          "origin": "custom",
+          "name": "Push-up",
+          "primaryMuscleGroupIds": [
+            "core"
+          ],
+          "secondaryMuscleGroupIds": [],
+          "equipmentIds": [],
+          "category": "strength",
+          "instructions": "Use a controlled movement.",
+          "notes": "Library note",
+          "tracking": {
+            "measurement": "reps",
+            "load": "bodyweight",
+            "weightConvention": null
+          },
+          "defaultRestSeconds": 90,
+          "archived": false
+        },
+        "position": 4,
+        "notes": "Session-only note",
+        "restSeconds": null,
+        "supersetGroupId": null
+      }
+    ],
+    "strengthSets": [
+      {
+        "id": "00000000-0000-4000-8000-000000000030",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "sessionExerciseId": "00000000-0000-4000-8000-000000000020",
+        "position": 0,
+        "setType": "back-off",
+        "completed": true,
+        "completedAt": "2026-11-10T03:00:00.000Z",
+        "reps": 8,
+        "durationSeconds": null,
+        "load": {
+          "mode": "external",
+          "weight": {
+            "value": 40,
+            "unit": "kg"
+          }
+        },
+        "rpe": 8.5,
+        "rir": 1,
+        "target": {
+          "reps": {
+            "min": 8,
+            "max": 10
+          },
+          "durationSeconds": null,
+          "load": {
+            "mode": "external",
+            "weight": {
+              "value": 45,
+              "unit": "kg"
+            }
+          },
+          "rpe": {
+            "min": 8,
+            "max": 9
+          },
+          "rir": null
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000031",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "sessionExerciseId": "00000000-0000-4000-8000-000000000021",
+        "position": 0,
+        "setType": "normal",
+        "completed": false,
+        "completedAt": null,
+        "reps": null,
+        "durationSeconds": null,
+        "load": {
+          "mode": "none"
+        },
+        "rpe": null,
+        "rir": null,
+        "target": null
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000032",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "sessionExerciseId": "00000000-0000-4000-8000-000000000021",
+        "position": 1,
+        "setType": "amrap",
+        "completed": true,
+        "completedAt": "2026-11-10T03:00:00.000Z",
+        "reps": null,
+        "durationSeconds": 90,
+        "load": {
+          "mode": "none"
+        },
+        "rpe": null,
+        "rir": null,
+        "target": null
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000033",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "sessionExerciseId": "00000000-0000-4000-8000-000000000022",
+        "position": 0,
+        "setType": "normal",
+        "completed": true,
+        "completedAt": "2026-11-10T03:00:00.000Z",
+        "reps": 5,
+        "durationSeconds": null,
+        "load": {
+          "mode": "added",
+          "addedWeight": {
+            "value": 10,
+            "unit": "kg"
+          },
+          "bodyweight": {
+            "value": 80,
+            "unit": "kg"
+          }
+        },
+        "rpe": null,
+        "rir": null,
+        "target": null
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000034",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "sessionExerciseId": "00000000-0000-4000-8000-000000000023",
+        "position": 0,
+        "setType": "normal",
+        "completed": true,
+        "completedAt": "2026-11-10T03:00:00.000Z",
+        "reps": 6,
+        "durationSeconds": null,
+        "load": {
+          "mode": "assisted",
+          "assistance": {
+            "value": 40,
+            "unit": "lb"
+          },
+          "bodyweight": null
+        },
+        "rpe": null,
+        "rir": null,
+        "target": null
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000035",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "sessionExerciseId": "00000000-0000-4000-8000-000000000024",
+        "position": 0,
+        "setType": "normal",
+        "completed": true,
+        "completedAt": "2026-11-10T03:00:00.000Z",
+        "reps": 12,
+        "durationSeconds": null,
+        "load": {
+          "mode": "bodyweight",
+          "bodyweight": null
+        },
+        "rpe": null,
+        "rir": null,
+        "target": null
+      }
+    ],
+    "supersetGroups": [
+      {
+        "id": "00000000-0000-4000-8000-000000000003",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "sessionActivityId": "00000000-0000-4000-8000-000000000002",
+        "name": "A",
+        "betweenExerciseRestSeconds": 0,
+        "betweenRoundRestSeconds": 90
+      }
+    ],
+    "restTimers": [
+      {
+        "sessionId": "00000000-0000-4000-8000-000000000001",
+        "sourceSetId": "00000000-0000-4000-8000-000000000030",
+        "status": "running",
+        "deadline": "2026-11-10T03:01:30.000Z",
+        "remainingSeconds": null,
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z"
+      }
+    ],
+    "editorDrafts": [
+      {
+        "id": "00000000-0000-4000-8000-000000000040",
+        "createdAt": "2026-11-10T03:00:00.000Z",
+        "updatedAt": "2026-11-10T03:00:00.000Z",
+        "sessionId": "00000000-0000-4000-8000-000000000001",
+        "setId": "00000000-0000-4000-8000-000000000031",
+        "values": {
+          "weight": "",
+          "bodyweight": "",
+          "reps": "",
+          "durationSeconds": "1:",
+          "rpe": "",
+          "rir": ""
+        },
+        "weightUnit": "kg"
+      }
+    ]
+  }
+}
