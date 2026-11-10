@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AthleticDatabase, verifyLocalStorage } from '../src/data/db/database'
 import { createCustomExercise, filterExercises, initializeExerciseLibrary, listExercises, type ExerciseInput } from '../src/data/repositories/exercises'
-import { STARTER_EXERCISES } from '../src/domain/strength/catalog'
+import { BUILTIN_EXERCISES, STARTER_EXERCISES } from '../src/domain/strength/catalog'
 import { createBackup, parseBackup, restoreBackup, serializeBackup } from '../src/data/backup/backup'
 import type { Tracking } from '../src/domain/strength/models'
 import fixture from './fixtures/backup-v2-strength-0.2.0.json'
@@ -25,7 +25,7 @@ describe('starter library and preservation', () => {
     const bundled = structuredClone(STARTER_EXERCISES[0]); bundled.notes = 'Existing note'; bundled.archived = true
     await value.exercises.put(bundled)
     await initializeExerciseLibrary(value)
-    expect(await value.exercises.count()).toBe(STARTER_EXERCISES.length + fixture.data.exercises.length + 1)
+    expect(await value.exercises.count()).toBe(BUILTIN_EXERCISES.length + fixture.data.exercises.length + 1)
     expect(await value.exercises.get(custom.id)).toEqual(custom)
     expect(await value.exercises.get(bundled.id)).toEqual(bundled)
     expect(await value.sessionExercises.toArray()).toEqual(fixture.data.sessionExercises)
@@ -33,7 +33,7 @@ describe('starter library and preservation', () => {
   it('serializes simultaneous initializations without duplicate starter entries', async () => {
     const value = database()
     await Promise.all([initializeExerciseLibrary(value), initializeExerciseLibrary(value)])
-    expect(await value.exercises.count()).toBe(12)
+    expect(await value.exercises.count()).toBe(BUILTIN_EXERCISES.length)
   })
 })
 

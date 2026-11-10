@@ -6,7 +6,7 @@ import { addSet, addWorkoutExercise, cancelWorkout, changeSetType, commitSet, di
 import { createBackup, parseBackup, restoreBackup, serializeBackup } from '../src/data/backup/backup'
 import { convertInputUnit, inputFromSet, performanceText, type SetInput } from '../src/domain/strength/logging'
 import type { Tracking } from '../src/domain/strength/models'
-import { STARTER_EXERCISES } from '../src/domain/strength/catalog'
+import { BUILTIN_EXERCISES, STARTER_EXERCISES } from '../src/domain/strength/catalog'
 import fixture from './fixtures/backup-v2-strength-0.2.0.json'
 
 const databases: AthleticDatabase[] = []
@@ -91,7 +91,7 @@ describe('core workout lifecycle', () => {
     await addWorkoutExercise(next, STARTER_EXERCISES[11].id, db)
     await saveWorkoutDetails(next, 'New session', 'New notes', db)
     expect(await loadWorkout(id, db)).toEqual(original)
-    expect(await db.exercises.count()).toBe(STARTER_EXERCISES.length)
+    expect(await db.exercises.count()).toBe(BUILTIN_EXERCISES.length)
   })
   it('cancels explicitly, preserving recorded data while removing drafts and allowing a new session', async () => {
     const { db, id, set } = await setup()

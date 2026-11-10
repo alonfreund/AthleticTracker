@@ -3,7 +3,7 @@ import Dexie from 'dexie'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AthleticDatabase, BACKUP_TABLES } from '../src/data/db/database'
 import { installCatalogue, validateCatalogue } from '../src/data/catalogue'
-import { STARTER_EXERCISES, LEGACY_STARTER_EXERCISES } from '../src/domain/strength/catalog'
+import { BUILTIN_EXERCISES, STARTER_EXERCISES, LEGACY_STARTER_EXERCISES } from '../src/domain/strength/catalog'
 import { exerciseFingerprint, normalizeDefinition } from '../src/domain/strength/exerciseMetadata'
 import { createBackup, restoreBackup, parseBackup, serializeBackup, validateBackup } from '../src/data/backup/backup'
 import { createCustomExercise, filterExercises, initializeExerciseLibrary } from '../src/data/repositories/exercises'
@@ -65,7 +65,7 @@ describe('schema 4 migration and preference separation',()=>{
     expect((await db.exercises.get(id))?.metadata?.aliases).toContain('BB bench press')
     expect((await db.catalogueState.get(id))?.appliedRevision).toBe(2)
     expect(await exerciseRest(id,db)).toBe(71)
-    expect(await db.exercises.count()).toBe(12 + previous.data.exercises.length) // all twelve built-ins plus every existing custom definition
+    expect(await db.exercises.count()).toBe(BUILTIN_EXERCISES.length + previous.data.exercises.length) // all twelve built-ins plus every existing custom definition
     expect(await db.sessionExercises.toArray()).toEqual(previous.data.sessionExercises)
   })
   it('custom creation keeps all metadata and stores personal rest/favourite independently',async()=>{
@@ -82,12 +82,12 @@ describe('schema 4 migration and preference separation',()=>{
   })
 })
 describe('safe versioned catalogue updates',()=>{
-  it('seeds only the same twelve IDs and is idempotent across connections',async()=>{
-    const db=database();expect((await installCatalogue(undefined,db)).added).toBe(12)
+  it('seeds the approved manifest while retaining all original IDs and is idempotent across connections',async()=>{
+    const db=database();expect((await installCatalogue(undefined,db)).added).toBe(BUILTIN_EXERCISES.length)
     const before=await db.exercises.toArray(),state=await db.catalogueState.toArray()
     expect(await installCatalogue(undefined,db)).toEqual({added:0,updated:0,preserved:[]})
     expect(await db.exercises.toArray()).toEqual(before);expect(await db.catalogueState.toArray()).toEqual(state)
-    expect(before.map(row=>row.id).sort()).toEqual(LEGACY_STARTER_EXERCISES.map(row=>row.id).sort())
+    expect(before.map(row=>row.id).sort()).toEqual(BUILTIN_EXERCISES.map(row=>row.id).sort())
   })
   it('updates original content, keeps preferences, and never refreshes unfinished snapshots',async()=>{
     const db=database();await initializeExerciseLibrary(db)
@@ -114,7 +114,7 @@ describe('safe versioned catalogue updates',()=>{
   it('archives only by explicit revision and never deletes entries omitted from a batch',async()=>{
     const db=database();await installCatalogue(undefined,db)
     const retired=nextDefinition();retired.archived=true;await installCatalogue([retired],db)
-    expect(await db.exercises.count()).toBe(12);expect((await db.exercises.get(retired.id))?.archived).toBe(true)
+    expect(await db.exercises.count()).toBe(BUILTIN_EXERCISES.length);expect((await db.exercises.get(retired.id))?.archived).toBe(true)
     expect(filterExercises(await db.exercises.toArray(),{}).some(row=>row.id===retired.id)).toBe(false)
   })
   it('rolls back definitions and catalogue markers when a later write fails',async()=>{

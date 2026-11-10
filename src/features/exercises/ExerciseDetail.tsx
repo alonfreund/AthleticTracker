@@ -13,7 +13,7 @@ export function ExerciseDetail({ exercise, onBack }: { exercise: Exercise; onBac
   const list = (ids: string[], dictionary: Record<string, string>) => ids.length ? ids.map(id => label(id, dictionary)).join(', ') : 'None specified'
   return <article className="exercise-detail">
     <button className="secondary" onClick={onBack}>Back to exercises</button>
-    <p className="eyebrow">{exercise.origin === 'custom' ? 'YOUR CUSTOM EXERCISE' : 'STARTER EXERCISE'}</p>
+    <p className="eyebrow">{exercise.origin === 'custom' ? 'YOUR CUSTOM EXERCISE' : 'BUILT-IN EXERCISE'}</p>
     <h2>{exercise.name}</h2>
     <dl>
       <dt>Primary muscles</dt><dd>{list(exercise.primaryMuscleGroupIds, MUSCLES)}</dd>

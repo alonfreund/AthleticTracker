@@ -57,12 +57,12 @@ export function ExerciseLibrary() {
       <div className="filter-grid">
         <div><label htmlFor="muscle-filter">Muscle group</label><select id="muscle-filter" value={filters.muscle} onChange={event => setFilters({ ...filters, muscle: event.target.value })}><option value="">All muscles</option>{muscleIds.map(id => <option key={id} value={id}>{label(id, MUSCLES)}</option>)}</select></div>
         <div><label htmlFor="equipment-filter">Equipment</label><select id="equipment-filter" value={filters.equipment} onChange={event => setFilters({ ...filters, equipment: event.target.value })}><option value="">All equipment</option>{equipmentIds.map(id => <option key={id} value={id}>{label(id, EQUIPMENT)}</option>)}</select></div>
-        <div><label htmlFor="source-filter">Source</label><select id="source-filter" value={filters.origin} onChange={event => setFilters({ ...filters, origin: event.target.value as ExerciseFilters['origin'] })}><option value="all">All exercises</option><option value="bundled">Starter library</option><option value="custom">My exercises</option></select></div>
+        <div><label htmlFor="source-filter">Source</label><select id="source-filter" value={filters.origin} onChange={event => setFilters({ ...filters, origin: event.target.value as ExerciseFilters['origin'] })}><option value="all">All exercises</option><option value="bundled">Built-in library</option><option value="custom">My exercises</option></select></div>
       </div>
       <p role="status">{loading ? 'Loading exercises…' : `${results.length} exercise${results.length === 1 ? '' : 's'}`}</p>
       {!loading && results.length === 0 && <p>No matching exercises. Try another search or create your own.</p>}
       <ul className="exercise-list">{results.map(exercise => <li key={exercise.id}><button className="exercise-row" disabled={applying} onClick={() => { setSelected(exercise); setMessage('') }}>
-        <span className="exercise-row-top"><strong>{exercise.name}</strong><span className="badge">{exercise.origin === 'custom' ? 'Custom' : 'Starter'}</span></span>
+        <span className="exercise-row-top"><strong>{exercise.name}</strong><span className="badge">{exercise.origin === 'custom' ? 'Custom' : 'Built-in'}</span></span>
         <span>{exercise.primaryMuscleGroupIds.map(id => label(id, MUSCLES)).join(', ') || 'No primary muscles specified'}</span>
         <span className="note">{trackingLabel(exercise.tracking)}</span>
       </button></li>)}</ul>

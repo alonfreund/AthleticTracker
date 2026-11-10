@@ -1,0 +1,24 @@
+// Permanent family UUIDs: never derive identity from array position.
+export const EXERCISE_FAMILIES: Record<string,string> = {
+  'ba51f000-0000-4000-8000-000000000001': 'bench-press',
+  'ba51f000-0000-4000-8000-000000000002': 'squat',
+  'ba51f000-0000-4000-8000-000000000003': 'deadlift',
+  'ba51f000-0000-4000-8000-000000000004': 'shoulder-press',
+  'ba51f000-0000-4000-8000-000000000005': 'curl',
+  'ba51f000-0000-4000-8000-000000000006': 'triceps-extension',
+  'ba51f000-0000-4000-8000-000000000007': 'pulldown',
+  'ba51f000-0000-4000-8000-000000000008': 'push-up',
+  'ba51f000-0000-4000-8000-000000000009': 'pull-up',
+  'ba51f000-0000-4000-8000-000000000010': 'plank',
+  'ba51f000-0000-4000-8000-000000000011': 'horizontal-row',
+  'ba51f000-0000-4000-8000-000000000012': 'chest-fly',
+  'ba51f000-0000-4000-8000-000000000013': 'pullover',
+  'ba51f000-0000-4000-8000-000000000014': 'face-pull',
+  'ba51f000-0000-4000-8000-000000000015': 'reverse-fly',
+  'ba51f000-0000-4000-8000-000000000016': 'lateral-raise',
+  'ba51f000-0000-4000-8000-000000000017': 'front-raise',
+  'ba51f000-0000-4000-8000-000000000018': 'scapular-pull-up',
+  'ba51f000-0000-4000-8000-000000000019': 'push-press',
+}
+
+export function familyId(slug:string):string { const id=Object.keys(EXERCISE_FAMILIES).find(id=>EXERCISE_FAMILIES[id]===slug);if(!id)throw new Error(`Unknown exercise family: ${slug}`);return id }

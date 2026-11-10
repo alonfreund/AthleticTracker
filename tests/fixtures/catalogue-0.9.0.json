@@ -1,0 +1,921 @@
+{
+  "current": [
+    {
+      "id": "ba51c000-0000-4000-8000-000000000001",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 2,
+      "origin": "bundled",
+      "name": "Barbell bench press",
+      "primaryMuscleGroupIds": [
+        "chest"
+      ],
+      "secondaryMuscleGroupIds": [
+        "triceps",
+        "shoulders"
+      ],
+      "equipmentIds": [
+        "barbell",
+        "bench"
+      ],
+      "category": "compound",
+      "instructions": "Lie on a bench with feet supported. Lower the bar under control, then press it upward. Use safeties or a spotter when appropriate.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "external",
+        "weightConvention": "total"
+      },
+      "defaultRestSeconds": null,
+      "archived": false,
+      "metadata": {
+        "version": 1,
+        "aliases": [
+          "Bench press",
+          "BB bench press"
+        ],
+        "familyId": "ba51f000-0000-4000-8000-000000000001",
+        "exerciseType": "compound",
+        "movementPatternIds": [
+          "horizontal-push"
+        ],
+        "optionalEquipmentIds": [],
+        "variant": {
+          "grip": null,
+          "angle": null,
+          "stance": null,
+          "support": null,
+          "execution": null
+        },
+        "repetitionConvention": "unspecified"
+      }
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000002",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 2,
+      "origin": "bundled",
+      "name": "Barbell back squat",
+      "primaryMuscleGroupIds": [
+        "quadriceps",
+        "glutes"
+      ],
+      "secondaryMuscleGroupIds": [
+        "adductors",
+        "core"
+      ],
+      "equipmentIds": [
+        "barbell"
+      ],
+      "category": "compound",
+      "instructions": "Support the bar securely on your upper back. Bend at the hips and knees, then return to standing with a controlled movement.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "external",
+        "weightConvention": "total"
+      },
+      "defaultRestSeconds": null,
+      "archived": false,
+      "metadata": {
+        "version": 1,
+        "aliases": [
+          "Back squat",
+          "BB squat"
+        ],
+        "familyId": "ba51f000-0000-4000-8000-000000000002",
+        "exerciseType": "compound",
+        "movementPatternIds": [
+          "squat"
+        ],
+        "optionalEquipmentIds": [],
+        "variant": {
+          "grip": null,
+          "angle": null,
+          "stance": null,
+          "support": null,
+          "execution": null
+        },
+        "repetitionConvention": "unspecified"
+      }
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000003",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 2,
+      "origin": "bundled",
+      "name": "Romanian deadlift",
+      "primaryMuscleGroupIds": [
+        "hamstrings",
+        "glutes"
+      ],
+      "secondaryMuscleGroupIds": [
+        "upper-back",
+        "core"
+      ],
+      "equipmentIds": [
+        "barbell"
+      ],
+      "category": "compound",
+      "instructions": "With a slight knee bend, move the hips backward while lowering the bar close to the legs. Return to standing under control.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "external",
+        "weightConvention": "total"
+      },
+      "defaultRestSeconds": null,
+      "archived": false,
+      "metadata": {
+        "version": 1,
+        "aliases": [
+          "Barbell Romanian deadlift",
+          "RDL"
+        ],
+        "familyId": "ba51f000-0000-4000-8000-000000000003",
+        "exerciseType": "compound",
+        "movementPatternIds": [
+          "hinge"
+        ],
+        "optionalEquipmentIds": [],
+        "variant": {
+          "grip": null,
+          "angle": null,
+          "stance": null,
+          "support": null,
+          "execution": null
+        },
+        "repetitionConvention": "unspecified"
+      }
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000004",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 2,
+      "origin": "bundled",
+      "name": "Dumbbell shoulder press",
+      "primaryMuscleGroupIds": [
+        "shoulders"
+      ],
+      "secondaryMuscleGroupIds": [
+        "triceps"
+      ],
+      "equipmentIds": [
+        "dumbbells"
+      ],
+      "category": "compound",
+      "instructions": "Begin with dumbbells near shoulder height. Press overhead under control, then lower. Record the weight of one dumbbell.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "external",
+        "weightConvention": "per-hand"
+      },
+      "defaultRestSeconds": null,
+      "archived": false,
+      "metadata": {
+        "version": 1,
+        "aliases": [
+          "DB overhead press"
+        ],
+        "familyId": "ba51f000-0000-4000-8000-000000000004",
+        "exerciseType": "compound",
+        "movementPatternIds": [
+          "vertical-push"
+        ],
+        "optionalEquipmentIds": [],
+        "variant": {
+          "grip": null,
+          "angle": null,
+          "stance": null,
+          "support": null,
+          "execution": null
+        },
+        "repetitionConvention": "unspecified"
+      }
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000005",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 2,
+      "origin": "bundled",
+      "name": "Dumbbell curl",
+      "primaryMuscleGroupIds": [
+        "biceps"
+      ],
+      "secondaryMuscleGroupIds": [
+        "forearms"
+      ],
+      "equipmentIds": [
+        "dumbbells"
+      ],
+      "category": "isolation",
+      "instructions": "Keep the upper arms steady while bending the elbows to lift the dumbbells. Lower under control. Record the weight of one dumbbell.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "external",
+        "weightConvention": "per-hand"
+      },
+      "defaultRestSeconds": null,
+      "archived": false,
+      "metadata": {
+        "version": 1,
+        "aliases": [
+          "DB curl"
+        ],
+        "familyId": "ba51f000-0000-4000-8000-000000000005",
+        "exerciseType": "isolation",
+        "movementPatternIds": [
+          "elbow-flexion"
+        ],
+        "optionalEquipmentIds": [],
+        "variant": {
+          "grip": null,
+          "angle": null,
+          "stance": null,
+          "support": null,
+          "execution": null
+        },
+        "repetitionConvention": "unspecified"
+      }
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000006",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 2,
+      "origin": "bundled",
+      "name": "Cable triceps pushdown",
+      "primaryMuscleGroupIds": [
+        "triceps"
+      ],
+      "secondaryMuscleGroupIds": [],
+      "equipmentIds": [
+        "cable"
+      ],
+      "category": "isolation",
+      "instructions": "Keep the upper arms near your sides. Extend the elbows to press the attachment down, then return under control. Record the displayed load.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "external",
+        "weightConvention": "machine-display"
+      },
+      "defaultRestSeconds": null,
+      "archived": false,
+      "metadata": {
+        "version": 1,
+        "aliases": [
+          "Triceps pressdown"
+        ],
+        "familyId": "ba51f000-0000-4000-8000-000000000006",
+        "exerciseType": "isolation",
+        "movementPatternIds": [
+          "elbow-extension"
+        ],
+        "optionalEquipmentIds": [],
+        "variant": {
+          "grip": null,
+          "angle": null,
+          "stance": null,
+          "support": null,
+          "execution": null
+        },
+        "repetitionConvention": "unspecified"
+      }
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000007",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 2,
+      "origin": "bundled",
+      "name": "Lat pulldown",
+      "primaryMuscleGroupIds": [
+        "lats"
+      ],
+      "secondaryMuscleGroupIds": [
+        "biceps",
+        "upper-back"
+      ],
+      "equipmentIds": [
+        "machine",
+        "cable"
+      ],
+      "category": "compound",
+      "instructions": "With a secure seated position, pull the attachment toward the upper chest, then return under control. Record the displayed load.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "external",
+        "weightConvention": "machine-display"
+      },
+      "defaultRestSeconds": null,
+      "archived": false,
+      "metadata": {
+        "version": 1,
+        "aliases": [
+          "Cable pulldown"
+        ],
+        "familyId": "ba51f000-0000-4000-8000-000000000007",
+        "exerciseType": "compound",
+        "movementPatternIds": [
+          "vertical-pull"
+        ],
+        "optionalEquipmentIds": [],
+        "variant": {
+          "grip": null,
+          "angle": null,
+          "stance": null,
+          "support": null,
+          "execution": null
+        },
+        "repetitionConvention": "unspecified"
+      }
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000008",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 2,
+      "origin": "bundled",
+      "name": "Push-up",
+      "primaryMuscleGroupIds": [
+        "chest"
+      ],
+      "secondaryMuscleGroupIds": [
+        "triceps",
+        "shoulders",
+        "core"
+      ],
+      "equipmentIds": [],
+      "category": "compound",
+      "instructions": "Maintain a stable body position. Bend the elbows to lower your torso, then press back up.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "bodyweight",
+        "weightConvention": null
+      },
+      "defaultRestSeconds": null,
+      "archived": false,
+      "metadata": {
+        "version": 1,
+        "aliases": [
+          "Pushup",
+          "Press-up"
+        ],
+        "familyId": "ba51f000-0000-4000-8000-000000000008",
+        "exerciseType": "compound",
+        "movementPatternIds": [
+          "horizontal-push"
+        ],
+        "optionalEquipmentIds": [],
+        "variant": {
+          "grip": null,
+          "angle": null,
+          "stance": null,
+          "support": null,
+          "execution": null
+        },
+        "repetitionConvention": "unspecified"
+      }
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000009",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 2,
+      "origin": "bundled",
+      "name": "Pull-up",
+      "primaryMuscleGroupIds": [
+        "lats"
+      ],
+      "secondaryMuscleGroupIds": [
+        "biceps",
+        "upper-back"
+      ],
+      "equipmentIds": [
+        "pull-up-bar"
+      ],
+      "category": "compound",
+      "instructions": "From a controlled hang, pull upward toward the bar, then lower under control.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "bodyweight",
+        "weightConvention": null
+      },
+      "defaultRestSeconds": null,
+      "archived": false,
+      "metadata": {
+        "version": 1,
+        "aliases": [
+          "Pullup"
+        ],
+        "familyId": "ba51f000-0000-4000-8000-000000000009",
+        "exerciseType": "compound",
+        "movementPatternIds": [
+          "vertical-pull"
+        ],
+        "optionalEquipmentIds": [],
+        "variant": {
+          "grip": null,
+          "angle": null,
+          "stance": null,
+          "support": null,
+          "execution": null
+        },
+        "repetitionConvention": "unspecified"
+      }
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000010",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 2,
+      "origin": "bundled",
+      "name": "Weighted pull-up",
+      "primaryMuscleGroupIds": [
+        "lats"
+      ],
+      "secondaryMuscleGroupIds": [
+        "biceps",
+        "upper-back"
+      ],
+      "equipmentIds": [
+        "pull-up-bar",
+        "dip-belt"
+      ],
+      "category": "compound",
+      "instructions": "Secure the added load before starting. Perform controlled pull-ups. Record added weight separately from bodyweight.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "added",
+        "weightConvention": "total"
+      },
+      "defaultRestSeconds": null,
+      "archived": false,
+      "metadata": {
+        "version": 1,
+        "aliases": [
+          "Weighted pullup"
+        ],
+        "familyId": "ba51f000-0000-4000-8000-000000000009",
+        "exerciseType": "compound",
+        "movementPatternIds": [
+          "vertical-pull"
+        ],
+        "optionalEquipmentIds": [],
+        "variant": {
+          "grip": null,
+          "angle": null,
+          "stance": null,
+          "support": null,
+          "execution": null
+        },
+        "repetitionConvention": "unspecified"
+      }
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000011",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 2,
+      "origin": "bundled",
+      "name": "Assisted pull-up",
+      "primaryMuscleGroupIds": [
+        "lats"
+      ],
+      "secondaryMuscleGroupIds": [
+        "biceps",
+        "upper-back"
+      ],
+      "equipmentIds": [
+        "machine"
+      ],
+      "category": "compound",
+      "instructions": "Set the machine assistance and follow its setup instructions. Perform controlled pull-ups. Record assistance as a positive amount, not a negative weight.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "assisted",
+        "weightConvention": "machine-display"
+      },
+      "defaultRestSeconds": null,
+      "archived": false,
+      "metadata": {
+        "version": 1,
+        "aliases": [
+          "Machine-assisted pull-up"
+        ],
+        "familyId": "ba51f000-0000-4000-8000-000000000009",
+        "exerciseType": "compound",
+        "movementPatternIds": [
+          "vertical-pull"
+        ],
+        "optionalEquipmentIds": [],
+        "variant": {
+          "grip": null,
+          "angle": null,
+          "stance": null,
+          "support": null,
+          "execution": null
+        },
+        "repetitionConvention": "unspecified"
+      }
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000012",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 2,
+      "origin": "bundled",
+      "name": "Plank",
+      "primaryMuscleGroupIds": [
+        "core"
+      ],
+      "secondaryMuscleGroupIds": [
+        "shoulders",
+        "glutes"
+      ],
+      "equipmentIds": [
+        "mat"
+      ],
+      "category": "stability",
+      "instructions": "Support yourself on forearms and toes, keeping a stable trunk. Record the time held in seconds.",
+      "notes": "",
+      "tracking": {
+        "measurement": "duration",
+        "load": "none",
+        "weightConvention": null
+      },
+      "defaultRestSeconds": null,
+      "archived": false,
+      "metadata": {
+        "version": 1,
+        "aliases": [
+          "Forearm plank",
+          "Isometric plank"
+        ],
+        "familyId": "ba51f000-0000-4000-8000-000000000010",
+        "exerciseType": "stability",
+        "movementPatternIds": [
+          "anti-extension"
+        ],
+        "optionalEquipmentIds": [],
+        "variant": {
+          "grip": null,
+          "angle": null,
+          "stance": null,
+          "support": null,
+          "execution": null
+        },
+        "repetitionConvention": "unspecified"
+      }
+    }
+  ],
+  "legacy": [
+    {
+      "id": "ba51c000-0000-4000-8000-000000000001",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 1,
+      "origin": "bundled",
+      "name": "Barbell bench press",
+      "primaryMuscleGroupIds": [
+        "chest"
+      ],
+      "secondaryMuscleGroupIds": [
+        "triceps",
+        "shoulders"
+      ],
+      "equipmentIds": [
+        "barbell",
+        "bench"
+      ],
+      "category": "compound",
+      "instructions": "Lie on a bench with feet supported. Lower the bar under control, then press it upward. Use safeties or a spotter when appropriate.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "external",
+        "weightConvention": "total"
+      },
+      "defaultRestSeconds": 90,
+      "archived": false
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000002",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 1,
+      "origin": "bundled",
+      "name": "Barbell back squat",
+      "primaryMuscleGroupIds": [
+        "quadriceps",
+        "glutes"
+      ],
+      "secondaryMuscleGroupIds": [
+        "adductors",
+        "core"
+      ],
+      "equipmentIds": [
+        "barbell"
+      ],
+      "category": "compound",
+      "instructions": "Support the bar securely on your upper back. Bend at the hips and knees, then return to standing with a controlled movement.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "external",
+        "weightConvention": "total"
+      },
+      "defaultRestSeconds": 90,
+      "archived": false
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000003",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 1,
+      "origin": "bundled",
+      "name": "Romanian deadlift",
+      "primaryMuscleGroupIds": [
+        "hamstrings",
+        "glutes"
+      ],
+      "secondaryMuscleGroupIds": [
+        "upper-back",
+        "core"
+      ],
+      "equipmentIds": [
+        "barbell"
+      ],
+      "category": "compound",
+      "instructions": "With a slight knee bend, move the hips backward while lowering the bar close to the legs. Return to standing under control.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "external",
+        "weightConvention": "total"
+      },
+      "defaultRestSeconds": 90,
+      "archived": false
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000004",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 1,
+      "origin": "bundled",
+      "name": "Dumbbell shoulder press",
+      "primaryMuscleGroupIds": [
+        "shoulders"
+      ],
+      "secondaryMuscleGroupIds": [
+        "triceps"
+      ],
+      "equipmentIds": [
+        "dumbbells"
+      ],
+      "category": "compound",
+      "instructions": "Begin with dumbbells near shoulder height. Press overhead under control, then lower. Record the weight of one dumbbell.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "external",
+        "weightConvention": "per-hand"
+      },
+      "defaultRestSeconds": 90,
+      "archived": false
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000005",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 1,
+      "origin": "bundled",
+      "name": "Dumbbell curl",
+      "primaryMuscleGroupIds": [
+        "biceps"
+      ],
+      "secondaryMuscleGroupIds": [
+        "forearms"
+      ],
+      "equipmentIds": [
+        "dumbbells"
+      ],
+      "category": "isolation",
+      "instructions": "Keep the upper arms steady while bending the elbows to lift the dumbbells. Lower under control. Record the weight of one dumbbell.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "external",
+        "weightConvention": "per-hand"
+      },
+      "defaultRestSeconds": 90,
+      "archived": false
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000006",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 1,
+      "origin": "bundled",
+      "name": "Cable triceps pushdown",
+      "primaryMuscleGroupIds": [
+        "triceps"
+      ],
+      "secondaryMuscleGroupIds": [],
+      "equipmentIds": [
+        "cable"
+      ],
+      "category": "isolation",
+      "instructions": "Keep the upper arms near your sides. Extend the elbows to press the attachment down, then return under control. Record the displayed load.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "external",
+        "weightConvention": "machine-display"
+      },
+      "defaultRestSeconds": 90,
+      "archived": false
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000007",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 1,
+      "origin": "bundled",
+      "name": "Lat pulldown",
+      "primaryMuscleGroupIds": [
+        "lats"
+      ],
+      "secondaryMuscleGroupIds": [
+        "biceps",
+        "upper-back"
+      ],
+      "equipmentIds": [
+        "machine",
+        "cable"
+      ],
+      "category": "compound",
+      "instructions": "With a secure seated position, pull the attachment toward the upper chest, then return under control. Record the displayed load.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "external",
+        "weightConvention": "machine-display"
+      },
+      "defaultRestSeconds": 90,
+      "archived": false
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000008",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 1,
+      "origin": "bundled",
+      "name": "Push-up",
+      "primaryMuscleGroupIds": [
+        "chest"
+      ],
+      "secondaryMuscleGroupIds": [
+        "triceps",
+        "shoulders",
+        "core"
+      ],
+      "equipmentIds": [],
+      "category": "bodyweight",
+      "instructions": "Maintain a stable body position. Bend the elbows to lower your torso, then press back up.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "bodyweight",
+        "weightConvention": null
+      },
+      "defaultRestSeconds": 90,
+      "archived": false
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000009",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 1,
+      "origin": "bundled",
+      "name": "Pull-up",
+      "primaryMuscleGroupIds": [
+        "lats"
+      ],
+      "secondaryMuscleGroupIds": [
+        "biceps",
+        "upper-back"
+      ],
+      "equipmentIds": [
+        "pull-up-bar"
+      ],
+      "category": "bodyweight",
+      "instructions": "From a controlled hang, pull upward toward the bar, then lower under control.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "bodyweight",
+        "weightConvention": null
+      },
+      "defaultRestSeconds": 90,
+      "archived": false
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000010",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 1,
+      "origin": "bundled",
+      "name": "Weighted pull-up",
+      "primaryMuscleGroupIds": [
+        "lats"
+      ],
+      "secondaryMuscleGroupIds": [
+        "biceps",
+        "upper-back"
+      ],
+      "equipmentIds": [
+        "pull-up-bar",
+        "dip-belt"
+      ],
+      "category": "bodyweight",
+      "instructions": "Secure the added load before starting. Perform controlled pull-ups. Record added weight separately from bodyweight.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "added",
+        "weightConvention": "total"
+      },
+      "defaultRestSeconds": 90,
+      "archived": false
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000011",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 1,
+      "origin": "bundled",
+      "name": "Assisted pull-up",
+      "primaryMuscleGroupIds": [
+        "lats"
+      ],
+      "secondaryMuscleGroupIds": [
+        "biceps",
+        "upper-back"
+      ],
+      "equipmentIds": [
+        "machine"
+      ],
+      "category": "bodyweight",
+      "instructions": "Set the machine assistance and follow its setup instructions. Perform controlled pull-ups. Record assistance as a positive amount, not a negative weight.",
+      "notes": "",
+      "tracking": {
+        "measurement": "reps",
+        "load": "assisted",
+        "weightConvention": "machine-display"
+      },
+      "defaultRestSeconds": 90,
+      "archived": false
+    },
+    {
+      "id": "ba51c000-0000-4000-8000-000000000012",
+      "createdAt": "2026-11-10T00:00:00.000Z",
+      "updatedAt": "2026-11-10T00:00:00.000Z",
+      "revision": 1,
+      "origin": "bundled",
+      "name": "Plank",
+      "primaryMuscleGroupIds": [
+        "core"
+      ],
+      "secondaryMuscleGroupIds": [
+        "shoulders",
+        "glutes"
+      ],
+      "equipmentIds": [
+        "mat"
+      ],
+      "category": "isometric",
+      "instructions": "Support yourself on forearms and toes, keeping a stable trunk. Record the time held in seconds.",
+      "notes": "",
+      "tracking": {
+        "measurement": "duration",
+        "load": "none",
+        "weightConvention": null
+      },
+      "defaultRestSeconds": 60,
+      "archived": false
+    }
+  ]
+}
