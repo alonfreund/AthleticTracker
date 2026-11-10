@@ -9,6 +9,7 @@ import { setFavourite } from '../src/data/repositories/preferences'
 import { addWorkoutExercise, commitSet, finishWorkout, loadWorkout, startWorkout } from '../src/data/repositories/workouts'
 import { BUILTIN_EXERCISES, CATALOGUE_BATCHES } from '../src/domain/strength/catalog'
 import { GRIP_VARIATIONS } from '../src/domain/strength/catalogue/gripVariations'
+import { exerciseDisplayName } from '../src/domain/strength/exerciseDisplayName'
 import history from './fixtures/backup-v3-rest-0.7.0.json'
 
 const released = CATALOGUE_BATCHES.filter(batch => batch.id !== 'grip-variations')
@@ -85,4 +86,21 @@ it('logs every new variant with its prescribed load and retains the exercise sna
   } finally {
     await db.delete()
   }
+})
+
+it('finds built-in exercises by either name and groups them by the displayed base name', () => {
+  const pulldowns = filterExercises(BUILTIN_EXERCISES, { query: 'Lat Pulldown' })
+  const names = pulldowns.map(exerciseDisplayName)
+  const neutral = names.indexOf('Lat Pulldown (Neutral-Grip)')
+  expect(names[neutral - 1]).toBe('Lat Pulldown (Medium-Grip)')
+  expect(names[neutral + 1]).toBe('Lat Pulldown (Underhand)')
+
+  for (const query of ['Neutral-grip lat pulldown', 'Lat Pulldown (Neutral-Grip)']) {
+    expect(filterExercises(BUILTIN_EXERCISES, { query }).map(exerciseDisplayName))
+      .toContain('Lat Pulldown (Neutral-Grip)')
+  }
+  expect(filterExercises(BUILTIN_EXERCISES, { query: 'Straight-arm cable pulldown (Rope)' })
+    .map(exerciseDisplayName)).toContain('Straight-arm cable pulldown (Rope)')
+  expect(exerciseDisplayName({ name: 'Neutral-grip lat pulldown', origin: 'custom' }))
+    .toBe('Neutral-grip lat pulldown')
 })

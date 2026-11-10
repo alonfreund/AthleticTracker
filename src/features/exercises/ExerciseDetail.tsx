@@ -1,3 +1,4 @@
+import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
 import { useEffect, useState } from 'react'
 import { db } from '../../data/db/database'
 import { globalRest } from '../../data/repositories/preferences'
@@ -14,7 +15,7 @@ export function ExerciseDetail({ exercise, onBack }: { exercise: Exercise; onBac
   return <article className="exercise-detail">
     <button className="secondary" onClick={onBack}>Back to exercises</button>
     <p className="eyebrow">{exercise.origin === 'custom' ? 'YOUR CUSTOM EXERCISE' : 'BUILT-IN EXERCISE'}</p>
-    <h2>{exercise.name}</h2>
+    <h2>{exerciseDisplayName(exercise)}</h2>
     <dl>
       <dt>Primary muscles</dt><dd>{list(exercise.primaryMuscleGroupIds, MUSCLES)}</dd>
       <dt>Secondary muscles</dt><dd>{list(exercise.secondaryMuscleGroupIds, MUSCLES)}</dd>

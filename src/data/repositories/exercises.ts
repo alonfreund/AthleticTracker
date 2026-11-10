@@ -1,3 +1,4 @@
+import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
 import { installCatalogue } from '../catalogue'
 import { defaultMetadata } from '../../domain/strength/exerciseMetadata'
 import { db, type AthleticDatabase } from '../db/database'
@@ -8,7 +9,7 @@ import { CATEGORIES, EQUIPMENT, label, MUSCLES, trackingLabel } from '../../doma
 
 export type ExerciseInput = Pick<Exercise, 'name' | 'primaryMuscleGroupIds' | 'secondaryMuscleGroupIds' | 'equipmentIds' | 'category' | 'instructions' | 'notes' | 'tracking' | 'defaultRestSeconds' | 'metadata'>
 export interface ExerciseFilters { query?: string; muscle?: string; equipment?: string; origin?: 'all' | 'custom' | 'bundled'; exerciseType?: string; movementPattern?: string; primaryOnly?: boolean }
-const normalize = (value: string) => value.normalize('NFKD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase().trim()
+const normalize = (value: string) => value.normalize('NFKD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase().replace(/[()]/g, ' ').trim()
 
 export async function initializeExerciseLibrary(database: AthleticDatabase = db) {
   return installCatalogue(undefined, database)
@@ -23,12 +24,12 @@ export function filterExercises(exercises: Exercise[], filters: ExerciseFilters)
     if (filters.movementPattern && !exercise.metadata?.movementPatternIds.includes(filters.movementPattern)) return false
     if (filters.equipment && !(EQUIPMENT_FILTER_GROUPS[filters.equipment] ?? [filters.equipment]).some(id => exercise.equipmentIds.includes(id))) return false
     const haystack = normalize([
-      exercise.name, ...(exercise.metadata?.aliases ?? []), ...(exercise.metadata?.movementPatternIds.map(id=>label(id,MOVEMENT_PATTERNS)) ?? []), label(exercise.category, CATEGORIES), exercise.category, trackingLabel(exercise.tracking),
+      exercise.name, exerciseDisplayName(exercise), ...(exercise.metadata?.aliases ?? []), ...(exercise.metadata?.movementPatternIds.map(id=>label(id,MOVEMENT_PATTERNS)) ?? []), label(exercise.category, CATEGORIES), exercise.category, trackingLabel(exercise.tracking),
       ...[...exercise.primaryMuscleGroupIds, ...exercise.secondaryMuscleGroupIds].map(id => label(id, MUSCLES)),
       ...exercise.equipmentIds.map(id => label(id, EQUIPMENT)),
     ].join(' '))
     return tokens.every(token => haystack.includes(token))
-  }).sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }) || a.id.localeCompare(b.id))
+  }).sort((a, b) => exerciseDisplayName(a).localeCompare(exerciseDisplayName(b), 'en', { sensitivity: 'base' }) || a.id.localeCompare(b.id))
 }
 export async function listExercises(database: AthleticDatabase = db): Promise<Exercise[]> { return database.exercises.toArray() }
 export async function createCustomExercise(input: ExerciseInput, database: AthleticDatabase = db): Promise<Exercise> {

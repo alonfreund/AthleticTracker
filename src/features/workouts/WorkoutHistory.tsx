@@ -1,3 +1,4 @@
+import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
 import { SET_TYPES } from '../../domain/strength/setTypes'
 import type { Workout } from '../../data/repositories/workouts'
 import { performanceText } from '../../domain/strength/logging'
@@ -16,7 +17,7 @@ export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Train' }:
     <p>{workout.strengthSets.filter(set => set.completed).length} completed sets</p>
     {session.notes && <p className="multiline">{session.notes}</p>}
     {workout.sessionExercises.map(exercise => <article className="workout-exercise" key={exercise.id}>
-      <h3>{exercise.snapshot.name}</h3><p className="note">{trackingLabel(exercise.snapshot.tracking)}</p>
+      <h3>{exerciseDisplayName(exercise.snapshot)}</h3><p className="note">{trackingLabel(exercise.snapshot.tracking)}</p>
       {exercise.notes && <p className="multiline">{exercise.notes}</p>}
       <ol>{workout.strengthSets.filter(set => set.sessionExerciseId === exercise.id).sort((a, b) => a.position - b.position).map(set => <li key={set.id}>
         <strong>{set.completed ? 'Completed' : 'Incomplete — excluded from results'}</strong> · <span className={`set-type-badge set-type-colour set-type--${set.setType}`}>{SET_TYPES[set.setType]}</span><br />{performanceText(set)}

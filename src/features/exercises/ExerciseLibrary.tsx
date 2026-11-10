@@ -1,3 +1,4 @@
+import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { updateSafety } from '../../app/updateSafety'
 import { createCustomExercise, filterExercises, initializeExerciseLibrary, listExercises, type ExerciseFilters, type ExerciseInput } from '../../data/repositories/exercises'
@@ -62,7 +63,7 @@ export function ExerciseLibrary() {
       <p role="status">{loading ? 'Loading exercises…' : `${results.length} exercise${results.length === 1 ? '' : 's'}`}</p>
       {!loading && results.length === 0 && <p>No matching exercises. Try another search or create your own.</p>}
       <ul className="exercise-list">{results.map(exercise => <li key={exercise.id}><button className="exercise-row" disabled={applying} onClick={() => { setSelected(exercise); setMessage('') }}>
-        <span className="exercise-row-top"><strong>{exercise.name}</strong><span className="badge">{exercise.origin === 'custom' ? 'Custom' : 'Built-in'}</span></span>
+        <span className="exercise-row-top"><strong>{exerciseDisplayName(exercise)}</strong><span className="badge">{exercise.origin === 'custom' ? 'Custom' : 'Built-in'}</span></span>
         <span>{exercise.primaryMuscleGroupIds.map(id => label(id, MUSCLES)).join(', ') || 'No primary muscles specified'}</span>
         <span className="note">{trackingLabel(exercise.tracking)}</span>
       </button></li>)}</ul>

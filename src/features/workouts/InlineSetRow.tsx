@@ -1,3 +1,4 @@
+import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
 import { SET_TYPES as types, SET_TYPE_SHORT as short } from '../../domain/strength/setTypes'
 import { useState } from 'react'
 import type { SessionExercise, StrengthSet } from '../../domain/strength/models'
@@ -13,7 +14,7 @@ export function InlineSetRow({ exercise, set, index, row, previous, disabled, on
   const [unitError, setUnitError] = useState('')
   const config = exercise.snapshot.tracking
   const hasWeight = ['external', 'added', 'assisted'].includes(config.load)
-  const name = `${exercise.snapshot.name}, set ${index + 1}`
+  const name = `${exerciseDisplayName(exercise.snapshot)}, set ${index + 1}`
   const weightLabel = config.load === 'added' ? 'Added weight' : config.load === 'assisted' ? 'Assistance' : 'Weight'
   function field(key: keyof SetInput['values'], label: string) {
     return <input aria-label={`${name}, ${label}`} aria-invalid={!!row.error} type="text" inputMode={key === 'reps' || key === 'rir' ? 'numeric' : 'decimal'} enterKeyHint="next" maxLength={128} placeholder="—" value={row.input.values[key]} disabled={disabled} onChange={event => onChange({ ...row.input, values: { ...row.input.values, [key]: event.target.value } })} onBlur={onSave} />
