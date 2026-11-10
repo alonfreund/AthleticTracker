@@ -96,3 +96,17 @@ Data & settings contains storage status, the existing test records and backup/re
 72 automated tests pass, including initialisation, preservation, search, every tracking configuration, failed saves, reopening and custom-exercise backup/restore. The test configuration restricts discovery to tests/ so ignored local verification checkouts cannot duplicate results. Browser verification at iPhone width covered no horizontal overflow, search, custom save/details and reopening with the preview server stopped. Actual iPhone interaction remains device-side.
 
 No exercise editing/archive UI, workout logging, cardio, routines, programmes or analytics has been added. The next stage is the active strength-workout logging flow.
+
+## Core strength logging (0.4.0)
+
+Workouts is now the default screen. Start an empty workout (or resume the active one), add a library/custom exercise, edit a set, and choose Save values or Complete set. Reps, holds, load modes, kg/lb, set types, RPE and RIR use the approved model. Weight-unit changes convert entered masses rather than relabelling the numbers. Existing targets and snapshots remain intact.
+
+Workout name/notes and raw set input save after a 300 ms pause; the app also attempts to flush when hidden. Wait for Saved status before closing. Inputs such as a partially typed decimal are recoverable editor drafts, separate from validated set performance. Save values applies a valid incomplete set; Complete set validates and marks it complete. On resume, a stored set draft is reopened automatically. If several drafts came from a backup, resolve each before finishing.
+
+Exercise/set add, move and removal operations are atomic. Removal and cancellation have inline confirmation. Finish requires at least one completed set and no unapplied set drafts; review explicitly retains incomplete rows while excluding them from results. Finished and cancelled workouts are viewable in read-only history with elapsed duration, notes and exercise snapshots. Cancel preserves recorded rows but discards pending drafts.
+
+No dependencies, schema migration or backup-format change were needed: schema v3 and format v2 already include the data. Backups cover both active and finished workouts. Operations validate the complete affected session graph, write only changed rows in one transaction and leave other workouts/library data untouched. Multiple-copy conflict management is still deferred.
+
+97 tests pass, covering the complete lifecycle, every tracking mode, invalid completion, ordered draft writes, unit conversion, rollback, cascade cleanup, other-session preservation and backup recovery. Browser verification at iPhone width covered start/add, autosaved partial input, reload/resume, rejected invalid completion, set type, finish with an incomplete row, and offline history reopening.
+
+Timers, supersets, previous-performance copying, routine/programme management, PR calculations, analytics, cardio and historical editing are not added in this increment. Imported timer/group relationships are preserved or cleaned up only as required when removing their referenced data. Wait for a saved status before force-closing; browser termination can interrupt the last pending input write.

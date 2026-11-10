@@ -54,3 +54,16 @@ dd { margin: 4px 0 0; overflow-wrap: anywhere; }
 .update-details { border-top: 1px solid #cfdbd6; margin-top: 24px; }
 .update-details section { margin-top: 8px; }
 @media (max-width: 360px) { main { padding-left: 16px; padding-right: 16px; } .choice-grid, .filter-grid { grid-template-columns: 1fr; } }
+
+.workout-exercise { border: 1px solid #cfdbd6; border-radius: 12px; padding: 16px; margin: 24px 0; }
+.workout-exercise h3 { overflow-wrap: anywhere; }
+.workout-title { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+.set-row { border-top: 1px solid #cfdbd6; padding: 16px 0; }
+.set-complete { border-left: 4px solid #3e8062; padding-left: 12px; }
+.set-input-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+.compact-actions { gap: 6px; }
+.compact-actions button { padding: 10px 12px; }
+.review-box, .resume-card { background: #edf3ed; padding: 16px; border: 1px solid #b8cdbe; border-radius: 12px; margin: 20px 0; }
+.exercise-picker { margin: 24px 0; }
+.app-nav { flex-wrap: wrap; }
+@media (max-width: 360px) { .set-input-grid { grid-template-columns: 1fr; } }
