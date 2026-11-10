@@ -19,12 +19,14 @@ const measurementNotes:Record<LoadProfile,string>={
   assisted:'Record the displayed assistance as a positive amount, separately from optional bodyweight.',
   'reps-only':'Log repetitions without a kilogram estimate. Note band type and tension in workout notes.',
 }
-export function defineBatchOne(entry:Entry):Exercise {
+export function defineBatchOne(entry:Entry):Exercise { return defineEntry(entry, 'ba51c100') }
+export function defineBatchTwo(entry:Entry):Exercise { return defineEntry(entry, 'ba51c200') }
+function defineEntry(entry:Entry, namespace:'ba51c100'|'ba51c200'):Exercise {
   const mode:Tracking['load']=entry.load==='bodyweight'?'bodyweight':entry.load==='added'?'added':entry.load==='assisted'?'assisted':entry.load==='reps-only'?'none':'external'
   const convention:Tracking['weightConvention']=mode==='none'||mode==='bodyweight'?null:entry.load==='dumbbells'?'per-hand':entry.load==='stack'||entry.load==='assisted'?'machine-display':'total'
   return {
     // Explicit reservation, NOT the entry's position. Numbers must never be reused or renumbered.
-    id:`ba51c100-0000-4000-8000-${String(entry.number).padStart(12,'0')}`,
+    id:`${namespace}-0000-4000-8000-${String(entry.number).padStart(12,'0')}`,
     createdAt:'2026-11-10T00:00:00.000Z',updatedAt:'2026-11-10T00:00:00.000Z',revision:1,origin:'bundled',archived:false,
     name:entry.name,primaryMuscleGroupIds:entry.primary,secondaryMuscleGroupIds:entry.secondary,equipmentIds:entry.equipment,category:entry.type,
     tracking:{measurement:'reps',load:mode,weightConvention:convention},defaultRestSeconds:null,instructions:entry.instructions,

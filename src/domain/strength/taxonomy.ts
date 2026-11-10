@@ -17,6 +17,9 @@ export const EQUIPMENT: Record<string, string> = {
   'fixed-bar': 'Secure fixed horizontal bar', 'neutral-pull-up-bar': 'Neutral-grip pull-up handles', 'overhead-band-anchor': 'Secure overhead band anchor',
   'landmine-attachment': 'Landmine attachment', 'landmine-row-handle': 'Landmine row handle', rings: 'Gymnastic rings', 'suspension-trainer': 'Suspension trainer',
   'ez-bar': 'EZ bar', 'trap-bar': 'Trap bar', 'safety-squat-bar': 'Safety-squat bar', 'multi-grip-bar': 'Multi-grip bar', 'medicine-ball': 'Medicine ball', sled: 'Sled', 'ab-wheel': 'Ab wheel', sliders: 'Sliders', 'stability-ball': 'Stability ball', 'neck-harness': 'Neck harness', 'weight-vest': 'Weight vest',
+  'heel-wedge': 'Stable heel-elevation wedge', 'squat-box': 'Squat box / stable seat', 'bar-pad': 'Barbell hip pad',
+  'incline-leg-press-machine': 'Plate-loaded 45-degree leg press', 'horizontal-leg-press-machine': 'Selectorized horizontal leg press',
+  'hack-squat-machine': 'Plate-loaded hack squat machine', 'pendulum-squat-machine': 'Plate-loaded pendulum squat machine', 'belt-squat-machine': 'Plate-loaded belt squat machine with belt', 'hip-thrust-machine': 'Plate-loaded hip thrust machine',
   'plate-loaded-pulldown-machine': 'Plate-loaded pulldown machine', 'pulldown-machine': 'Pulldown machine', 'cable-rope': 'Cable rope', 'cable-bar': 'Cable bar', 'cable-handle': 'Cable handle',
 }
 export const EXERCISE_TYPES = { compound: 'Compound', isolation: 'Isolation', stability: 'Stability', conditioning: 'Conditioning', unspecified: 'Unspecified' } as const

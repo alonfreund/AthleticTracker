@@ -19,6 +19,15 @@ export const EXERCISE_FAMILIES: Record<string,string> = {
   'ba51f000-0000-4000-8000-000000000017': 'front-raise',
   'ba51f000-0000-4000-8000-000000000018': 'scapular-pull-up',
   'ba51f000-0000-4000-8000-000000000019': 'push-press',
+  'ba51f000-0000-4000-8000-000000000020': 'leg-press',
+  'ba51f000-0000-4000-8000-000000000021': 'good-morning',
+  'ba51f000-0000-4000-8000-000000000022': 'lunge',
+  'ba51f000-0000-4000-8000-000000000023': 'split-squat',
+  'ba51f000-0000-4000-8000-000000000024': 'step-up',
+  'ba51f000-0000-4000-8000-000000000025': 'step-down',
+  'ba51f000-0000-4000-8000-000000000026': 'hip-thrust',
+  'ba51f000-0000-4000-8000-000000000027': 'glute-bridge',
+  'ba51f000-0000-4000-8000-000000000028': 'pull-through',
 }
 
 export function familyId(slug:string):string { const id=Object.keys(EXERCISE_FAMILIES).find(id=>EXERCISE_FAMILIES[id]===slug);if(!id)throw new Error(`Unknown exercise family: ${slug}`);return id }

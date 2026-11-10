@@ -1,0 +1,4568 @@
+[
+  {
+    "id": "ba51c000-0000-4000-8000-000000000001",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 2,
+    "origin": "bundled",
+    "name": "Barbell bench press",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps",
+      "shoulders"
+    ],
+    "equipmentIds": [
+      "barbell",
+      "bench"
+    ],
+    "category": "compound",
+    "instructions": "Lie on a bench with feet supported. Lower the bar under control, then press it upward. Use safeties or a spotter when appropriate.",
+    "notes": "",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "archived": false,
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Bench press",
+        "BB bench press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push"
+      ],
+      "optionalEquipmentIds": [],
+      "variant": {
+        "grip": null,
+        "angle": null,
+        "stance": null,
+        "support": null,
+        "execution": null
+      },
+      "repetitionConvention": "unspecified"
+    }
+  },
+  {
+    "id": "ba51c000-0000-4000-8000-000000000002",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 2,
+    "origin": "bundled",
+    "name": "Barbell back squat",
+    "primaryMuscleGroupIds": [
+      "quadriceps",
+      "glutes"
+    ],
+    "secondaryMuscleGroupIds": [
+      "adductors",
+      "core"
+    ],
+    "equipmentIds": [
+      "barbell"
+    ],
+    "category": "compound",
+    "instructions": "Support the bar securely on your upper back. Bend at the hips and knees, then return to standing with a controlled movement.",
+    "notes": "",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "archived": false,
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Back squat",
+        "BB squat"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000002",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "squat"
+      ],
+      "optionalEquipmentIds": [],
+      "variant": {
+        "grip": null,
+        "angle": null,
+        "stance": null,
+        "support": null,
+        "execution": null
+      },
+      "repetitionConvention": "unspecified"
+    }
+  },
+  {
+    "id": "ba51c000-0000-4000-8000-000000000003",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 2,
+    "origin": "bundled",
+    "name": "Romanian deadlift",
+    "primaryMuscleGroupIds": [
+      "hamstrings",
+      "glutes"
+    ],
+    "secondaryMuscleGroupIds": [
+      "upper-back",
+      "core"
+    ],
+    "equipmentIds": [
+      "barbell"
+    ],
+    "category": "compound",
+    "instructions": "With a slight knee bend, move the hips backward while lowering the bar close to the legs. Return to standing under control.",
+    "notes": "",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "archived": false,
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Barbell Romanian deadlift",
+        "RDL"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000003",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "hinge"
+      ],
+      "optionalEquipmentIds": [],
+      "variant": {
+        "grip": null,
+        "angle": null,
+        "stance": null,
+        "support": null,
+        "execution": null
+      },
+      "repetitionConvention": "unspecified"
+    }
+  },
+  {
+    "id": "ba51c000-0000-4000-8000-000000000004",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 2,
+    "origin": "bundled",
+    "name": "Dumbbell shoulder press",
+    "primaryMuscleGroupIds": [
+      "shoulders"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps"
+    ],
+    "equipmentIds": [
+      "dumbbells"
+    ],
+    "category": "compound",
+    "instructions": "Begin with dumbbells near shoulder height. Press overhead under control, then lower. Record the weight of one dumbbell.",
+    "notes": "",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "archived": false,
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "DB overhead press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000004",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-push"
+      ],
+      "optionalEquipmentIds": [],
+      "variant": {
+        "grip": null,
+        "angle": null,
+        "stance": null,
+        "support": null,
+        "execution": null
+      },
+      "repetitionConvention": "unspecified"
+    }
+  },
+  {
+    "id": "ba51c000-0000-4000-8000-000000000005",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 2,
+    "origin": "bundled",
+    "name": "Dumbbell curl",
+    "primaryMuscleGroupIds": [
+      "biceps"
+    ],
+    "secondaryMuscleGroupIds": [
+      "forearms"
+    ],
+    "equipmentIds": [
+      "dumbbells"
+    ],
+    "category": "isolation",
+    "instructions": "Keep the upper arms steady while bending the elbows to lift the dumbbells. Lower under control. Record the weight of one dumbbell.",
+    "notes": "",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "archived": false,
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "DB curl"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000005",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "elbow-flexion"
+      ],
+      "optionalEquipmentIds": [],
+      "variant": {
+        "grip": null,
+        "angle": null,
+        "stance": null,
+        "support": null,
+        "execution": null
+      },
+      "repetitionConvention": "unspecified"
+    }
+  },
+  {
+    "id": "ba51c000-0000-4000-8000-000000000006",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 2,
+    "origin": "bundled",
+    "name": "Cable triceps pushdown",
+    "primaryMuscleGroupIds": [
+      "triceps"
+    ],
+    "secondaryMuscleGroupIds": [],
+    "equipmentIds": [
+      "cable"
+    ],
+    "category": "isolation",
+    "instructions": "Keep the upper arms near your sides. Extend the elbows to press the attachment down, then return under control. Record the displayed load.",
+    "notes": "",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "archived": false,
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Triceps pressdown"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000006",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "elbow-extension"
+      ],
+      "optionalEquipmentIds": [],
+      "variant": {
+        "grip": null,
+        "angle": null,
+        "stance": null,
+        "support": null,
+        "execution": null
+      },
+      "repetitionConvention": "unspecified"
+    }
+  },
+  {
+    "id": "ba51c000-0000-4000-8000-000000000007",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 2,
+    "origin": "bundled",
+    "name": "Lat pulldown",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "upper-back"
+    ],
+    "equipmentIds": [
+      "machine",
+      "cable"
+    ],
+    "category": "compound",
+    "instructions": "With a secure seated position, pull the attachment toward the upper chest, then return under control. Record the displayed load.",
+    "notes": "",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "archived": false,
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Cable pulldown"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000007",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "variant": {
+        "grip": null,
+        "angle": null,
+        "stance": null,
+        "support": null,
+        "execution": null
+      },
+      "repetitionConvention": "unspecified"
+    }
+  },
+  {
+    "id": "ba51c000-0000-4000-8000-000000000008",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 2,
+    "origin": "bundled",
+    "name": "Push-up",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps",
+      "shoulders",
+      "core"
+    ],
+    "equipmentIds": [],
+    "category": "compound",
+    "instructions": "Maintain a stable body position. Bend the elbows to lower your torso, then press back up.",
+    "notes": "",
+    "tracking": {
+      "measurement": "reps",
+      "load": "bodyweight",
+      "weightConvention": null
+    },
+    "defaultRestSeconds": null,
+    "archived": false,
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Pushup",
+        "Press-up"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000008",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push"
+      ],
+      "optionalEquipmentIds": [],
+      "variant": {
+        "grip": null,
+        "angle": null,
+        "stance": null,
+        "support": null,
+        "execution": null
+      },
+      "repetitionConvention": "unspecified"
+    }
+  },
+  {
+    "id": "ba51c000-0000-4000-8000-000000000009",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 2,
+    "origin": "bundled",
+    "name": "Pull-up",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "upper-back"
+    ],
+    "equipmentIds": [
+      "pull-up-bar"
+    ],
+    "category": "compound",
+    "instructions": "From a controlled hang, pull upward toward the bar, then lower under control.",
+    "notes": "",
+    "tracking": {
+      "measurement": "reps",
+      "load": "bodyweight",
+      "weightConvention": null
+    },
+    "defaultRestSeconds": null,
+    "archived": false,
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Pullup"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000009",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "variant": {
+        "grip": null,
+        "angle": null,
+        "stance": null,
+        "support": null,
+        "execution": null
+      },
+      "repetitionConvention": "unspecified"
+    }
+  },
+  {
+    "id": "ba51c000-0000-4000-8000-000000000010",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 2,
+    "origin": "bundled",
+    "name": "Weighted pull-up",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "upper-back"
+    ],
+    "equipmentIds": [
+      "pull-up-bar",
+      "dip-belt"
+    ],
+    "category": "compound",
+    "instructions": "Secure the added load before starting. Perform controlled pull-ups. Record added weight separately from bodyweight.",
+    "notes": "",
+    "tracking": {
+      "measurement": "reps",
+      "load": "added",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "archived": false,
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Weighted pullup"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000009",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "variant": {
+        "grip": null,
+        "angle": null,
+        "stance": null,
+        "support": null,
+        "execution": null
+      },
+      "repetitionConvention": "unspecified"
+    }
+  },
+  {
+    "id": "ba51c000-0000-4000-8000-000000000011",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 2,
+    "origin": "bundled",
+    "name": "Assisted pull-up",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "upper-back"
+    ],
+    "equipmentIds": [
+      "machine"
+    ],
+    "category": "compound",
+    "instructions": "Set the machine assistance and follow its setup instructions. Perform controlled pull-ups. Record assistance as a positive amount, not a negative weight.",
+    "notes": "",
+    "tracking": {
+      "measurement": "reps",
+      "load": "assisted",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "archived": false,
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Machine-assisted pull-up"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000009",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "variant": {
+        "grip": null,
+        "angle": null,
+        "stance": null,
+        "support": null,
+        "execution": null
+      },
+      "repetitionConvention": "unspecified"
+    }
+  },
+  {
+    "id": "ba51c000-0000-4000-8000-000000000012",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 2,
+    "origin": "bundled",
+    "name": "Plank",
+    "primaryMuscleGroupIds": [
+      "core"
+    ],
+    "secondaryMuscleGroupIds": [
+      "shoulders",
+      "glutes"
+    ],
+    "equipmentIds": [
+      "mat"
+    ],
+    "category": "stability",
+    "instructions": "Support yourself on forearms and toes, keeping a stable trunk. Record the time held in seconds.",
+    "notes": "",
+    "tracking": {
+      "measurement": "duration",
+      "load": "none",
+      "weightConvention": null
+    },
+    "defaultRestSeconds": null,
+    "archived": false,
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Forearm plank",
+        "Isometric plank"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000010",
+      "exerciseType": "stability",
+      "movementPatternIds": [
+        "anti-extension"
+      ],
+      "optionalEquipmentIds": [],
+      "variant": {
+        "grip": null,
+        "angle": null,
+        "stance": null,
+        "support": null,
+        "execution": null
+      },
+      "repetitionConvention": "unspecified"
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000001",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Dumbbell bench press",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "triceps"
+    ],
+    "equipmentIds": [
+      "dumbbells",
+      "bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Lie on a flat bench with feet planted and dumbbells beside the chest. Press both weights upward without bouncing them together. Lower with the forearms under the weights.",
+    "notes": "Set the dumbbells down under control at the end of the set. Record the weight of one dumbbell; use equal dumbbells for two-arm sets. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Flat dumbbell press",
+        "DB bench press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": "flat",
+        "stance": null,
+        "support": "flat bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000002",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Incline barbell bench press",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "triceps"
+    ],
+    "equipmentIds": [
+      "barbell",
+      "rack",
+      "adjustable-bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Set an adjustable bench to a low incline inside a rack. Unrack the bar with wrists above the elbows, lower toward the upper chest, then press back to the start.",
+    "notes": "Use rack safeties or a spotter. Keep the chosen incline consistent between sessions. Record the total barbell load, including the bar and plates. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Incline bench press",
+        "Incline BB press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": "low incline",
+        "stance": null,
+        "support": "incline bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000003",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Incline dumbbell bench press",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "triceps"
+    ],
+    "equipmentIds": [
+      "dumbbells",
+      "adjustable-bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Sit against a low-incline bench with the dumbbells near the upper chest. Press upward while keeping the torso against the pad. Lower both weights through a comfortable range.",
+    "notes": "Use the same bench angle for comparable records. Record the weight of one dumbbell; use equal dumbbells for two-arm sets. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Incline DB press",
+        "Incline dumbbell chest press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": "low incline",
+        "stance": null,
+        "support": "incline bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000004",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Decline barbell bench press",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "triceps"
+    ],
+    "equipmentIds": [
+      "barbell",
+      "rack",
+      "decline-bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Secure the legs on a decline bench beneath a racked bar. Unrack with assistance if needed, lower the bar toward the lower chest, then press upward under control.",
+    "notes": "Use a bench designed for decline pressing and arrange safeties or a spotter. Record the total barbell load, including the bar and plates. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Decline bench press",
+        "Decline BB press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": "decline",
+        "stance": null,
+        "support": "decline bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000005",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Decline dumbbell bench press",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "triceps"
+    ],
+    "equipmentIds": [
+      "dumbbells",
+      "decline-bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Secure yourself on a decline bench and position both dumbbells beside the chest. Press them above the torso, then lower without letting the shoulders roll forward.",
+    "notes": "Arrange a controlled way to get the weights into and out of position. Record the weight of one dumbbell; use equal dumbbells for two-arm sets. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Decline DB press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": "decline",
+        "stance": null,
+        "support": "decline bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000006",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Close-grip barbell bench press",
+    "primaryMuscleGroupIds": [
+      "triceps"
+    ],
+    "secondaryMuscleGroupIds": [
+      "chest",
+      "anterior-deltoid"
+    ],
+    "equipmentIds": [
+      "barbell",
+      "rack",
+      "bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Lie on a flat bench and hold the bar with a comfortably narrow grip. Lower with the wrists aligned over the forearms and elbows near the torso. Press to straight arms without bouncing.",
+    "notes": "A close grip does not require the hands to touch. Use safeties or a spotter. Record the total barbell load, including the bar and plates. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Close-grip bench press",
+        "Narrow-grip bench press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push",
+        "elbow-extension"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "close pronated",
+        "angle": "flat",
+        "stance": null,
+        "support": "flat bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000007",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Paused barbell bench press",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "triceps"
+    ],
+    "equipmentIds": [
+      "barbell",
+      "rack",
+      "bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Lower a racked barbell to the chest while keeping the upper back set. Hold the bar motionless briefly without relaxing into the chest, then press to the start.",
+    "notes": "Use a consistent pause duration for comparison; do not bounce the bar. Record the total barbell load, including the bar and plates. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Pause bench press",
+        "Paused BB bench"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": "flat",
+        "stance": null,
+        "support": "flat bench",
+        "execution": "deliberate pause at chest"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000008",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Barbell floor press",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps",
+      "anterior-deltoid"
+    ],
+    "equipmentIds": [
+      "barbell",
+      "rack"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Lie on the floor under a safely racked bar with knees bent. Lower until the upper arms gently contact the floor. Maintain tension and press upward without rebounding.",
+    "notes": "Set rack safeties for the floor position; the floor limits the bottom range. Record the total barbell load, including the bar and plates. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "BB floor press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": "flat",
+        "stance": null,
+        "support": "floor",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000009",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Dumbbell floor press",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "triceps"
+    ],
+    "equipmentIds": [
+      "dumbbells"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Lie on the floor with knees bent and dumbbells above the chest. Lower until the upper arms lightly touch the floor, then press both weights upward.",
+    "notes": "Keep the elbows controlled rather than striking or bouncing off the floor. Record the weight of one dumbbell; use equal dumbbells for two-arm sets. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "DB floor press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": "flat",
+        "stance": null,
+        "support": "floor",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000010",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Neutral-grip dumbbell bench press",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "triceps"
+    ],
+    "equipmentIds": [
+      "dumbbells",
+      "bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Lie on a flat bench with palms facing each other. Lower the dumbbells beside the chest while keeping that grip. Press both weights upward with the feet supported.",
+    "notes": "Keep the palms-in grip throughout; this is distinct from the standard pronated press. Record the weight of one dumbbell; use equal dumbbells for two-arm sets. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Palms-in dumbbell bench press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": "flat",
+        "stance": null,
+        "support": "flat bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000011",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Single-arm dumbbell bench press",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps",
+      "anterior-deltoid",
+      "core"
+    ],
+    "equipmentIds": [
+      "dumbbells",
+      "bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Lie on a flat bench holding one dumbbell beside the chest. Brace the torso so the hips do not roll, press the weight up, then lower. Repeat on the other side.",
+    "notes": "Use a load that allows a stable torso; do not twist to finish the press. Record the weight of the single dumbbell used. Reps are per side. Use the same reps on each side; log sides separately if they differ.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "One-arm dumbbell bench press",
+        "Unilateral DB bench press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push",
+        "anti-rotation"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "per-side",
+      "variant": {
+        "grip": "neutral",
+        "angle": "flat",
+        "stance": null,
+        "support": "flat bench",
+        "execution": "single arm"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000012",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Smith machine bench press",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "triceps"
+    ],
+    "equipmentIds": [
+      "smith-machine",
+      "bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Position a flat bench so the Smith bar reaches the chest without forcing the shoulders. Set the stops, unlock the bar, then lower and press along the rails.",
+    "notes": "Check bench placement with an unloaded carriage before loading plates. Record added plates only; exclude the Smith carriage rather than estimating its effective weight. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Flat Smith press",
+        "Smith chest press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": "flat",
+        "stance": null,
+        "support": "flat bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000013",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Incline Smith machine bench press",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "triceps"
+    ],
+    "equipmentIds": [
+      "smith-machine",
+      "adjustable-bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Place a low-incline bench under the Smith bar and set the stops. Unlock the carriage, lower toward the upper chest, then press while keeping the back supported.",
+    "notes": "Keep the bench angle and position consistent; rail angles differ between machines. Record added plates only; exclude the Smith carriage rather than estimating its effective weight. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Incline Smith press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": "low incline",
+        "stance": null,
+        "support": "incline bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000014",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Seated chest press machine",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "triceps"
+    ],
+    "equipmentIds": [
+      "chest-press-machine"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Adjust the seat so the handles start around mid-chest. Keep the back on the pad, press the handles forward, then return without letting the stack slam.",
+    "notes": "Follow the machine setup markings and use the same handle option for comparisons. Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Selectorized chest press",
+        "Machine chest press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "machine handles",
+        "angle": "horizontal",
+        "stance": null,
+        "support": "machine back pad",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000015",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Plate-loaded chest press machine",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "triceps"
+    ],
+    "equipmentIds": [
+      "plate-loaded-chest-press-machine"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Set the seat on a plate-loaded horizontal chest press and load the working levers evenly. Press both handles away from the chest, then lower the levers under control.",
+    "notes": "This entry records a bilateral set on a plate-loaded machine, not a selectorized stack. Record the total plates added to all working levers, excluding the unloaded machine. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Lever chest press",
+        "Plate-loaded flat chest press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "machine handles",
+        "angle": "horizontal",
+        "stance": null,
+        "support": "machine back pad",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000016",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Plate-loaded incline chest press",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "triceps"
+    ],
+    "equipmentIds": [
+      "plate-loaded-incline-press-machine"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Adjust the seat on an incline press machine so the handles align with the upper chest. Press along the machine path, then return with the torso against the pad.",
+    "notes": "Use equal loading on independent arms for bilateral sets. Record the total plates added to all working levers, excluding the unloaded machine. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Incline lever press",
+        "Plate-loaded incline press machine"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "machine handles",
+        "angle": "incline",
+        "stance": null,
+        "support": "machine back pad",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000017",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Standing cable chest press",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps",
+      "anterior-deltoid",
+      "core"
+    ],
+    "equipmentIds": [
+      "cable",
+      "dual-cable-station",
+      "cable-handle"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Set two cable handles around chest height and take a stable split stance. Brace, press both handles forward, then return without letting the cables pull the torso backward.",
+    "notes": "Two matching handles and two independent pulleys are required. Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Dual-cable chest press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push",
+        "anti-extension"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": null,
+        "angle": "horizontal",
+        "stance": "split stance",
+        "support": "none",
+        "execution": "two arms"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000018",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Single-arm standing cable chest press",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps",
+      "anterior-deltoid",
+      "core"
+    ],
+    "equipmentIds": [
+      "cable",
+      "cable-handle"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Face away from a chest-height pulley in a split stance. Press one handle forward without turning the torso, then bring it back beside the chest. Change sides.",
+    "notes": "Keep the ribs and pelvis facing forward rather than rotating through the press. Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. Reps are per side. Use the same reps on each side; log sides separately if they differ.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "One-arm cable chest press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000001",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-push",
+        "anti-rotation"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "per-side",
+      "variant": {
+        "grip": null,
+        "angle": "horizontal",
+        "stance": "split stance",
+        "support": "none",
+        "execution": "single arm"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000019",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Dumbbell chest fly",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid"
+    ],
+    "equipmentIds": [
+      "dumbbells",
+      "bench"
+    ],
+    "category": "isolation",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Lie on a flat bench holding dumbbells above the chest. With a small fixed elbow bend, open the arms to a comfortable depth, then bring the weights back over the chest.",
+    "notes": "Keep the elbow angle nearly constant; do not turn the return into a press. Record the weight of one dumbbell; use equal dumbbells for two-arm sets. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Flat dumbbell fly",
+        "DB pec fly"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000012",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "horizontal-adduction"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": "flat",
+        "stance": null,
+        "support": "flat bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000020",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Incline dumbbell chest fly",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid"
+    ],
+    "equipmentIds": [
+      "dumbbells",
+      "adjustable-bench"
+    ],
+    "category": "isolation",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Lie against a low-incline bench with dumbbells above the upper chest. Open the arms with softly bent elbows, then close the same arc without lifting the torso.",
+    "notes": "Do not chase extra depth by letting the shoulders roll forward. Record the weight of one dumbbell; use equal dumbbells for two-arm sets. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Incline dumbbell fly",
+        "Incline DB fly"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000012",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "horizontal-adduction"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": "low incline",
+        "stance": null,
+        "support": "incline bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000021",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Standing cable chest fly",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid"
+    ],
+    "equipmentIds": [
+      "cable",
+      "dual-cable-station",
+      "cable-handle"
+    ],
+    "category": "isolation",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Set two pulleys around chest height and stand between them. With a slight fixed elbow bend, sweep the handles together in front of the chest, then reopen under control.",
+    "notes": "Use equal stack settings. Keep the crossing point consistent rather than alternating large overlaps. Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Mid-height cable fly",
+        "Cable crossover"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000012",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "horizontal-adduction"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": null,
+        "angle": "mid-height",
+        "stance": "split stance",
+        "support": "none",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000022",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Low-to-high cable chest fly",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid"
+    ],
+    "equipmentIds": [
+      "cable",
+      "dual-cable-station",
+      "cable-handle"
+    ],
+    "category": "isolation",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Start with two handles on low pulleys and a stable stance. Sweep the arms forward and upward toward the upper chest with elbows softly bent. Return along the same path.",
+    "notes": "The upward path is a variation, not isolation of a separate upper-chest muscle. Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Low cable fly",
+        "Low cable crossover"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000012",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "horizontal-adduction"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": null,
+        "angle": "low to high",
+        "stance": "split stance",
+        "support": "none",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000023",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "High-to-low cable chest fly",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid"
+    ],
+    "equipmentIds": [
+      "cable",
+      "dual-cable-station",
+      "cable-handle"
+    ],
+    "category": "isolation",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Take handles from high pulleys and step into a stable stance. Bring the arms down and inward in front of the lower chest, then reopen slowly.",
+    "notes": "Maintain the elbow bend and avoid using a torso dip to move the load. Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "High cable fly",
+        "High cable crossover"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000012",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "horizontal-adduction"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": null,
+        "angle": "high to low",
+        "stance": "split stance",
+        "support": "none",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000024",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Pec deck chest fly",
+    "primaryMuscleGroupIds": [
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "anterior-deltoid"
+    ],
+    "equipmentIds": [
+      "pec-deck-machine"
+    ],
+    "category": "isolation",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Set the seat so the upper arms align with the machine pivots. Bring the pads or handles together in front of the chest, then return without forcing a deep stretch.",
+    "notes": "Use the machine in its chest-fly configuration, not the reverse-fly position. Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Machine chest fly",
+        "Butterfly machine"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000012",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "horizontal-adduction"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "machine pads or handles",
+        "angle": "horizontal",
+        "stance": null,
+        "support": "machine back pad",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000025",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Standing barbell overhead press",
+    "primaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "lateral-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps",
+      "traps",
+      "core"
+    ],
+    "equipmentIds": [
+      "barbell",
+      "rack"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Start with the bar at the upper chest and feet planted. Brace the trunk and press overhead without dipping the knees. Lower to the starting position under control.",
+    "notes": "Keep this entry strict; use the separate push-press entry when using leg drive. Record the total barbell load, including the bar and plates. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Military press",
+        "Strict barbell press",
+        "BB overhead press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000004",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": "vertical",
+        "stance": "standing",
+        "support": "none",
+        "execution": "strict"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000026",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Seated barbell shoulder press",
+    "primaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "lateral-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps",
+      "traps"
+    ],
+    "equipmentIds": [
+      "barbell",
+      "rack",
+      "adjustable-bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Sit against an upright bench with the bar racked in front of you. Unrack, press overhead without lifting off the pad, then lower the bar in front of the face.",
+    "notes": "Set safeties and use a comfortable front-of-body bar path; this is not a behind-neck press. Record the total barbell load, including the bar and plates. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Seated BB overhead press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000004",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": "vertical",
+        "stance": "seated",
+        "support": "upright bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000027",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Seated dumbbell shoulder press",
+    "primaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "lateral-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps",
+      "traps"
+    ],
+    "equipmentIds": [
+      "dumbbells",
+      "adjustable-bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Sit with the back supported and dumbbells near shoulder height. Press both weights overhead, then lower with the forearms beneath the dumbbells.",
+    "notes": "Keep the bench position consistent and avoid sliding into a steep incline chest press. Record the weight of one dumbbell; use equal dumbbells for two-arm sets. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Seated DB overhead press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000004",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": "vertical",
+        "stance": "seated",
+        "support": "upright bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000028",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Seated Arnold press",
+    "primaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "lateral-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps"
+    ],
+    "equipmentIds": [
+      "dumbbells",
+      "adjustable-bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Sit upright with dumbbells in front of the shoulders and palms facing you. Rotate the arms outward as you press overhead. Reverse the motion smoothly on the way down.",
+    "notes": "Use a comfortable rotation and avoid forcing the shoulders behind the torso. Record the weight of one dumbbell; use equal dumbbells for two-arm sets. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Arnold dumbbell press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000004",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "rotating supinated to pronated",
+        "angle": "vertical",
+        "stance": "seated",
+        "support": "upright bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000029",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Seated neutral-grip dumbbell shoulder press",
+    "primaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "lateral-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps",
+      "traps"
+    ],
+    "equipmentIds": [
+      "dumbbells",
+      "adjustable-bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Sit against an upright backrest with palms facing each other. Press both dumbbells overhead while retaining the neutral grip, then lower beside the shoulders.",
+    "notes": "Keep the palms-in position throughout the set. Record the weight of one dumbbell; use equal dumbbells for two-arm sets. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Palms-in seated DB press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000004",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": "vertical",
+        "stance": "seated",
+        "support": "upright bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000030",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Single-arm standing dumbbell overhead press",
+    "primaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "lateral-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps",
+      "core",
+      "traps"
+    ],
+    "equipmentIds": [
+      "dumbbells"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Hold one dumbbell near the shoulder while standing tall. Press overhead without leaning sideways or dipping the knees, then lower and repeat on the other arm.",
+    "notes": "Brace against the sideways pull of the single weight; no leg drive. Record the weight of the single dumbbell used. Reps are per side. Use the same reps on each side; log sides separately if they differ.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "One-arm DB overhead press",
+        "Unilateral dumbbell shoulder press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000004",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-push",
+        "lateral-stability"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "per-side",
+      "variant": {
+        "grip": "neutral",
+        "angle": "vertical",
+        "stance": "standing",
+        "support": "none",
+        "execution": "single arm strict"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000031",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Seated Smith machine shoulder press",
+    "primaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "lateral-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps",
+      "traps"
+    ],
+    "equipmentIds": [
+      "smith-machine",
+      "adjustable-bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Place an upright bench under the Smith bar with the bar path in front of the face. Set the stops, unlock the carriage, then press overhead and lower under control.",
+    "notes": "Check the unloaded path first; do not force a behind-neck position to fit the rails. Record added plates only; exclude the Smith carriage rather than estimating its effective weight. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Smith overhead press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000004",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": "vertical",
+        "stance": "seated",
+        "support": "upright bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000032",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Shoulder press machine",
+    "primaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "lateral-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps",
+      "traps"
+    ],
+    "equipmentIds": [
+      "shoulder-press-machine"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Adjust the seat so the handles begin near shoulder height. Keep the torso supported, press the handles upward, then return without dropping the stack.",
+    "notes": "Use the same handle option and seat setting for comparable logs. Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Selectorized shoulder press",
+        "Machine overhead press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000004",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-push"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "machine handles",
+        "angle": "vertical",
+        "stance": "seated",
+        "support": "machine back pad",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000033",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Half-kneeling single-arm landmine press",
+    "primaryMuscleGroupIds": [
+      "anterior-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [
+      "chest",
+      "triceps",
+      "core"
+    ],
+    "equipmentIds": [
+      "barbell",
+      "landmine-attachment"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Secure one bar end in a landmine attachment and kneel with the opposite foot forward. Hold the sleeve near the working shoulder, press it diagonally forward and up, then return.",
+    "notes": "Keep the trunk facing forward. The anchored bar follows an arc rather than a vertical path. Record plates added at the free end only; exclude the bar and attachment. Reps are per side. Use the same reps on each side; log sides separately if they differ.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Half-kneeling landmine press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000004",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "diagonal-push",
+        "anti-rotation"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "per-side",
+      "variant": {
+        "grip": "bar sleeve",
+        "angle": "diagonal",
+        "stance": "half kneeling",
+        "support": "none",
+        "execution": "single arm"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000034",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Barbell push press",
+    "primaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "triceps"
+    ],
+    "secondaryMuscleGroupIds": [
+      "quadriceps",
+      "glutes",
+      "lateral-deltoid",
+      "core"
+    ],
+    "equipmentIds": [
+      "barbell",
+      "rack"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Hold the bar in a front-rack position. Make a short upright knee dip, drive through the legs and finish the press overhead. Lower and reset before the next repetition.",
+    "notes": "This is a push press, not a jerk: do not re-bend the knees to catch the bar. Record the total barbell load, including the bar and plates. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "BB push press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000019",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-push",
+        "jump-power"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": "vertical",
+        "stance": "standing",
+        "support": null,
+        "execution": "leg-driven press"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000035",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Dumbbell push press",
+    "primaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "triceps"
+    ],
+    "secondaryMuscleGroupIds": [
+      "quadriceps",
+      "glutes",
+      "lateral-deltoid",
+      "core"
+    ],
+    "equipmentIds": [
+      "dumbbells"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Hold two dumbbells at the shoulders. Dip slightly through the knees with the torso upright, then drive the legs and press both weights overhead. Lower and reset the rack position.",
+    "notes": "Count one leg drive and overhead finish as one rep; do not turn the set into repeated bouncing. Record the weight of one dumbbell; use equal dumbbells for two-arm sets. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "DB push press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000019",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-push",
+        "jump-power"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": "vertical",
+        "stance": "standing",
+        "support": null,
+        "execution": "leg-driven press"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000036",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Dumbbell Z press",
+    "primaryMuscleGroupIds": [
+      "anterior-deltoid",
+      "lateral-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps",
+      "core",
+      "traps"
+    ],
+    "equipmentIds": [
+      "dumbbells"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Sit on the floor with legs forward and the torso tall. Start the dumbbells at shoulder height, press overhead, then lower without rolling backward or using leg drive.",
+    "notes": "Use a position that lets the torso stay upright; floor sitting makes this distinct from a back-supported press. Record the weight of one dumbbell; use equal dumbbells for two-arm sets. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Seated floor dumbbell press",
+        "DB Z press"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000004",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-push",
+        "anti-extension"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": "vertical",
+        "stance": "seated legs forward",
+        "support": "floor",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000037",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Barbell bent-over row",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid",
+      "lower-back"
+    ],
+    "equipmentIds": [
+      "barbell"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Hinge at the hips with a braced torso and hold the bar below the shoulders. Pull toward the lower ribs, then extend the elbows without changing the torso angle.",
+    "notes": "Record the total barbell load, including the bar and plates. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Bent-over barbell row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": null,
+        "stance": "hip hinge",
+        "support": "none",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000038",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Underhand barbell row",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid",
+      "lower-back"
+    ],
+    "equipmentIds": [
+      "barbell"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Hinge with an underhand grip and the bar hanging beneath the shoulders. Draw the elbows back toward the hips, lower smoothly and keep the wrists straight.",
+    "notes": "Record the total barbell load, including the bar and plates. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Supinated barbell row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "supinated",
+        "angle": null,
+        "stance": "hip hinge",
+        "support": "none",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000039",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Pendlay row",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid",
+      "lower-back"
+    ],
+    "equipmentIds": [
+      "barbell"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Start each rep with the bar resting on the floor and the torso near horizontal. Brace, row toward the lower chest without standing up, then return the bar to the floor and reset.",
+    "notes": "Record the total barbell load, including the bar and plates. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Dead-stop barbell row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": null,
+        "stance": "hip hinge",
+        "support": "none",
+        "execution": "floor reset"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000040",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Single-arm dumbbell row",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid"
+    ],
+    "equipmentIds": [
+      "dumbbells",
+      "bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Support one hand and knee on a bench, keeping the back steady. Pull the other dumbbell toward the hip, then lower to a controlled arm extension. Complete both sides.",
+    "notes": "Record the weight of the single dumbbell used. Reps are per side. Use the same reps on each side; log sides separately if they differ.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "One-arm DB row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "per-side",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "split support",
+        "support": "hand and knee on bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000041",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Chest-supported dumbbell row",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid"
+    ],
+    "equipmentIds": [
+      "dumbbells",
+      "adjustable-bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Lie chest down on an incline bench with dumbbells hanging and palms facing each other. Row toward the hips with elbows close, then lower without lifting the chest off the pad.",
+    "notes": "Record the weight of one dumbbell; use equal dumbbells for two-arm sets. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Incline bench DB row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "prone",
+        "support": "incline chest pad",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000042",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Barbell seal row",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid"
+    ],
+    "equipmentIds": [
+      "barbell",
+      "seal-row-bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Lie face down on a raised seal-row bench with the bar below and enough clearance for full arm extension. Row toward the underside of the bench, then lower while keeping the chest supported.",
+    "notes": "Record the total barbell load, including the bar and plates. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Seal row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": null,
+        "stance": "prone",
+        "support": "flat raised bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000043",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Incline-bench dumbbell high row",
+    "primaryMuscleGroupIds": [
+      "rhomboids",
+      "posterior-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [
+      "traps",
+      "biceps"
+    ],
+    "equipmentIds": [
+      "dumbbells",
+      "adjustable-bench"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Lie chest down on an incline bench and hold dumbbells with palms facing back. Row with elbows out toward shoulder height, then lower under control without shrugging.",
+    "notes": "Record the weight of one dumbbell; use equal dumbbells for two-arm sets. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Chest-supported DB high row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": null,
+        "stance": "prone",
+        "support": "incline chest pad",
+        "execution": "elbows out"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000044",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Seated cable row",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid"
+    ],
+    "equipmentIds": [
+      "cable",
+      "cable-row-station",
+      "neutral-row-handle"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Sit at a cable row station with knees slightly bent and hold the neutral handle. Pull toward the lower ribs with a steady torso, then extend the arms without rounding the lower back.",
+    "notes": "Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Close-grip cable row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "seated",
+        "support": "none",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000045",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Wide-grip seated cable row",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid"
+    ],
+    "equipmentIds": [
+      "cable",
+      "cable-row-station",
+      "cable-bar"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Sit at a cable row station holding a wide overhand bar grip. Pull toward the upper abdomen with elbows out, then return without leaning backward to move the stack.",
+    "notes": "Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Wide cable row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "wide pronated",
+        "angle": null,
+        "stance": "seated",
+        "support": "none",
+        "execution": "elbows out"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000046",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Single-arm seated cable row",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid"
+    ],
+    "equipmentIds": [
+      "cable",
+      "cable-row-station",
+      "cable-handle"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Sit square to a cable row station and hold one handle. Row toward the working hip while keeping both shoulders facing forward, then reach under control. Repeat on the other side.",
+    "notes": "Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. Reps are per side. Use the same reps on each side; log sides separately if they differ.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "One-arm cable row seated"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "per-side",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "seated",
+        "support": "none",
+        "execution": "single arm"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000047",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Single-arm standing cable row",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid"
+    ],
+    "equipmentIds": [
+      "cable",
+      "cable-handle"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Stand in a split stance facing a cable set around lower-chest height. Row one handle toward the ribs without rotating the torso, then return. Repeat on the other side.",
+    "notes": "Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. Reps are per side. Use the same reps on each side; log sides separately if they differ.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Standing one-arm cable row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "per-side",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "split stance",
+        "support": "none",
+        "execution": "single arm"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000048",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Half-kneeling single-arm cable row",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid"
+    ],
+    "equipmentIds": [
+      "cable",
+      "cable-handle"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Half-kneel facing a cable set near chest height and hold one handle. Pull toward the working ribs with hips and shoulders square, then extend the arm. Repeat on the other side.",
+    "notes": "Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. Reps are per side. Use the same reps on each side; log sides separately if they differ.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Kneeling one-arm cable row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "per-side",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "half kneeling",
+        "support": "none",
+        "execution": "single arm"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000049",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Chest-supported row machine",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid"
+    ],
+    "equipmentIds": [
+      "seated-row-machine"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Adjust the seat and chest pad so the handles are reachable with arms extended. Keep the chest supported, pull the handles back, then return without letting the stack slam.",
+    "notes": "Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Selectorized supported row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "seated",
+        "support": "chest pad",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000050",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Plate-loaded chest-supported row",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid"
+    ],
+    "equipmentIds": [
+      "plate-loaded-row-machine"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Load the working levers evenly and adjust the chest support. Row both handles toward the ribs while staying against the pad, then lower the levers smoothly.",
+    "notes": "Record the total plates added to all working levers, excluding the unloaded machine. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Plate-loaded supported row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "seated",
+        "support": "chest pad",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000051",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Single-arm row machine",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid"
+    ],
+    "equipmentIds": [
+      "seated-row-machine"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Adjust a supported selectorized row machine and hold one independent handle. Keep the torso against the pad, row the working arm, then return. Repeat on the other side.",
+    "notes": "Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. Reps are per side. Use the same reps on each side; log sides separately if they differ.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Unilateral selectorized row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "per-side",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "seated",
+        "support": "chest pad",
+        "execution": "single arm"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000052",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Chest-supported T-bar row",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid"
+    ],
+    "equipmentIds": [
+      "t-bar-row-machine"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Set the chest pad and stand on the T-bar row platform. With the chest supported, pull the handles toward the ribs, then lower to a controlled arm extension.",
+    "notes": "Record the total plates added to all working levers, excluding the unloaded machine. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Supported T-bar row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "standing on platform",
+        "support": "chest pad",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000053",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Meadows row",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid",
+      "lower-back"
+    ],
+    "equipmentIds": [
+      "barbell",
+      "landmine-attachment"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Stand side-on to the free end of an anchored bar and hinge with a staggered stance. Grip the sleeve overhand, row toward the hip and lower without twisting the trunk. Repeat on the other side.",
+    "notes": "Record plates added at the free end only; exclude the bar and attachment. Reps are per side. Use the same reps on each side; log sides separately if they differ.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Single-arm landmine sleeve row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "per-side",
+      "variant": {
+        "grip": "pronated sleeve",
+        "angle": null,
+        "stance": "staggered hip hinge",
+        "support": "none",
+        "execution": "single arm"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000054",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Landmine T-bar row",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid",
+      "lower-back"
+    ],
+    "equipmentIds": [
+      "barbell",
+      "landmine-attachment",
+      "landmine-row-handle"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Straddle an anchored bar and attach a suitable neutral row handle near its free end. Hinge with a braced back, pull toward the lower ribs, then lower without jerking the torso upward.",
+    "notes": "Record plates added at the free end only; exclude the bar and attachment. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Unsupported T-bar row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "hip hinge",
+        "support": "none",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000055",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Smith machine bent-over row",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid",
+      "lower-back"
+    ],
+    "equipmentIds": [
+      "smith-machine"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Set the Smith bar low, take an overhand grip and hinge with knees softly bent. Pull along the rails toward the abdomen, then lower while holding the torso angle.",
+    "notes": "Record added plates only; exclude the Smith carriage rather than estimating its effective weight. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Smith row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": null,
+        "stance": "hip hinge",
+        "support": "none",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000056",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Inverted row",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid"
+    ],
+    "equipmentIds": [
+      "fixed-bar"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "bodyweight",
+      "weightConvention": null
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Set a secure fixed bar above floor level and hang beneath it with heels on the floor. Keep the body straight, pull the chest toward the bar, then lower with control.",
+    "notes": "Log repetitions; recording bodyweight is optional. Do not enter bodyweight as external load. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Bodyweight row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": null,
+        "stance": "heels on floor",
+        "support": "none",
+        "execution": "rigid body"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000057",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Feet-elevated inverted row",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "rhomboids"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "posterior-deltoid"
+    ],
+    "equipmentIds": [
+      "fixed-bar",
+      "platform"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "bodyweight",
+      "weightConvention": null
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Hang beneath a secure fixed bar with heels on a stable raised platform. Brace the body in a straight line, pull the chest toward the bar, then lower without dropping the hips.",
+    "notes": "Log repetitions; recording bodyweight is optional. Do not enter bodyweight as external load. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Elevated bodyweight row"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000011",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": null,
+        "stance": "heels elevated",
+        "support": "none",
+        "execution": "rigid body"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000058",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Dumbbell pullover",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "chest"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps"
+    ],
+    "equipmentIds": [
+      "dumbbells",
+      "bench"
+    ],
+    "category": "isolation",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Lie lengthwise on a bench holding one dumbbell above the chest. With elbows slightly bent, lower behind the head only as far as the ribs stay down, then bring the weight back above the chest.",
+    "notes": "Keep the elbow angle nearly constant; this is not a triceps extension. Record the weight of the single dumbbell used. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "DB pullover"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000013",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "shoulder-extension"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "both hands on one dumbbell",
+        "angle": null,
+        "stance": "supine",
+        "support": "flat bench",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000059",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Straight-arm cable pulldown",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps",
+      "core"
+    ],
+    "equipmentIds": [
+      "cable",
+      "cable-bar"
+    ],
+    "category": "isolation",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Face a high pulley with a bar attachment. Keep a small fixed elbow bend and pull the bar toward the thighs, then return overhead without leaning farther forward.",
+    "notes": "Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Cable pullover"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000013",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "shoulder-extension"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": null,
+        "stance": "standing",
+        "support": null,
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000060",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Rope straight-arm cable pulldown",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "triceps",
+      "core"
+    ],
+    "equipmentIds": [
+      "cable",
+      "cable-rope"
+    ],
+    "category": "isolation",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Face a high pulley holding the rope ends. Keep elbows softly bent, sweep the hands down beside the thighs, then return without arching the back.",
+    "notes": "Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Rope pullover"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000013",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "shoulder-extension"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral rope",
+        "angle": null,
+        "stance": "standing",
+        "support": null,
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000061",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Neutral-grip lat pulldown",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "rhomboids",
+      "traps"
+    ],
+    "equipmentIds": [
+      "lat-pulldown-station",
+      "neutral-pulldown-handle"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Secure the thighs under the pad and hold a neutral pulldown handle. Pull toward the upper chest with elbows moving down, then let the arms extend without lifting out of the seat.",
+    "notes": "Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Parallel-grip pulldown"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000007",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "seated",
+        "support": null,
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000062",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Underhand lat pulldown",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "rhomboids",
+      "traps"
+    ],
+    "equipmentIds": [
+      "lat-pulldown-station",
+      "cable-bar"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Sit with thighs secured and take a shoulder-width underhand grip. Pull toward the upper chest, then return smoothly without swinging backward or bending the wrists.",
+    "notes": "Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Reverse-grip pulldown"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000007",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "supinated",
+        "angle": null,
+        "stance": "seated",
+        "support": null,
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000063",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Wide-grip lat pulldown",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "rhomboids",
+      "traps"
+    ],
+    "equipmentIds": [
+      "lat-pulldown-station",
+      "cable-bar"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Sit with thighs secured and grip the bar moderately wider than the shoulders. Pull in front of the head toward the upper chest, then return overhead. Avoid an extreme grip width.",
+    "notes": "Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Wide overhand pulldown"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000007",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "wide pronated",
+        "angle": null,
+        "stance": "seated",
+        "support": null,
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000064",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Half-kneeling single-arm cable lat pulldown",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "rhomboids",
+      "traps"
+    ],
+    "equipmentIds": [
+      "cable",
+      "cable-handle"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Half-kneel beneath a high cable holding one handle. Pull the elbow down toward the working ribs without tilting sideways, then reach overhead under control. Repeat on the other side.",
+    "notes": "Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. Reps are per side. Use the same reps on each side; log sides separately if they differ.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Kneeling one-arm pulldown"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000007",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "per-side",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "half kneeling",
+        "support": null,
+        "execution": "single arm"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000065",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Plate-loaded lat pulldown machine",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "rhomboids",
+      "traps"
+    ],
+    "equipmentIds": [
+      "plate-loaded-pulldown-machine"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Load the machine levers evenly and adjust the seat and thigh support. Pull the handles downward toward the shoulders, then return without letting the levers drop.",
+    "notes": "Record the total plates added to all working levers, excluding the unloaded machine. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Plate-loaded pulldown"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000007",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "seated",
+        "support": null,
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000066",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Chin-up",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "rhomboids",
+      "traps"
+    ],
+    "equipmentIds": [
+      "pull-up-bar"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "bodyweight",
+      "weightConvention": null
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Hang from a secure bar with an underhand grip. Pull until the chin clears the bar without kicking, then lower to a comfortable arm extension.",
+    "notes": "Log repetitions; recording bodyweight is optional. Do not enter bodyweight as external load. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Underhand pull-up"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000009",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "supinated",
+        "angle": null,
+        "stance": "hanging",
+        "support": null,
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000067",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Neutral-grip pull-up",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "rhomboids",
+      "traps"
+    ],
+    "equipmentIds": [
+      "neutral-pull-up-bar"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "bodyweight",
+      "weightConvention": null
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Hang from secure parallel pull-up handles with palms facing each other. Pull upward without swinging, then lower under control to a comfortable arm extension.",
+    "notes": "Log repetitions; recording bodyweight is optional. Do not enter bodyweight as external load. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Parallel-grip pull-up"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000009",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "hanging",
+        "support": null,
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000068",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Weighted chin-up",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "rhomboids",
+      "traps"
+    ],
+    "equipmentIds": [
+      "pull-up-bar",
+      "dip-belt"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "added",
+      "weightConvention": "total"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Secure added weight to a dip belt and hang from a bar with an underhand grip. Pull the chin above the bar without swinging, then lower smoothly. Keep the plates clear of nearby objects.",
+    "notes": "Record added weight separately from optional bodyweight. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Added-weight chin-up"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000009",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "supinated",
+        "angle": null,
+        "stance": "hanging",
+        "support": null,
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000069",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Assisted chin-up machine",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "rhomboids",
+      "traps"
+    ],
+    "equipmentIds": [
+      "assisted-pull-up-machine"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "assisted",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Select assistance and mount the assisted pull-up machine according to its design. Take an underhand grip, pull upward without bouncing the support pad, then lower under control.",
+    "notes": "Record the displayed assistance as a positive amount, separately from optional bodyweight. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Machine-assisted chin-up"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000009",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "supinated",
+        "angle": null,
+        "stance": "supported hanging",
+        "support": null,
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000070",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Scapular pull-up",
+    "primaryMuscleGroupIds": [
+      "lats",
+      "traps"
+    ],
+    "secondaryMuscleGroupIds": [],
+    "equipmentIds": [
+      "pull-up-bar"
+    ],
+    "category": "isolation",
+    "tracking": {
+      "measurement": "reps",
+      "load": "bodyweight",
+      "weightConvention": null
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Hang from a secure bar with straight elbows. Draw the shoulders gently down to raise the torso a small distance, then return to the starting hang. Keep the elbows straight throughout.",
+    "notes": "Use a comfortable shoulder range rather than forcing a passive hang. Log repetitions; recording bodyweight is optional. Do not enter bodyweight as external load. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Scap pull-up",
+        "Active hang repetitions"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000018",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "scapular-movement"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "pronated",
+        "angle": null,
+        "stance": "hanging",
+        "support": null,
+        "execution": "straight elbows"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000071",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Single-arm seated lat pulldown",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "rhomboids",
+      "traps"
+    ],
+    "equipmentIds": [
+      "lat-pulldown-station",
+      "cable-handle"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Sit at a pulldown station with thighs secured and one cable handle overhead. Pull the working elbow toward the ribs while keeping the torso square, then extend overhead. Repeat on the other side.",
+    "notes": "Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. Reps are per side. Use the same reps on each side; log sides separately if they differ.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Seated unilateral pulldown"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000007",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "per-side",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "seated",
+        "support": null,
+        "execution": "single arm"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000072",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Band lat pulldown",
+    "primaryMuscleGroupIds": [
+      "lats"
+    ],
+    "secondaryMuscleGroupIds": [
+      "biceps",
+      "rhomboids",
+      "traps"
+    ],
+    "equipmentIds": [
+      "resistance-band",
+      "overhead-band-anchor"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "none",
+      "weightConvention": null
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Secure a suitable band to an overhead anchor and kneel beneath it. Hold both ends, pull the elbows down toward the ribs, then return slowly. Check the band and anchor before loading them.",
+    "notes": "Log repetitions without a kilogram estimate. Note band type and tension in workout notes. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Kneeling resistance-band pulldown"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000007",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "vertical-pull"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "kneeling",
+        "support": null,
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000073",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Cable face pull",
+    "primaryMuscleGroupIds": [
+      "posterior-deltoid",
+      "traps"
+    ],
+    "secondaryMuscleGroupIds": [
+      "rhomboids",
+      "rotator-cuff"
+    ],
+    "equipmentIds": [
+      "cable",
+      "cable-rope"
+    ],
+    "category": "compound",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Set the rope around face height. Pull the ends toward the sides of the face with elbows out and rotate the hands back comfortably. Return without leaning backward.",
+    "notes": "Use a light enough load to keep the neck relaxed and the movement controlled. Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Rope face pull"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000014",
+      "exerciseType": "compound",
+      "movementPatternIds": [
+        "horizontal-pull",
+        "shoulder-rotation"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral rope",
+        "angle": null,
+        "stance": "standing",
+        "support": null,
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000074",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Reverse pec deck fly",
+    "primaryMuscleGroupIds": [
+      "posterior-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [
+      "rhomboids",
+      "traps"
+    ],
+    "equipmentIds": [
+      "reverse-fly-machine"
+    ],
+    "category": "isolation",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Face the machine pad and adjust the handles near shoulder height. Open the arms outward with a small fixed elbow bend, then return without lifting the chest from the pad.",
+    "notes": "Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Rear delt machine fly"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000015",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "horizontal-abduction"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "seated",
+        "support": "chest pad",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000075",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Bent-over dumbbell reverse fly",
+    "primaryMuscleGroupIds": [
+      "posterior-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [
+      "rhomboids",
+      "traps"
+    ],
+    "equipmentIds": [
+      "dumbbells"
+    ],
+    "category": "isolation",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Hinge at the hips with dumbbells beneath the chest. Raise the arms out to the sides with softly bent elbows, then lower without swinging the torso.",
+    "notes": "Record the weight of one dumbbell; use equal dumbbells for two-arm sets. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Bent-over rear delt fly"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000015",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "horizontal-abduction"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "hip hinge",
+        "support": "none",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000076",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Chest-supported dumbbell reverse fly",
+    "primaryMuscleGroupIds": [
+      "posterior-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [
+      "rhomboids",
+      "traps"
+    ],
+    "equipmentIds": [
+      "dumbbells",
+      "adjustable-bench"
+    ],
+    "category": "isolation",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Lie chest down on an incline bench with dumbbells hanging beneath the shoulders. Raise the arms outward with a fixed slight elbow bend, then lower while keeping the chest supported.",
+    "notes": "Record the weight of one dumbbell; use equal dumbbells for two-arm sets. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Incline bench rear delt fly"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000015",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "horizontal-abduction"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "prone",
+        "support": "incline chest pad",
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000077",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Standing cable reverse fly",
+    "primaryMuscleGroupIds": [
+      "posterior-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [
+      "rhomboids",
+      "traps"
+    ],
+    "equipmentIds": [
+      "cable",
+      "dual-cable-station",
+      "cable-handle"
+    ],
+    "category": "isolation",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Set two pulleys near shoulder height and hold the opposite handles with cables crossed. Open both arms outward without leaning back, then return slowly to the crossed starting position.",
+    "notes": "Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Cross-cable rear delt fly"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000015",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "horizontal-abduction"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "standing",
+        "support": null,
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000078",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Dumbbell lateral raise",
+    "primaryMuscleGroupIds": [
+      "lateral-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [
+      "traps"
+    ],
+    "equipmentIds": [
+      "dumbbells"
+    ],
+    "category": "isolation",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Stand with dumbbells beside the thighs and elbows softly bent. Raise the arms out slightly forward of the sides to around shoulder height, then lower without shrugging or swinging.",
+    "notes": "Record the weight of one dumbbell; use equal dumbbells for two-arm sets. One complete bilateral movement counts as one rep.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "DB side raise"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000016",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "shoulder-raise"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "total",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "standing",
+        "support": null,
+        "execution": null
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000079",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Single-arm cable lateral raise",
+    "primaryMuscleGroupIds": [
+      "lateral-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [
+      "traps"
+    ],
+    "equipmentIds": [
+      "cable",
+      "cable-handle"
+    ],
+    "category": "isolation",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "machine-display"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Stand side-on to a low pulley and hold the handle in the farther hand. Raise the arm outward to around shoulder height, then lower smoothly. Repeat on the other side.",
+    "notes": "Record the displayed setting of the working stack. For two independent stacks, use equal settings and record ONE stack, not their sum. Reps are per side. Use the same reps on each side; log sides separately if they differ.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "One-arm cable side raise"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000016",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "shoulder-raise"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "per-side",
+      "variant": {
+        "grip": "neutral",
+        "angle": null,
+        "stance": "standing",
+        "support": null,
+        "execution": "single arm"
+      }
+    }
+  },
+  {
+    "id": "ba51c100-0000-4000-8000-000000000080",
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z",
+    "revision": 1,
+    "origin": "bundled",
+    "archived": false,
+    "name": "Alternating dumbbell front raise",
+    "primaryMuscleGroupIds": [
+      "anterior-deltoid"
+    ],
+    "secondaryMuscleGroupIds": [],
+    "equipmentIds": [
+      "dumbbells"
+    ],
+    "category": "isolation",
+    "tracking": {
+      "measurement": "reps",
+      "load": "external",
+      "weightConvention": "per-hand"
+    },
+    "defaultRestSeconds": null,
+    "instructions": "Stand holding dumbbells in front of the thighs. Raise one arm forward to around shoulder height, lower it, then alternate arms without rocking the torso. Count repetitions separately for each side.",
+    "notes": "Record the weight of one dumbbell; use equal dumbbells for two-arm sets. Reps are per side. Use the same reps on each side; log sides separately if they differ.",
+    "metadata": {
+      "version": 1,
+      "aliases": [
+        "Alternating DB anterior raise"
+      ],
+      "familyId": "ba51f000-0000-4000-8000-000000000017",
+      "exerciseType": "isolation",
+      "movementPatternIds": [
+        "shoulder-raise"
+      ],
+      "optionalEquipmentIds": [],
+      "repetitionConvention": "per-side",
+      "variant": {
+        "grip": "pronated",
+        "angle": null,
+        "stance": "standing",
+        "support": null,
+        "execution": "alternating"
+      }
+    }
+  }
+]

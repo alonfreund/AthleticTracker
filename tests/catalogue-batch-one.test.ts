@@ -21,8 +21,8 @@ describe('approved catalogue preparation and Batch 1',()=>{
     expect(LEGACY_STARTER_EXERCISES).toEqual(released.legacy)
   })
   it('ships exactly 80 permanently reserved additions and no unapproved batches',()=>{
-    expect(CATALOGUE_BATCHES.map(batch=>batch.id)).toEqual(['original','batch-1'])
-    expect(BATCH_ONE_EXERCISES).toHaveLength(80);expect(BUILTIN_EXERCISES).toHaveLength(92)
+    expect(CATALOGUE_BATCHES.map(batch=>batch.id)).toEqual(['original','batch-1','batch-2'])
+    expect(BATCH_ONE_EXERCISES).toHaveLength(80);expect([...STARTER_EXERCISES,...BATCH_ONE_EXERCISES]).toHaveLength(92)
     expect(Object.fromEntries(BATCH_ONE_EXERCISES.map(row=>[row.id,row.name]))).toEqual(reservations)
     for(const row of BUILTIN_EXERCISES)expect(row.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
     expect(()=>validateCatalogue(BUILTIN_EXERCISES)).not.toThrow()
@@ -64,13 +64,13 @@ describe('approved catalogue preparation and Batch 1',()=>{
     await setFavourite(custom.id,true,db)
     // Imported history includes completed and unfinished rows, with raw drafts and timers.
     const before=(await createBackup(db)).data
-    expect((await installCatalogue(undefined,db)).added).toBe(80)
+    expect((await installCatalogue([...STARTER_EXERCISES,...BATCH_ONE_EXERCISES],db)).added).toBe(80)
     const after=(await createBackup(db)).data
     for(const key of ['sessions','sessionActivities','sessionExercises','strengthSets','supersetGroups','restTimers','editorDrafts','exercisePreferences','foundationRecords'] as const)expect(after[key]).toEqual(before[key])
     expect(await db.exercises.get(custom.id)).toEqual(custom)
     for(const original of before.exercises)expect(await db.exercises.get(original.id)).toEqual(original)
     db.close();const reopened=database(db.name);await reopened.open()
-    expect(await installCatalogue(undefined,reopened)).toEqual({added:0,updated:0,preserved:[]})
+    expect(await installCatalogue([...STARTER_EXERCISES,...BATCH_ONE_EXERCISES],reopened)).toEqual({added:0,updated:0,preserved:[]})
     const exported=await exportBackupFile(reopened),target=database()
     await verifyLocalStorage(target)
     const incoming=await stageImport(exported.blob,target),safety=await stageSnapshot(target)
@@ -106,10 +106,10 @@ describe('approved catalogue preparation and Batch 1',()=>{
     const before=(await createBackup(db)).data;let writes=0
     const fail=()=>{if(++writes===40)throw new Error('Quota during Batch 1')}
     db.catalogueState.hook('creating',fail)
-    await expect(installCatalogue(undefined,db)).rejects.toThrow('Quota during Batch 1')
+    await expect(installCatalogue([...STARTER_EXERCISES,...BATCH_ONE_EXERCISES],db)).rejects.toThrow('Quota during Batch 1')
     expect((await createBackup(db)).data).toEqual(before)
     db.catalogueState.hook('creating').unsubscribe(fail)
-    expect((await installCatalogue(undefined,db)).added).toBe(80)
+    expect((await installCatalogue([...STARTER_EXERCISES,...BATCH_ONE_EXERCISES],db)).added).toBe(80)
     expect(await db.exercises.count()).toBe(92)
   })
 })
