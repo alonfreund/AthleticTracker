@@ -27,7 +27,7 @@ afterEach(async()=>{
 describe('Batch 2 lower-body catalogue',()=>{
   it('adds exactly 80 permanent IDs and leaves every released definition unchanged',()=>{
     expect([...prior,...BATCH_TWO_EXERCISES]).toHaveLength(172)
-    expect(CATALOGUE_BATCHES.map(batch=>batch.id)).toEqual(['original','batch-1','batch-2','batch-3'])
+    expect(CATALOGUE_BATCHES.map(batch=>batch.id)).toEqual(['original','batch-1','batch-2','batch-3','batch-4'])
     expect(BATCH_TWO_EXERCISES).toHaveLength(80)
     expect(BUILTIN_EXERCISES.filter(row=>prior.some(old=>old.id===row.id))).toEqual(prior)
     expect(Object.fromEntries(BATCH_TWO_EXERCISES.map(row=>[row.id,row.name]))).toEqual(reservations)

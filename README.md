@@ -2,11 +2,11 @@
 
 Local-first React + TypeScript PWA with strength workout logging, an exercise library and versioned JSON export/restore. No mandatory accounts or backend services. GitHub Pages deployment is configured in `.github/workflows/deploy.yml`.
 
-## Exercise catalogue (0.12.0)
+## Exercise catalogue (0.13.0)
 
-252 built-in exercises: the original 12 plus three batches of 80. Batch 3 adds shoulders, arms, forearms and grip, including existing reps/duration tracking for holds. See [Batch 3's inventory and test guidance](docs/catalogue-batch-3.md), [the expansion sequence](docs/catalogue-batch-2.md) and [catalogue maintenance rules](docs/catalogue-batch-1.md). All 172 previously released definitions, custom exercises, personal preferences and workout snapshots are preserved. Batch 4 is not included.
+332 built-in exercises: the original 12 plus four batches of 80. Batch 4 fills machine, cable and Smith-machine gaps, including lower-body isolation and cable core work. See [Batch 4's inventory and test guidance](docs/catalogue-batch-4.md), [the expansion sequence](docs/catalogue-batch-2.md) and [catalogue maintenance rules](docs/catalogue-batch-1.md). All 252 previously released definitions, custom exercises, personal preferences and workout snapshots are preserved. Batch 5 is not included.
 
-207 automated tests pass, plus the production build. No new dependencies were introduced.
+222 automated tests pass, plus the production build. No new dependencies were introduced.
 
 ## Current backup support (0.9.0)
 

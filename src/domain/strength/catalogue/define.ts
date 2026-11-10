@@ -24,7 +24,8 @@ const measurementNotes:Record<LoadProfile,string>={
 export function defineBatchOne(entry:Entry):Exercise { return defineEntry(entry, 'ba51c100') }
 export function defineBatchTwo(entry:Entry):Exercise { return defineEntry(entry, 'ba51c200') }
 export function defineBatchThree(entry:Entry):Exercise { return defineEntry(entry, 'ba51c300') }
-function defineEntry(entry:Entry, namespace:'ba51c100'|'ba51c200'|'ba51c300'):Exercise {
+export function defineBatchFour(entry:Entry):Exercise { return defineEntry(entry, 'ba51c400') }
+function defineEntry(entry:Entry, namespace:'ba51c100'|'ba51c200'|'ba51c300'|'ba51c400'):Exercise {
   const mode:Tracking['load']=entry.load==='bodyweight'?'bodyweight':entry.load==='added'?'added':entry.load==='assisted'?'assisted':entry.load==='reps-only'||entry.load==='gripper'?'none':'external'
   const convention:Tracking['weightConvention']=mode==='none'||mode==='bodyweight'?null:entry.load==='dumbbells'?'per-hand':entry.load==='stack'||entry.load==='assisted'?'machine-display':'total'
   return {
