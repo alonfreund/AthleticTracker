@@ -1,4 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { DurationEditor } from '../../components/DurationEditor'
+import { globalRest, saveGlobalRest } from '../../data/repositories/preferences'
 import { updateSafety } from '../../app/updateSafety'
 import type { FoundationRecord } from '../../domain/foundation'
 import { deleteRecord, listRecords, saveRecord } from '../../data/repositories/foundation'
@@ -7,6 +9,8 @@ import { db } from '../../data/db/database'
 import { createBackup, downloadBackup, MAX_BACKUP_BYTES, parseBackup, restoreBackup, type Backup } from '../../data/backup/backup'
 
 export function FoundationPanel({ onDataRestored }: { onDataRestored?: () => Promise<void> }) {
+  const [rest, setRest] = useState<number>()
+  const [restDirty, setRestDirty] = useState(false)
   const [backupStatus, setBackupStatus] = useState(readBackupStatus)
   const [records, setRecords] = useState<FoundationRecord[]>([])
   const [text, setText] = useState('')
@@ -21,13 +25,13 @@ export function FoundationPanel({ onDataRestored }: { onDataRestored?: () => Pro
   const [safetyReady, setSafetyReady] = useState(false)
   const safetyBackup = useRef<Backup | undefined>(undefined)
   const [confirmed, setConfirmed] = useState(false)
-  const dirty = text !== baseline
+  const dirty = text !== baseline || restDirty
   const { applying } = useSyncExternalStore(updateSafety.subscribe, updateSafety.getSnapshot)
   useLayoutEffect(() => {
     updateSafety.setSafety({ dirty, busy, restoring: !!pending, loading: !loaded })
   }, [dirty, busy, pending, loaded])
   useEffect(() => {
-    void listRecords().then(value => { setRecords(value); setLoaded(true) }).catch(() => setError('Could not load local records. Reload to retry.'))
+    void Promise.all([listRecords(), globalRest()]).then(([value, rest]) => { setRecords(value); setRest(rest); setLoaded(true) }).catch(() => setError('Could not load local records. Reload to retry.'))
   }, [])
   useEffect(() => {
     const guard = (event: BeforeUnloadEvent) => { if (dirty || lock.current) event.preventDefault() }
@@ -70,13 +74,18 @@ export function FoundationPanel({ onDataRestored }: { onDataRestored?: () => Pro
             if (!safetyBackup.current) throw new Error('Download a safety backup first.')
             await restoreBackup(pending, db, safetyBackup.current)
             cancelRestore(); resetEditor(); setMessage('Restore completed successfully.')
-            setRecords(await listRecords())
+            setRecords(await listRecords()); setRest(await globalRest())
             await onDataRestored?.()
           })}>Replace data with backup</button>
           <button className="secondary" disabled={applying || busy} onClick={cancelRestore}>Cancel restore</button>
         </div>
       </div>}
     </section>
+    <section className="surface-card" aria-label="Rest preferences"><h2>Rest preferences</h2><p>Global default for exercises without their own saved rest preference. Changes apply when you next add an exercise; existing workouts keep their rest settings.</p>{rest !== undefined && <DurationEditor seconds={rest} label="Global default rest" saveLabel="Save global default" disabled={applying || busy || !!pending || !loaded} onDirty={setRestDirty} onSave={async seconds => {
+      let saved = false
+      await run(async () => { await saveGlobalRest(seconds); setRest(seconds); setMessage('Global rest default saved.'); saved = true })
+      if (!saved) throw new Error('Could not save the global default.')
+    }} />}</section>
     <details className="diagnostics"><summary>Advanced · storage test records{dirty ? ' · Unsaved changes' : ''}</summary>
     <section aria-labelledby="records-heading">
       <h2 id="records-heading">Storage test records</h2>

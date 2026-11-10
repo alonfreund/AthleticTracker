@@ -66,7 +66,7 @@ describe('inline persistence and timers', () => {
   it('uses snapshot defaults, allows rest off and replaces the one timer on a new completion', async () => {
     const { db, id, exerciseId, set, input } = await setup()
     const exercise = (await loadWorkout(id, db)).sessionExercises[0]
-    await db.sessionExercises.update(exerciseId, { snapshot: { ...exercise.snapshot, defaultRestSeconds: 120 } })
+    await db.sessionExercises.update(exerciseId, { restSeconds: null, snapshot: { ...exercise.snapshot, defaultRestSeconds: 120 } })
     await saveInlineSet(id, set.id, input, true, db)
     expect(timerSeconds((await loadWorkout(id, db)).restTimers[0])).toBe(120)
     const next = await addSet(id, exerciseId, db); await setExerciseRest(id, exerciseId, 0, db)

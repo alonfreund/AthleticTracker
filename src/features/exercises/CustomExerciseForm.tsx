@@ -3,7 +3,7 @@ import type { ExerciseInput } from '../../data/repositories/exercises'
 import type { Tracking } from '../../domain/strength/models'
 import { CATEGORIES, CONVENTION_LABELS, EQUIPMENT, LOAD_LABELS, MUSCLES } from '../../domain/strength/catalog'
 
-const initial = { name: '', primary: [] as string[], secondary: [] as string[], equipment: [] as string[], otherEquipment: '', category: 'compound', instructions: '', notes: '', measurement: 'reps' as Tracking['measurement'], load: 'external' as Tracking['load'], convention: 'total' as NonNullable<Tracking['weightConvention']>, rest: '90' }
+const initial = { name: '', primary: [] as string[], secondary: [] as string[], equipment: [] as string[], otherEquipment: '', category: 'compound', instructions: '', notes: '', measurement: 'reps' as Tracking['measurement'], load: 'external' as Tracking['load'], convention: 'total' as NonNullable<Tracking['weightConvention']>, rest: '' }
 export function CustomExerciseForm({ disabled, onDirty, onSave, onCancel }: {
   disabled: boolean; onDirty: (dirty: boolean) => void; onSave: (input: ExerciseInput) => Promise<void>; onCancel: () => void
 }) {
@@ -69,8 +69,8 @@ export function CustomExerciseForm({ disabled, onDirty, onSave, onCancel }: {
           </select></>}
         <p className="note">Added load and assistance use positive amounts separate from bodyweight. Set weights will retain their entered kg or lb unit.</p>
       </fieldset>
-      <label htmlFor="exercise-rest">Default rest (seconds; blank for no default)</label>
-      <input id="exercise-rest" type="number" min="0" step="any" inputMode="decimal" value={form.rest} onChange={event => setForm({ ...form, rest: event.target.value })} />
+      <label htmlFor="exercise-rest">Default rest (seconds; blank to use global default)</label>
+      <input id="exercise-rest" type="number" min="0" step="1" inputMode="numeric" value={form.rest} onChange={event => setForm({ ...form, rest: event.target.value })} />
       <label htmlFor="exercise-instructions">Instructions (optional)</label>
       <textarea id="exercise-instructions" value={form.instructions} maxLength={10000} onChange={event => setForm({ ...form, instructions: event.target.value })} />
       <label htmlFor="exercise-notes">Personal notes (optional)</label>

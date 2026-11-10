@@ -1,10 +1,9 @@
+import { SET_TYPES as types, SET_TYPE_SHORT as short } from '../../domain/strength/setTypes'
 import { useState } from 'react'
 import type { SessionExercise, StrengthSet } from '../../domain/strength/models'
 import { convertInputUnit, inputFromSet, type SetInput } from '../../domain/strength/logging'
 import type { InlineRow } from './InlineSetStore'
 
-const types = { normal: 'Normal', 'warm-up': 'Warm-up', failure: 'Failure', 'drop-set': 'Drop set', 'back-off': 'Back-off', amrap: 'AMRAP' }
-const short = { normal: '', 'warm-up': 'W', failure: 'F', 'drop-set': 'D', 'back-off': 'B', amrap: 'A' }
 export function InlineSetRow({ exercise, set, index, row, previous, disabled, onChange, onSave, onComplete, onType, onRemove, onMove, onRevert, last }: {
   exercise: SessionExercise; set: StrengthSet; index: number; row: InlineRow; previous?: StrengthSet; disabled: boolean; last: boolean
   onChange: (input: SetInput) => void; onSave: () => void; onComplete: () => void; onType: (type: StrengthSet['setType']) => void
@@ -23,7 +22,7 @@ export function InlineSetRow({ exercise, set, index, row, previous, disabled, on
   const previousText = previousInput ? `${hasWeight ? `${previousInput.values.weight} × ` : ''}${config.measurement === 'reps' ? previousInput.values.reps : `${previousInput.values.durationSeconds}s`}` : '—'
   return <div className={`inline-set ${set.completed ? 'is-complete' : ''}`}>
     <div className="inline-set__cells" role="group" aria-label={name}>
-      <select className="set-type" aria-label={`${name}, set type`} value={set.setType} disabled={disabled || row.saving > 0} onChange={event => onType(event.target.value as StrengthSet['setType'])}>
+      <select className={`set-type set-type-colour set-type--${set.setType}`} aria-label={`${name}, set type`} value={set.setType} disabled={disabled || row.saving > 0} onChange={event => onType(event.target.value as StrengthSet['setType'])}>
         {Object.entries(types).map(([value, label]) => <option key={value} value={value}>{value === 'normal' ? index + 1 : short[value as keyof typeof short]} · {label}</option>)}
       </select>
       <button className="previous-value" aria-label={`${name}, copy previous ${previousText}`} disabled={disabled || !previousInput} onClick={() => previousInput && onChange({ ...previousInput, values: { ...previousInput.values, rpe: row.input.values.rpe, rir: row.input.values.rir } })}>{previousText}</button>

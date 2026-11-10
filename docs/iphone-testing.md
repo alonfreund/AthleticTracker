@@ -38,3 +38,15 @@ Record the iPhone model, iOS version, exact failing step and visible error (with
 6. In Airplane Mode, repeat set entry and completion, reopen/resume, then export a backup. Restore it using the existing safety-backup/review flow. Confirm history, unfinished values and paused/running timer state are preserved.
 
 Check the numeric keyboard and visibility of focused fields on the physical iPhone. Background alarms are not guaranteed while iOS suspends the PWA; the deadline still recovers on return.
+
+## Rest preferences and drag handles (0.7.0)
+
+1. Export a backup, update to 0.7.0 and set Settings → Rest preferences to 1 minute 17 seconds. Save, leave Settings and return: expect 1:17.
+2. In a workout, expand an exercise's Rest control. Enter 1 minute 23 seconds and Save exercise default. Complete a set: expect a 1:23 timer. Pause it, open Set exact remaining time and apply 0:47: the paused timer changes to 0:47 while the exercise header remains 1:23. ±15s affects only this timer.
+3. Finish the workout and add the exercise to a new workout. Expect 1:23 automatically. Choose Use global default for this exercise: expect 1:17. Global applies only to exercises without a saved exercise default; existing starter defaults remain until you change/reset them. Test 0:00 to turn rest off.
+4. Add at least three exercises, with some logged values and an unfinished partial draft. Hold the ⠿ handle for a quarter-second, then drag. Expect a highlighted floating label, a visible placeholder and cards moving aside. Drag near the screen edge to check auto-scrolling. Release to save. Scroll on the card away from the handle: it must not reorder. Test a very tall card as well.
+5. Reopen in Airplane Mode: expect order, values, drafts and rest preferences intact. Reorder and edit rest while offline. Start a running timer, close for 15 seconds and reopen: remaining time should reflect elapsed time rather than restart. Background alarms are not guaranteed.
+6. Choose every set type. Expect yellow W, red F, light-blue D, green A, purple B, neutral normal. Finish and open history: named badges must use the same colours. Dark tokens are prepared and contrast-tested, but there is no new theme switch.
+7. Export/restore while offline. New format-3 backups should retain global and exercise defaults, order and unfinished data. Keep the safety backup. Old formats 1/2 remain importable; an older backup without the global setting uses 1:30 after restore. Avoid testing an older backup against real data without first keeping a current backup.
+
+Physical iPhone acceptance: confirm hold-to-drag, edge scrolling, numeric keyboard visibility and returning from app suspension. Desktop/browser checks cannot certify Safari touch behaviour on the device.

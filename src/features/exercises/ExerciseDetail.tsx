@@ -13,7 +13,7 @@ export function ExerciseDetail({ exercise, onBack }: { exercise: Exercise; onBac
       <dt>Equipment</dt><dd>{list(exercise.equipmentIds, EQUIPMENT)}</dd>
       <dt>Category</dt><dd>{label(exercise.category, CATEGORIES)}</dd>
       <dt>Tracking</dt><dd>{trackingLabel(exercise.tracking)}</dd>
-      <dt>Default rest</dt><dd>{exercise.defaultRestSeconds === null ? 'No default set' : `${exercise.defaultRestSeconds} seconds`}</dd>
+      <dt>Default rest</dt><dd>{exercise.defaultRestSeconds === null ? 'Uses global default' : `${exercise.defaultRestSeconds} seconds`}</dd>
     </dl>
     <h3>Instructions</h3><p className="multiline">{exercise.instructions || 'No instructions added.'}</p>
     <h3>Notes</h3><p className="multiline">{exercise.notes || 'No notes added.'}</p>

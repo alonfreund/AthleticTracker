@@ -1,10 +1,13 @@
 import type { Table } from 'dexie'
+import { globalRest } from './preferences'
+import { validateRestSeconds } from '../../domain/rest'
+import { validateExercise } from '../../domain/strength/validation'
 import { db, type AthleticDatabase } from '../db/database'
 import { STRENGTH_TABLES, snapshotExercise, type Session, type StrengthData, type StrengthSet } from '../../domain/strength/models'
 import { validateStrengthData } from '../../domain/strength/validation'
 import { emptyLoad, measurements, type SetInput } from '../../domain/strength/logging'
 export type Workout = StrengthData
-const tables = (database: AthleticDatabase) => STRENGTH_TABLES.map(name => database[name])
+const tables = (database: AthleticDatabase) => [database.metadata, ...STRENGTH_TABLES.map(name => database[name])]
 async function readWorkout(id: string, database: AthleticDatabase): Promise<Workout> {
   const session = await database.sessions.get(id)
   if (!session) throw new Error('Workout no longer exists. Return to Workouts and reopen it.')
@@ -76,7 +79,7 @@ export function addWorkoutExercise(id: string, sourceId: string, database = db) 
     const activity = workout.sessionActivities[0]
     if (!activity) throw new Error('This workout has no strength activity.')
     const exerciseId = crypto.randomUUID()
-    workout.sessionExercises.push({ id: exerciseId, sessionActivityId: activity.id, sourceExerciseId: source.id, snapshot: snapshotExercise(source), position: workout.sessionExercises.length ? Math.max(...workout.sessionExercises.map(row => row.position)) + 1 : 0, notes: '', restSeconds: null, supersetGroupId: null, createdAt: now, updatedAt: now })
+    workout.sessionExercises.push({ id: exerciseId, sessionActivityId: activity.id, sourceExerciseId: source.id, snapshot: snapshotExercise(source), position: workout.sessionExercises.length ? Math.max(...workout.sessionExercises.map(row => row.position)) + 1 : 0, notes: '', restSeconds: source.defaultRestSeconds ?? await globalRest(database), supersetGroupId: null, createdAt: now, updatedAt: now })
     workout.strengthSets.push(newSet(exerciseId, source.tracking.load, 0, now))
     return exerciseId
   }, database)
@@ -234,4 +237,40 @@ export async function previousPerformance(id: string, database = db): Promise<Re
     }
     return result
   })
+}
+
+/** Save one exact order; IDs and all associated rows remain unchanged. */
+export function reorderExercises(id: string, orderedIds: string[], database = db) {
+  return mutate(id, (workout, now) => {
+    const existing = new Set(workout.sessionExercises.map(row => row.id))
+    if (orderedIds.length !== existing.size || new Set(orderedIds).size !== existing.size || orderedIds.some(id => !existing.has(id))) throw new Error('The exercise list changed. Try reordering again.')
+    const positions = new Map(orderedIds.map((id, position) => [id, position]))
+    workout.sessionExercises.forEach(row => { const position = positions.get(row.id)!; if (row.position !== position) { row.position = position; row.updatedAt = now } })
+  }, database)
+}
+/** Library preference and active exercise override change together; old snapshots never change. */
+export function saveExerciseRest(id: string, exerciseId: string, seconds: number | null, database = db) {
+  if (seconds !== null) validateRestSeconds(seconds)
+  return mutate(id, async (workout, now) => {
+    const exercise = workout.sessionExercises.find(row => row.id === exerciseId)
+    if (!exercise) throw new Error('Exercise no longer exists.')
+    const source = exercise.sourceExerciseId ? await database.exercises.get(exercise.sourceExerciseId) : undefined
+    if (!source) throw new Error('This exercise has no library entry. Its rest can only be changed for this workout.')
+    const updated = { ...source, defaultRestSeconds: seconds, revision: source.revision + 1, updatedAt: now }
+    validateExercise(updated); await database.exercises.put(updated)
+    const resolved = seconds ?? await globalRest(database)
+    // Multiple copies of this exercise in the current workout share the preference.
+    workout.sessionExercises.filter(row => row.sourceExerciseId === source.id).forEach(row => { row.restSeconds = resolved; row.updatedAt = now })
+  }, database)
+}
+export function replaceCurrentRest(id: string, seconds: number, database = db) {
+  validateRestSeconds(seconds)
+  return mutate(id, (workout, now) => {
+    const timer = workout.restTimers[0]
+    if (!timer || !['running', 'paused'].includes(timer.status)) throw new Error('There is no active rest timer.')
+    if (seconds === 0) Object.assign(timer, { status: 'finished', deadline: null, remainingSeconds: 0 })
+    else if (timer.status === 'paused') timer.remainingSeconds = seconds
+    else Object.assign(timer, { deadline: new Date(Date.parse(now) + seconds * 1000).toISOString(), remainingSeconds: null })
+    timer.updatedAt = now
+  }, database)
 }

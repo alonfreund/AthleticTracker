@@ -1,4 +1,5 @@
 import type { Table } from 'dexie'
+import { GLOBAL_REST_KEY, validateRestSeconds } from '../../domain/rest'
 import { recordBackupRequest, type BackupStatus } from './status'
 import { APP_VERSION } from '../../app/version'
 import { emptyStrengthData, STRENGTH_TABLES, type StrengthData } from '../../domain/strength/models'
@@ -10,7 +11,7 @@ export const MAX_BACKUP_BYTES = 10 * 1024 * 1024
 export interface BackupData extends StrengthData { metadata: AppMetadata[]; foundationRecords: FoundationRecord[] }
 export interface Backup {
   format: 'athletic-tracker-backup'
-  formatVersion: 2
+  formatVersion: 3
   exportedAt: string
   appVersion: string
   data: BackupData
@@ -37,17 +38,27 @@ function date(value: unknown): string {
 export function validateBackup(value: unknown): Backup {
   const root = object(value)
   if (root.format !== 'athletic-tracker-backup') throw new Error('This is not an AthleticTracker backup.')
-  if (root.formatVersion !== 1 && root.formatVersion !== 2) throw new Error('Unsupported backup version. Your data has not been changed.')
+  if (root.formatVersion !== 1 && root.formatVersion !== 2 && root.formatVersion !== 3) throw new Error('Unsupported backup version. Your data has not been changed.')
   keys(root, ['format', 'formatVersion', 'exportedAt', 'appVersion', 'data'])
   const data = object(root.data)
-  keys(data, ['metadata', 'foundationRecords', ...(root.formatVersion === 2 ? STRENGTH_TABLES : [])])
+  keys(data, ['metadata', 'foundationRecords', ...(root.formatVersion !== 1 ? STRENGTH_TABLES : [])])
   if (!Array.isArray(data.metadata) || !Array.isArray(data.foundationRecords)) throw new Error('Backup tables must be arrays.')
-  if (data.metadata.length !== 1) throw new Error('Backup must contain the database creation date.')
+  if (data.metadata.filter(value => object(value).key === 'createdAt').length !== 1) throw new Error('Backup must contain the database creation date.')
+  const metadataKeys = new Set<string>()
   const metadata = data.metadata.map(value => {
     const item = object(value)
     keys(item, ['key', 'value'])
-    if (item.key !== 'createdAt') throw new Error('Unsupported metadata key.')
-    return { key: 'createdAt', value: date(item.value) }
+    const key = string(item.key)
+    if (metadataKeys.has(key)) throw new Error('Duplicate metadata key.')
+    metadataKeys.add(key)
+    if (key === 'createdAt') return { key, value: date(item.value) }
+    if (root.formatVersion === 3 && key === GLOBAL_REST_KEY) {
+      const value = string(item.value)
+      if (!/^\d+$/.test(value)) throw new Error('Invalid global rest preference.')
+      validateRestSeconds(Number(value))
+      return { key, value }
+    }
+    throw new Error('Unsupported metadata key.')
   })
   const ids = new Set<string>()
   const foundationRecords = data.foundationRecords.map(value => {
@@ -65,7 +76,7 @@ export function validateBackup(value: unknown): Backup {
   })
   const strength = root.formatVersion === 1 ? emptyStrengthData() : Object.fromEntries(STRENGTH_TABLES.map(name => [name, data[name]]))
   validateStrengthData(strength)
-  return { format: 'athletic-tracker-backup', formatVersion: 2, exportedAt: date(root.exportedAt), appVersion: string(root.appVersion), data: { metadata, foundationRecords, ...structuredClone(strength) } }
+  return { format: 'athletic-tracker-backup', formatVersion: 3, exportedAt: date(root.exportedAt), appVersion: string(root.appVersion), data: { metadata, foundationRecords, ...structuredClone(strength) } }
 }
 export function parseBackup(text: string): Backup {
   if (new TextEncoder().encode(text).byteLength > MAX_BACKUP_BYTES) throw new Error('Backup exceeds the 10 MB limit for this foundation version.')
@@ -79,7 +90,7 @@ async function readData(database: AthleticDatabase): Promise<BackupData> {
 }
 export async function createBackup(database: AthleticDatabase = db): Promise<Backup> {
   const data = await database.transaction('r', BACKUP_TABLES.map(name => database.table(name)), () => readData(database))
-  return validateBackup({ format: 'athletic-tracker-backup', formatVersion: 2, exportedAt: new Date().toISOString(), appVersion: APP_VERSION, data })
+  return validateBackup({ format: 'athletic-tracker-backup', formatVersion: 3, exportedAt: new Date().toISOString(), appVersion: APP_VERSION, data })
 }
 export async function restoreBackup(value: unknown, database: AthleticDatabase = db, expectedCurrent?: Backup): Promise<void> {
   // Validate and detach the complete input before starting any write transaction.
