@@ -1,9 +1,11 @@
 import { useEffect, useLayoutEffect, useState } from 'react'
 import type { ExerciseInput } from '../../data/repositories/exercises'
-import type { Tracking } from '../../domain/strength/models'
-import { CATEGORIES, CONVENTION_LABELS, EQUIPMENT, LOAD_LABELS, MUSCLES } from '../../domain/strength/catalog'
+import { defaultMetadata } from '../../domain/strength/exerciseMetadata'
+import { EXERCISE_TYPES, MOVEMENT_PATTERNS, REPETITION_CONVENTIONS } from '../../domain/strength/taxonomy'
+import type { ExerciseMetadata, Tracking } from '../../domain/strength/models'
+import { CONVENTION_LABELS, EQUIPMENT, LOAD_LABELS, MUSCLES } from '../../domain/strength/catalog'
 
-const initial = { name: '', primary: [] as string[], secondary: [] as string[], equipment: [] as string[], otherEquipment: '', category: 'compound', instructions: '', notes: '', measurement: 'reps' as Tracking['measurement'], load: 'external' as Tracking['load'], convention: 'total' as NonNullable<Tracking['weightConvention']>, rest: '' }
+const initial = { name: '', primary: [] as string[], secondary: [] as string[], equipment: [] as string[], otherEquipment: '', category: 'compound', instructions: '', notes: '', measurement: 'reps' as Tracking['measurement'], load: 'external' as Tracking['load'], convention: 'total' as NonNullable<Tracking['weightConvention']>, rest: '', aliases: '', patterns: [] as string[], repetitionConvention: 'unspecified' as ExerciseMetadata['repetitionConvention'], grip: '', angle: '', stance: '', support: '', execution: '' }
 export function CustomExerciseForm({ disabled, onDirty, onSave, onCancel }: {
   disabled: boolean; onDirty: (dirty: boolean) => void; onSave: (input: ExerciseInput) => Promise<void>; onCancel: () => void
 }) {
@@ -31,6 +33,7 @@ export function CustomExerciseForm({ disabled, onDirty, onSave, onCancel }: {
       instructions: form.instructions, notes: form.notes,
       tracking: { measurement: form.measurement, load: form.load, weightConvention: hasLoad ? form.convention : null },
       defaultRestSeconds: rest,
+      metadata: { ...defaultMetadata({category:form.category}), aliases: [...new Set(form.aliases.split(',').map(value=>value.trim()).filter(Boolean))], movementPatternIds:form.patterns, repetitionConvention:form.repetitionConvention, variant: { grip:form.grip.trim()||null, angle:form.angle.trim()||null, stance:form.stance.trim()||null, support:form.support.trim()||null, execution:form.execution.trim()||null } },
     })
   }}>
     <h2>Create custom exercise</h2>
@@ -50,9 +53,14 @@ export function CustomExerciseForm({ disabled, onDirty, onSave, onCancel }: {
       </fieldset>
       <label htmlFor="other-equipment">Other equipment (comma-separated, optional)</label>
       <input id="other-equipment" value={form.otherEquipment} maxLength={500} onChange={event => setForm({ ...form, otherEquipment: event.target.value })} />
-      <label htmlFor="exercise-category">Category</label>
-      <input id="exercise-category" list="exercise-categories" value={form.category} maxLength={100} required onChange={event => setForm({ ...form, category: event.target.value })} />
-      <datalist id="exercise-categories">{Object.entries(CATEGORIES).map(([id, name]) => <option key={id} value={id}>{name}</option>)}</datalist>
+      <label htmlFor="exercise-category">Exercise type</label>
+      <select id="exercise-category" value={form.category} onChange={event=>setForm({...form,category:event.target.value})}>{Object.entries(EXERCISE_TYPES).filter(([id])=>id!=='unspecified').map(([id,name])=><option key={id} value={id}>{name}</option>)}</select>
+      <details><summary>Additional classification (optional)</summary>
+        <label htmlFor="exercise-aliases">Aliases (comma-separated)</label><input id="exercise-aliases" value={form.aliases} maxLength={1000} onChange={event=>setForm({...form,aliases:event.target.value})} />
+        <fieldset className="choices"><legend>Movement patterns</legend><div className="choice-grid">{Object.entries(MOVEMENT_PATTERNS).map(([id,name])=><label key={id}><input type="checkbox" checked={form.patterns.includes(id)} onChange={()=>setForm({...form,patterns:form.patterns.includes(id)?form.patterns.filter(value=>value!==id):[...form.patterns,id]})} />{name}</label>)}</div></fieldset>
+        <label htmlFor="rep-convention">Repetition convention</label><select id="rep-convention" value={form.repetitionConvention} onChange={event=>setForm({...form,repetitionConvention:event.target.value as ExerciseMetadata['repetitionConvention']})}>{Object.entries(REPETITION_CONVENTIONS).map(([id,name])=><option key={id} value={id}>{name}</option>)}</select>
+        {(['grip','angle','stance','support','execution'] as const).map(key=><label key={key}>{key[0].toUpperCase()+key.slice(1)}<input value={form[key]} maxLength={100} onChange={event=>setForm({...form,[key]:event.target.value})} /></label>)}
+      </details>
       <fieldset className="choices"><legend>Tracking configuration</legend>
         <label htmlFor="exercise-measurement">Measure</label>
         <select id="exercise-measurement" value={form.measurement} onChange={event => setForm({ ...form, measurement: event.target.value as Tracking['measurement'] })}>

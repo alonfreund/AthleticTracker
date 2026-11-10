@@ -10,7 +10,30 @@ export type Tracking = {
   load: 'none' | 'external' | 'bodyweight' | 'added' | 'assisted'
   weightConvention: 'total' | 'per-hand' | 'machine-display' | null
 }
+export interface ExerciseMetadata {
+  version: 1
+  aliases: string[]
+  familyId: string | null
+  exerciseType: 'compound' | 'isolation' | 'stability' | 'conditioning' | 'unspecified'
+  movementPatternIds: string[]
+  optionalEquipmentIds: string[]
+  variant: { grip: string | null; angle: string | null; stance: string | null; support: string | null; execution: string | null }
+  repetitionConvention: 'unspecified' | 'total' | 'per-side'
+}
+export interface ExercisePreference extends Timestamps {
+  exerciseId: string
+  restSeconds: number | null
+  favourite: boolean
+}
+export interface CatalogueState {
+  exerciseId: string
+  appliedRevision: number
+  fingerprint: string
+  status: 'managed' | 'preserved'
+}
 export interface Exercise extends Entity {
+  /** Absent only on legacy snapshots/definitions; never filled from the live library. */
+  metadata?: ExerciseMetadata
   revision: number
   origin: 'bundled' | 'custom'
   name: string

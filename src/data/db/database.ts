@@ -1,11 +1,14 @@
+import { legacyPreference, normalizeDefinition } from '../../domain/strength/exerciseMetadata'
 import Dexie, { type Table } from 'dexie'
-import type { Exercise, Session, SessionActivity, SessionExercise, StrengthSet, SupersetGroup, RestTimer, EditorDraft } from '../../domain/strength/models'
+import type { Exercise, Session, SessionActivity, SessionExercise, StrengthSet, SupersetGroup, RestTimer, EditorDraft, ExercisePreference, CatalogueState } from '../../domain/strength/models'
 import { STRENGTH_TABLES } from '../../domain/strength/models'
 import type { AppMetadata, FoundationRecord } from '../../domain/foundation'
 
-export const BACKUP_TABLES = ['metadata', 'foundationRecords', ...STRENGTH_TABLES] as const
+export const BACKUP_TABLES = ['metadata', 'foundationRecords', ...STRENGTH_TABLES, 'exercisePreferences', 'catalogueState'] as const
 
 export class AthleticDatabase extends Dexie {
+  exercisePreferences!: Table<ExercisePreference, string>
+  catalogueState!: Table<CatalogueState, string>
   metadata!: Table<AppMetadata, string>
   foundationRecords!: Table<FoundationRecord, string>
   exercises!: Table<Exercise, string>
@@ -29,6 +32,14 @@ export class AthleticDatabase extends Dexie {
       strengthSets: '&id, sessionExerciseId, [sessionExerciseId+position]',
       supersetGroups: '&id, sessionActivityId',
       restTimers: '&sessionId', editorDrafts: '&id, sessionId, &setId',
+    })
+    this.version(4).stores({ exercisePreferences: '&exerciseId', catalogueState: '&exerciseId' }).upgrade(async transaction => {
+      const definitions: Exercise[] = await transaction.table('exercises').toArray()
+      for (const definition of definitions) {
+        await transaction.table('exercisePreferences').add(legacyPreference(definition))
+        await transaction.table('exercises').put(normalizeDefinition(definition))
+      }
+      // No session, snapshot, set, draft or timer rows are touched.
     })
     this.on('versionchange', () => this.close())
   }

@@ -72,7 +72,8 @@ describe('custom creation and backup', () => {
     await verifyLocalStorage(value)
     const data = input(); data.tracking = tracking
     const exercise = await createCustomExercise(data, value)
-    expect(exercise).toMatchObject({ ...data, origin: 'custom', revision: 1, archived: false })
+    expect(exercise).toMatchObject({ ...data, defaultRestSeconds: null, origin: 'custom', revision: 1, archived: false })
+    expect((await value.exercisePreferences.get(exercise.id))?.restSeconds).toBe(data.defaultRestSeconds)
     expect(exercise.id).toMatch(/^[0-9a-f-]{36}$/)
     value.close()
     const reopened = database(value.name)

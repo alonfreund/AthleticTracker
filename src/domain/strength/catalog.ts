@@ -1,15 +1,7 @@
 import type { Exercise, Tracking } from './models'
 
-export const MUSCLES: Record<string, string> = {
-  chest: 'Chest', 'upper-back': 'Upper back', lats: 'Lats', shoulders: 'Shoulders',
-  triceps: 'Triceps', biceps: 'Biceps', forearms: 'Forearms', core: 'Core',
-  quadriceps: 'Quadriceps', hamstrings: 'Hamstrings', glutes: 'Glutes', calves: 'Calves', adductors: 'Adductors',
-}
-export const EQUIPMENT: Record<string, string> = {
-  barbell: 'Barbell', dumbbells: 'Dumbbells', bench: 'Bench', machine: 'Machine',
-  cable: 'Cable', 'pull-up-bar': 'Pull-up bar', 'dip-belt': 'Dip belt', mat: 'Mat', 'resistance-band': 'Resistance band', kettlebell: 'Kettlebell',
-}
-export const CATEGORIES: Record<string, string> = { compound: 'Compound', isolation: 'Isolation', bodyweight: 'Bodyweight', isometric: 'Isometric' }
+export { MUSCLES, EQUIPMENT, CATEGORIES } from './taxonomy'
+import { defaultMetadata, normalizeDefinition } from './exerciseMetadata'
 export const LOAD_LABELS: Record<Tracking['load'], string> = {
   external: 'External weight', bodyweight: 'Bodyweight only', added: 'Bodyweight + added weight', assisted: 'Assisted bodyweight', none: 'No load measurement',
 }
@@ -29,7 +21,7 @@ function exercise(number: number, name: string, primary: string[], secondary: st
   }
 }
 const external = (convention: Tracking['weightConvention'] = 'total'): Tracking => ({ measurement: 'reps', load: 'external', weightConvention: convention })
-export const STARTER_EXERCISES: readonly Exercise[] = [
+export const LEGACY_STARTER_EXERCISES: readonly Exercise[] = [
   exercise(1, 'Barbell bench press', ['chest'], ['triceps', 'shoulders'], ['barbell', 'bench'], 'compound', external(), 'Lie on a bench with feet supported. Lower the bar under control, then press it upward. Use safeties or a spotter when appropriate.'),
   exercise(2, 'Barbell back squat', ['quadriceps', 'glutes'], ['adductors', 'core'], ['barbell'], 'compound', external(), 'Support the bar securely on your upper back. Bend at the hips and knees, then return to standing with a controlled movement.'),
   exercise(3, 'Romanian deadlift', ['hamstrings', 'glutes'], ['upper-back', 'core'], ['barbell'], 'compound', external(), 'With a slight knee bend, move the hips backward while lowering the bar close to the legs. Return to standing under control.'),
@@ -43,3 +35,39 @@ export const STARTER_EXERCISES: readonly Exercise[] = [
   exercise(11, 'Assisted pull-up', ['lats'], ['biceps', 'upper-back'], ['machine'], 'bodyweight', { measurement: 'reps', load: 'assisted', weightConvention: 'machine-display' }, 'Set the machine assistance and follow its setup instructions. Perform controlled pull-ups. Record assistance as a positive amount, not a negative weight.'),
   exercise(12, 'Plank', ['core'], ['shoulders', 'glutes'], ['mat'], 'isometric', { measurement: 'duration', load: 'none', weightConvention: null }, 'Support yourself on forearms and toes, keeping a stable trunk. Record the time held in seconds.', 60),
 ]
+
+// Same twelve reserved IDs; metadata revision only, no library expansion.
+const metadata = [
+  ['horizontal-push', 'bench-press', ['Bench press', 'BB bench press']],
+  ['squat', 'squat', ['Back squat', 'BB squat']],
+  ['hinge', 'deadlift', ['Barbell Romanian deadlift', 'RDL']],
+  ['vertical-push', 'shoulder-press', ['DB overhead press']],
+  ['elbow-flexion', 'curl', ['DB curl']],
+  ['elbow-extension', 'triceps-extension', ['Triceps pressdown']],
+  ['vertical-pull', 'pulldown', ['Cable pulldown']],
+  ['horizontal-push', 'push-up', ['Pushup', 'Press-up']],
+  ['vertical-pull', 'pull-up', ['Pullup']],
+  ['vertical-pull', 'pull-up', ['Weighted pullup']],
+  ['vertical-pull', 'pull-up', ['Machine-assisted pull-up']],
+  ['anti-extension', 'plank', ['Forearm plank', 'Isometric plank']],
+] as const
+export const EXERCISE_FAMILIES: Record<string,string> = {
+  'ba51f000-0000-4000-8000-000000000001': 'bench-press',
+  'ba51f000-0000-4000-8000-000000000002': 'squat',
+  'ba51f000-0000-4000-8000-000000000003': 'deadlift',
+  'ba51f000-0000-4000-8000-000000000004': 'shoulder-press',
+  'ba51f000-0000-4000-8000-000000000005': 'curl',
+  'ba51f000-0000-4000-8000-000000000006': 'triceps-extension',
+  'ba51f000-0000-4000-8000-000000000007': 'pulldown',
+  'ba51f000-0000-4000-8000-000000000008': 'push-up',
+  'ba51f000-0000-4000-8000-000000000009': 'pull-up',
+  'ba51f000-0000-4000-8000-000000000010': 'plank',
+}
+export const STARTER_EXERCISES: readonly Exercise[] = LEGACY_STARTER_EXERCISES.map((exercise,index)=>{
+  const [pattern,family,aliases]=metadata[index]
+  const definition=normalizeDefinition(exercise)
+  definition.revision=2
+  definition.metadata={ ...defaultMetadata(exercise), aliases:[...aliases], familyId:Object.keys(EXERCISE_FAMILIES).find(id=>EXERCISE_FAMILIES[id]===family)!, movementPatternIds:[pattern] }
+  definition.category=definition.metadata.exerciseType
+  return definition
+})

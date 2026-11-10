@@ -50,3 +50,14 @@ Check the numeric keyboard and visibility of focused fields on the physical iPho
 7. Export/restore while offline. New format-3 backups should retain global and exercise defaults, order and unfinished data. Keep the safety backup. Old formats 1/2 remain importable; an older backup without the global setting uses 1:30 after restore. Avoid testing an older backup against real data without first keeping a current backup.
 
 Physical iPhone acceptance: confirm hold-to-drag, edge scrolling, numeric keyboard visibility and returning from app suspension. Desktop/browser checks cannot certify Safari touch behaviour on the device.
+
+## Catalogue foundation (0.8.0)
+
+1. Before updating, export a backup and note an exercise's saved rest setting, a finished workout and any unfinished set draft. Keep the backup outside the app.
+2. Update via Settings → About & updates and confirm 0.8.0. Resume the draft: expect identical raw text, values, order and timer state. View the old workout: its exercise name/instructions/tracking snapshot must be unchanged.
+3. Open Library: expect the same twelve built-ins, plus your custom exercises. Search `RDL` to find Romanian deadlift. Details now show exercise type, movement patterns, aliases and repetition convention. A missing legacy repetition convention says Not specified rather than reinterpreting old repetitions.
+4. Check saved rest in exercise details and add that exercise to a new workout. Expect the same personal duration. Saving a new duration must not change old workout snapshots.
+5. Create one disposable custom exercise. Optional classification supports aliases, movement patterns, repetition convention and variant notes. Reopen offline and confirm details and rest persist. No full favourites/filter UI is introduced in this increment.
+6. Export a current backup and use the existing safety-backup/review flow to restore it. Confirm custom metadata, personal rest, workouts and drafts. New files are format 4 and require the updated app. Older formats 1–3 still import and migrate; replacement still replaces all current data.
+
+Physical-device update/restore testing is recommended before expanding catalogue content. Do not clear site data to troubleshoot an update; use backups to protect your local records.

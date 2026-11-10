@@ -1,4 +1,5 @@
 import type { Exercise, StrengthData, Tracking } from './models'
+import { EXERCISE_TYPES, REPETITION_CONVENTIONS } from './taxonomy'
 import { STRENGTH_TABLES } from './models'
 
 type Obj = Record<string, unknown>
@@ -78,7 +79,13 @@ function target(value: unknown, config: Tracking) {
 }
 const exerciseFields = ['revision', 'origin', 'name', 'primaryMuscleGroupIds', 'secondaryMuscleGroupIds', 'equipmentIds', 'category', 'instructions', 'notes', 'tracking', 'defaultRestSeconds', 'archived']
 export function validateExercise(value: unknown): asserts value is Exercise {
-  const item = entity(value, exerciseFields)
+  const item = entity(value, [...exerciseFields, ...(Object.hasOwn(object(value), 'metadata') ? ['metadata'] : [])])
+  if (item.metadata !== undefined) {
+    validateExerciseMetadata(item.metadata)
+    const metadata = item.metadata as unknown as import('./models').ExerciseMetadata
+    const equipment = item.equipmentIds
+    if (Array.isArray(equipment) && metadata.optionalEquipmentIds.some(id=>equipment.includes(id))) fail('equipment cannot be both required and optional.')
+  }
   num(item.revision, 1, Number.MAX_SAFE_INTEGER, true); choice(item.origin, ['bundled', 'custom']); text(item.name, 200, true)
   strings(item.primaryMuscleGroupIds); strings(item.secondaryMuscleGroupIds); strings(item.equipmentIds)
   const primary = item.primaryMuscleGroupIds as string[]
@@ -200,4 +207,26 @@ export function validateStrengthData(value: unknown): asserts value is StrengthD
     Object.values(values).forEach(value => text(value, 128))
   })
   if (new Set(drafts.map(row => row.setId)).size !== drafts.length) fail('duplicate drafts for the same set.')
+}
+
+export function validateExerciseMetadata(value: unknown): void {
+  const item = shape(value, ['version','aliases','familyId','exerciseType','movementPatternIds','optionalEquipmentIds','variant','repetitionConvention'])
+  choice(item.version,[1]); strings(item.aliases); nullable(item.familyId,id)
+  choice(item.exerciseType,Object.keys(EXERCISE_TYPES)); strings(item.movementPatternIds); strings(item.optionalEquipmentIds)
+  const variant=shape(item.variant,['grip','angle','stance','support','execution'])
+  Object.values(variant).forEach(value=>nullable(value,value=>text(value,100,true)))
+  choice(item.repetitionConvention,Object.keys(REPETITION_CONVENTIONS))
+}
+export function validateExercisePreferences(value: unknown): void {
+  table(value,row=>{
+    const item=shape(row,['exerciseId','restSeconds','favourite','createdAt','updatedAt'])
+    id(item.exerciseId); timestamps(item); nullable(item.restSeconds,value=>num(value,0)); bool(item.favourite)
+  },'exerciseId')
+}
+export function validateCatalogueStates(value: unknown): void {
+  table(value,row=>{
+    const item=shape(row,['exerciseId','appliedRevision','fingerprint','status'])
+    id(item.exerciseId); num(item.appliedRevision,0,Number.MAX_SAFE_INTEGER,true); text(item.fingerprint,100000,true)
+    choice(item.status,['managed','preserved'])
+  },'exerciseId')
 }

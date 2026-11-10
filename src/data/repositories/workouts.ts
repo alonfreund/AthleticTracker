@@ -1,13 +1,12 @@
 import type { Table } from 'dexie'
-import { globalRest } from './preferences'
+import { exerciseRest } from './preferences'
 import { validateRestSeconds } from '../../domain/rest'
-import { validateExercise } from '../../domain/strength/validation'
 import { db, type AthleticDatabase } from '../db/database'
 import { STRENGTH_TABLES, snapshotExercise, type Session, type StrengthData, type StrengthSet } from '../../domain/strength/models'
 import { validateStrengthData } from '../../domain/strength/validation'
 import { emptyLoad, measurements, type SetInput } from '../../domain/strength/logging'
 export type Workout = StrengthData
-const tables = (database: AthleticDatabase) => [database.metadata, ...STRENGTH_TABLES.map(name => database[name])]
+const tables = (database: AthleticDatabase) => [database.metadata, database.exercisePreferences, ...STRENGTH_TABLES.map(name => database[name])]
 async function readWorkout(id: string, database: AthleticDatabase): Promise<Workout> {
   const session = await database.sessions.get(id)
   if (!session) throw new Error('Workout no longer exists. Return to Workouts and reopen it.')
@@ -79,7 +78,7 @@ export function addWorkoutExercise(id: string, sourceId: string, database = db) 
     const activity = workout.sessionActivities[0]
     if (!activity) throw new Error('This workout has no strength activity.')
     const exerciseId = crypto.randomUUID()
-    workout.sessionExercises.push({ id: exerciseId, sessionActivityId: activity.id, sourceExerciseId: source.id, snapshot: snapshotExercise(source), position: workout.sessionExercises.length ? Math.max(...workout.sessionExercises.map(row => row.position)) + 1 : 0, notes: '', restSeconds: source.defaultRestSeconds ?? await globalRest(database), supersetGroupId: null, createdAt: now, updatedAt: now })
+    workout.sessionExercises.push({ id: exerciseId, sessionActivityId: activity.id, sourceExerciseId: source.id, snapshot: snapshotExercise(source), position: workout.sessionExercises.length ? Math.max(...workout.sessionExercises.map(row => row.position)) + 1 : 0, notes: '', restSeconds: await exerciseRest(source.id, database), supersetGroupId: null, createdAt: now, updatedAt: now })
     workout.strengthSets.push(newSet(exerciseId, source.tracking.load, 0, now))
     return exerciseId
   }, database)
@@ -256,9 +255,9 @@ export function saveExerciseRest(id: string, exerciseId: string, seconds: number
     if (!exercise) throw new Error('Exercise no longer exists.')
     const source = exercise.sourceExerciseId ? await database.exercises.get(exercise.sourceExerciseId) : undefined
     if (!source) throw new Error('This exercise has no library entry. Its rest can only be changed for this workout.')
-    const updated = { ...source, defaultRestSeconds: seconds, revision: source.revision + 1, updatedAt: now }
-    validateExercise(updated); await database.exercises.put(updated)
-    const resolved = seconds ?? await globalRest(database)
+    const previous = await database.exercisePreferences.get(source.id)
+    await database.exercisePreferences.put({ exerciseId:source.id, restSeconds:seconds, favourite:previous?.favourite ?? false, createdAt:previous?.createdAt ?? now, updatedAt:now })
+    const resolved = await exerciseRest(source.id,database)
     // Multiple copies of this exercise in the current workout share the preference.
     workout.sessionExercises.filter(row => row.sourceExerciseId === source.id).forEach(row => { row.restSeconds = resolved; row.updatedAt = now })
   }, database)

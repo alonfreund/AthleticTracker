@@ -21,7 +21,7 @@ export function ExerciseLibrary() {
   useLayoutEffect(() => { updateSafety.setSafety({ dirty, busy, restoring: false, loading }) }, [dirty, busy, loading])
   useEffect(() => {
     let active = true
-    void initializeExerciseLibrary().then(() => listExercises()).then(value => {
+    void initializeExerciseLibrary().then(result => { if (active && result.preserved.length) setMessage('Some built-in definitions were kept to preserve local changes. Your exercises and history remain available.'); return listExercises() }).then(value => {
       if (active) { setExercises(value); setLoading(false) }
     }).catch(() => { if (active) { setError('Could not load the exercise library. Reopen the app to retry.'); setLoading(false) } })
     return () => { active = false }
