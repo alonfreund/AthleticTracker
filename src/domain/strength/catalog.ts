@@ -10,6 +10,14 @@ export function trackingLabel(tracking: Tracking): string {
   return `${LOAD_LABELS[tracking.load]} · ${tracking.measurement === 'reps' ? 'Repetitions' : 'Duration / timed hold'}${tracking.weightConvention ? ` · ${CONVENTION_LABELS[tracking.weightConvention]}` : ''}`
 }
 
+/** Compact active-workout label; unweighted repetitions are not timed holds. */
+export function workoutLoadLabel(config: Tracking): string {
+  if (config.load === 'assisted') return 'Assistance'
+  if (config.load === 'added') return 'Added weight'
+  if (config.load === 'bodyweight') return 'Bodyweight'
+  if (config.weightConvention) return CONVENTION_LABELS[config.weightConvention]
+  return config.measurement === 'duration' ? 'Timed hold' : 'Reps only'
+}
 
 export { LEGACY_STARTER_EXERCISES } from './catalogue/legacy'
 export { STARTER_EXERCISES } from './catalogue/original'

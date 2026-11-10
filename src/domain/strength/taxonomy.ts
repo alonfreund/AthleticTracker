@@ -17,6 +17,7 @@ export const EQUIPMENT: Record<string, string> = {
   'fixed-bar': 'Secure fixed horizontal bar', 'neutral-pull-up-bar': 'Neutral-grip pull-up handles', 'overhead-band-anchor': 'Secure overhead band anchor',
   'landmine-attachment': 'Landmine attachment', 'landmine-row-handle': 'Landmine row handle', rings: 'Gymnastic rings', 'suspension-trainer': 'Suspension trainer',
   'ez-bar': 'EZ bar', 'trap-bar': 'Trap bar', 'safety-squat-bar': 'Safety-squat bar', 'multi-grip-bar': 'Multi-grip bar', 'medicine-ball': 'Medicine ball', sled: 'Sled', 'ab-wheel': 'Ab wheel', sliders: 'Sliders', 'stability-ball': 'Stability ball', 'neck-harness': 'Neck harness', 'weight-vest': 'Weight vest',
+  'lateral-raise-machine': 'Selectorized lateral raise machine', 'preacher-bench': 'Preacher curl bench', 'preacher-curl-machine': 'Selectorized preacher curl machine', 'triceps-extension-machine': 'Selectorized triceps extension machine', 'assisted-dip-machine': 'Assisted dip machine', 'weight-plate': 'Weight plate', towel: 'Strong training towel', 'hand-gripper': 'Hand gripper',
   'heel-wedge': 'Stable heel-elevation wedge', 'squat-box': 'Squat box / stable seat', 'bar-pad': 'Barbell hip pad',
   'incline-leg-press-machine': 'Plate-loaded 45-degree leg press', 'horizontal-leg-press-machine': 'Selectorized horizontal leg press',
   'hack-squat-machine': 'Plate-loaded hack squat machine', 'pendulum-squat-machine': 'Plate-loaded pendulum squat machine', 'belt-squat-machine': 'Plate-loaded belt squat machine with belt', 'hip-thrust-machine': 'Plate-loaded hip thrust machine',
@@ -26,6 +27,7 @@ export const EXERCISE_TYPES = { compound: 'Compound', isolation: 'Isolation', st
 // Legacy categories remain readable; they are not mutually exclusive exercise types.
 export const CATEGORIES: Record<string, string> = { ...EXERCISE_TYPES, bodyweight: 'Bodyweight', isometric: 'Isometric' }
 export const MOVEMENT_PATTERNS: Record<string, string> = {
+  'grip': 'Grip / finger flexion', 'wrist-radial-deviation': 'Wrist radial deviation',
   'horizontal-adduction': 'Horizontal adduction', 'diagonal-push': 'Diagonal push', 'shoulder-extension': 'Shoulder extension', 'wrist-flexion': 'Wrist flexion', 'wrist-extension': 'Wrist extension', 'forearm-pronation': 'Forearm pronation', 'forearm-supination': 'Forearm supination', 'neck-flexion': 'Neck flexion', 'neck-extension': 'Neck extension', 'neck-lateral-flexion': 'Neck lateral flexion', 'neck-rotation': 'Neck rotation', 'neck-stability': 'Neck stability',
   'horizontal-push': 'Horizontal push', 'vertical-push': 'Vertical push', 'horizontal-pull': 'Horizontal pull', 'vertical-pull': 'Vertical pull',
   squat: 'Squat / knee dominant', hinge: 'Hinge / hip dominant', 'lunge-step': 'Lunge / step', 'elbow-flexion': 'Elbow flexion', 'elbow-extension': 'Elbow extension',
