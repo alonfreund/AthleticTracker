@@ -1,3 +1,4 @@
+import { APP_VERSION } from '../../app/version'
 import { db, type AthleticDatabase } from '../db/database'
 import { validateText, type AppMetadata, type FoundationRecord } from '../../domain/foundation'
 
@@ -70,7 +71,7 @@ export async function createBackup(database: AthleticDatabase = db): Promise<Bac
     metadata: await database.metadata.toArray(),
     foundationRecords: await database.foundationRecords.toArray(),
   }))
-  return validateBackup({ format: 'athletic-tracker-backup', formatVersion: 1, exportedAt: new Date().toISOString(), appVersion: '0.0.0', data })
+  return validateBackup({ format: 'athletic-tracker-backup', formatVersion: 1, exportedAt: new Date().toISOString(), appVersion: APP_VERSION, data })
 }
 export async function restoreBackup(value: unknown, database: AthleticDatabase = db, expectedCurrent?: Backup): Promise<void> {
   const backup = validateBackup(value)

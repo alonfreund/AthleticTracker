@@ -64,3 +64,9 @@ For device verification, an actual iPhone and HTTPS deployment are still require
 ## GitHub Pages
 
 The deployment base path is `/AthleticTracker/`. Use that path when opening local development or preview. The workflow runs on pushes to `main` and can be started manually in Actions. It runs tests before deploying and uses Node 24. See [iPhone testing instructions](docs/iphone-testing.md). Publishing moves application files only, not local records.
+
+## Safe updates (0.1.0)
+
+App version comes from package.json at build time and is also included in new backups. Check for updates requires internet; a waiting update does not automatically reload. Drafts, operations, initial record loading and restore reviews block activation. Editors are disabled during an approved update. Activation rechecks safety; another open copy cannot cause an automatic reload here. Failed/timed-out updates release the controls and show an error. Unsaved drafts are memory-only and cannot survive all OS termination/manual reload events.
+
+See [the staged iPhone update test](docs/update-testing.md). Load 0.1.0 before publishing the next test version. The local two-build browser test confirmed a disabled update button with an intact draft, then a successful reload with both saved records retained. Automated checks now include 17 tests. No schema or backup-format change was needed.
