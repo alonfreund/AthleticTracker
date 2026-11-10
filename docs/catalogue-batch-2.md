@@ -2,7 +2,9 @@
 
 **80 additions; 172 built-in exercises in total.** This implements only Batch 2 of the approved expansion plan. Batch 3 has not started. No dependencies, database schema changes, backup format changes or fitness features were added.
 
-## Approved expansion sequence
+## Original approved expansion sequence
+
+The later [combined release](catalogue-batches-5-8.md) replaces the four larger planned Batches 5–8 with 100 total additions. This table records the original plan.
 
 | Batch | Additions | Running total | Scope |
 | --- | ---: | ---: | --- |

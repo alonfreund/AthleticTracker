@@ -1,4 +1,5 @@
 export const MUSCLES: Record<string, string> = {
+  'hip-flexors': 'Hip flexors', 'serratus-anterior': 'Serratus anterior',
   chest: 'Chest', 'upper-back': 'Upper back', lats: 'Lats', traps: 'Traps', 'lower-back': 'Lower back / spinal erectors', shoulders: 'Shoulders',
   rhomboids: 'Rhomboids', 'anterior-deltoid': 'Anterior deltoid', 'lateral-deltoid': 'Lateral deltoid', 'posterior-deltoid': 'Posterior deltoid', 'rotator-cuff': 'Rotator cuff', neck: 'Neck', 'rectus-abdominis': 'Rectus abdominis', obliques: 'Obliques',
   triceps: 'Triceps', biceps: 'Biceps', forearms: 'Forearms', core: 'Core', quadriceps: 'Quadriceps', hamstrings: 'Hamstrings',
@@ -43,6 +44,19 @@ export const EQUIPMENT: Record<string, string> = {
   'plate-loaded-preacher-curl-machine': 'Plate-loaded preacher curl machine',
   'abdominal-crunch-machine': 'Selectorized abdominal crunch machine',
   'torso-rotation-machine': 'Selectorized torso rotation machine',
+  'band-anchor': 'Secure resistance-band anchor',
+  'back-extension-bench': '45-degree back extension bench',
+  'reverse-hyperextension-machine': 'Plate-loaded reverse hyperextension machine',
+  'wall': 'Suitable wall',
+  'nordic-anchor': 'Secure padded Nordic ankle restraint',
+  'jump-box': 'Stable jump box',
+  'battle-ropes': 'Battle ropes',
+  'rope-anchor': 'Secure battle-rope anchor',
+  'jump-rope': 'Skipping rope',
+  'sandbag': 'Training sandbag',
+  'sled-straps': 'Sled pulling straps',
+  'slam-ball': 'Non-bouncing slam ball',
+  'throwing-wall': 'Wall suitable for medicine-ball throws',
   'heel-wedge': 'Stable heel-elevation wedge', 'squat-box': 'Squat box / stable seat', 'bar-pad': 'Barbell hip pad',
   'incline-leg-press-machine': 'Plate-loaded 45-degree leg press', 'horizontal-leg-press-machine': 'Selectorized horizontal leg press',
   'hack-squat-machine': 'Plate-loaded hack squat machine', 'pendulum-squat-machine': 'Plate-loaded pendulum squat machine', 'belt-squat-machine': 'Plate-loaded belt squat machine with belt', 'hip-thrust-machine': 'Plate-loaded hip thrust machine',
@@ -52,6 +66,7 @@ export const EXERCISE_TYPES = { compound: 'Compound', isolation: 'Isolation', st
 // Legacy categories remain readable; they are not mutually exclusive exercise types.
 export const CATEGORIES: Record<string, string> = { ...EXERCISE_TYPES, bodyweight: 'Bodyweight', isometric: 'Isometric' }
 export const MOVEMENT_PATTERNS: Record<string, string> = {
+  'hip-flexion': 'Hip flexion', 'hip-external-rotation': 'Hip external rotation',
   'hip-extension': 'Hip extension',
   'grip': 'Grip / finger flexion', 'wrist-radial-deviation': 'Wrist radial deviation',
   'horizontal-adduction': 'Horizontal adduction', 'diagonal-push': 'Diagonal push', 'shoulder-extension': 'Shoulder extension', 'wrist-flexion': 'Wrist flexion', 'wrist-extension': 'Wrist extension', 'forearm-pronation': 'Forearm pronation', 'forearm-supination': 'Forearm supination', 'neck-flexion': 'Neck flexion', 'neck-extension': 'Neck extension', 'neck-lateral-flexion': 'Neck lateral flexion', 'neck-rotation': 'Neck rotation', 'neck-stability': 'Neck stability',
