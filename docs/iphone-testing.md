@@ -27,3 +27,14 @@ Do not delete the Home Screen app or clear website data to test reopening. Those
 ## If something fails
 
 Record the iPhone model, iOS version, exact failing step and visible error (without sharing private backup contents). Initial installation and updates need internet; normal foundation saving/export/restore should work offline. Browser storage is not guaranteed permanent; keep backups outside it.
+
+## Inline logging and rest timers (0.6.0)
+
+1. Save drafts and export a backup before updating. In Settings → About & updates, check and apply the update. Confirm version 0.6.0.
+2. Start/resume a strength workout. Add Barbell bench press. Tap its weight and reps cells directly, enter values and tap the round completion control. Expect a checked, tinted row and a rest timer. There is no separate editor.
+3. Pause, adjust, resume and skip rest. Add another set. Tap its set-type selector to choose warm-up/drop set/etc. Details exposes optional RPE/RIR, duration and units. Correct a completed row and confirm the timer does not restart.
+4. Enter a partial number such as `.` in an incomplete row. Wait for “Changes pending” (the raw draft is saved). Reopen offline, resume and confirm the text remains. Correct or revert pending edits before finishing.
+5. Finish a workout with completed sets. Start another with the same exercise: Previous shows the completed performance. Tap it to copy values; the row remains incomplete until checked. Warm-ups match warm-ups, and working sets match their own types.
+6. In Airplane Mode, repeat set entry and completion, reopen/resume, then export a backup. Restore it using the existing safety-backup/review flow. Confirm history, unfinished values and paused/running timer state are preserved.
+
+Check the numeric keyboard and visibility of focused fields on the physical iPhone. Background alarms are not guaranteed while iOS suspends the PWA; the deadline still recovers on return.

@@ -104,9 +104,11 @@ export function commitSet(id: string, setId: string, input: SetInput, complete: 
     const set = workout.strengthSets.find(row => row.id === setId)
     const exercise = workout.sessionExercises.find(row => row.id === set?.sessionExerciseId)
     if (!set || !exercise) throw new Error('Set no longer exists.')
+    const wasComplete = set.completed
     Object.assign(set, measurements(input, exercise.snapshot.tracking), { completed: complete, completedAt: complete ? (set.completedAt ?? now) : null, updatedAt: now })
     workout.editorDrafts = workout.editorDrafts.filter(row => row.setId !== setId)
     if (!complete) stopTimer(workout, [setId], now)
+    else if (!wasComplete) startRest(workout, exercise, setId, now)
   }, database)
 }
 export function changeSetType(id: string, setId: string, type: StrengthSet['setType'], database = db) {
@@ -155,4 +157,81 @@ export function cancelWorkout(id: string, database = db) {
     Object.assign(workout.sessions[0], { status: 'cancelled', endedAt: now }); workout.editorDrafts = []
     for (const timer of workout.restTimers) Object.assign(timer, { status: 'skipped', deadline: null, remainingSeconds: 0, updatedAt: now })
   }, database)
+}
+
+function startRest(workout: Workout, exercise: Workout['sessionExercises'][number], setId: string, now: string) {
+  const seconds = exercise.restSeconds ?? exercise.snapshot.defaultRestSeconds
+  const previous = workout.restTimers[0]
+  workout.restTimers = [{ sessionId: workout.sessions[0].id, sourceSetId: setId,
+    status: seconds ? 'running' : 'skipped', deadline: seconds ? new Date(Date.parse(now) + seconds * 1000).toISOString() : null,
+    remainingSeconds: seconds ? null : 0, createdAt: previous?.createdAt ?? now, updatedAt: now }]
+}
+/** Raw text and valid measurements are saved together. Invalid text remains recoverable. */
+export function saveInlineSet(id: string, setId: string, input: SetInput, complete?: boolean, database = db) {
+  return mutate(id, (workout, now) => {
+    const set = workout.strengthSets.find(row => row.id === setId)
+    const exercise = workout.sessionExercises.find(row => row.id === set?.sessionExerciseId)
+    if (!set || !exercise) throw new Error('Set no longer exists.')
+    const oldDraft = workout.editorDrafts.find(row => row.setId === setId)
+    workout.editorDrafts = workout.editorDrafts.filter(row => row.setId !== setId)
+    workout.editorDrafts.push({ ...structuredClone(input), id: oldDraft?.id ?? crypto.randomUUID(), sessionId: id, setId, createdAt: oldDraft?.createdAt ?? now, updatedAt: now })
+    const candidate = structuredClone(workout)
+    const next = candidate.strengthSets.find(row => row.id === setId)!
+    const completed = complete ?? set.completed
+    try {
+      Object.assign(next, measurements(input, exercise.snapshot.tracking), { completed, completedAt: completed ? (set.completedAt ?? now) : null, updatedAt: now })
+      if (!completed) stopTimer(candidate, [setId], now)
+      else if (!set.completed) startRest(candidate, exercise, setId, now)
+      candidate.editorDrafts = candidate.editorDrafts.filter(row => row.setId !== setId)
+      validateStrengthData(candidate)
+    } catch (error) { return { applied: false, error: error instanceof Error ? error.message : 'Check this set.' } }
+    Object.assign(workout, candidate)
+    return { applied: true, error: '' }
+  }, database)
+}
+export function setExerciseRest(id: string, exerciseId: string, seconds: number | null, database = db) {
+  return mutate(id, (workout, now) => {
+    const exercise = workout.sessionExercises.find(row => row.id === exerciseId)
+    if (!exercise) throw new Error('Exercise no longer exists.')
+    exercise.restSeconds = seconds; exercise.updatedAt = now
+  }, database)
+}
+export function timerSeconds(timer: Workout['restTimers'][number], now = Date.now()): number {
+  return timer.status === 'running' ? Math.max(0, Math.ceil((Date.parse(timer.deadline!) - now) / 1000)) : timer.remainingSeconds ?? 0
+}
+export function controlRest(id: string, action: 'pause' | 'resume' | 'skip' | 'adjust', adjustment = 0, database = db) {
+  return mutate(id, (workout, now) => {
+    const timer = workout.restTimers[0]
+    if (!timer || !['running', 'paused'].includes(timer.status)) return
+    const remaining = timerSeconds(timer, Date.parse(now))
+    if (action === 'skip' || remaining === 0) Object.assign(timer, { status: action === 'skip' ? 'skipped' : 'finished', deadline: null, remainingSeconds: 0 })
+    else if (action === 'pause') Object.assign(timer, { status: 'paused', deadline: null, remainingSeconds: remaining })
+    else if (action === 'resume') Object.assign(timer, { status: 'running', deadline: new Date(Date.parse(now) + remaining * 1000).toISOString(), remainingSeconds: null })
+    else {
+      const seconds = Math.max(0, remaining + adjustment)
+      if (seconds === 0) Object.assign(timer, { status: 'finished', deadline: null, remainingSeconds: 0 })
+      else if (timer.status === 'running') timer.deadline = new Date(Date.parse(now) + seconds * 1000).toISOString()
+      else timer.remainingSeconds = seconds
+    }
+    timer.updatedAt = now
+  }, database)
+}
+export type PreviousExercise = { date: string; sets: StrengthSet[] }
+export async function previousPerformance(id: string, database = db): Promise<Record<string, PreviousExercise>> {
+  return database.transaction('r', tables(database), async () => {
+    const current = await readWorkout(id, database)
+    const sessions = (await database.sessions.where('status').equals('finished').toArray())
+      .filter(row => row.id !== id && row.startedAt <= current.sessions[0].startedAt).sort((a, b) => b.startedAt.localeCompare(a.startedAt))
+    const result: Record<string, PreviousExercise> = {}
+    for (const session of sessions) {
+      const previous = await readWorkout(session.id, database)
+      for (const exercise of current.sessionExercises) {
+        if (result[exercise.id] || !exercise.sourceExerciseId) continue
+        const matches = previous.sessionExercises.filter(row => row.sourceExerciseId === exercise.sourceExerciseId && row.snapshot.tracking.load === exercise.snapshot.tracking.load && row.snapshot.tracking.measurement === exercise.snapshot.tracking.measurement && row.snapshot.tracking.weightConvention === exercise.snapshot.tracking.weightConvention)
+        const sets = matches.map(row => previous.strengthSets.filter(set => set.sessionExerciseId === row.id && set.completed).sort((a, b) => a.position - b.position)).find(rows => rows.length) ?? []
+        if (sets.length) result[exercise.id] = { date: session.startedAt, sets }
+      }
+    }
+    return result
+  })
 }
