@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FoundationPanel } from '../features/foundation/FoundationPanel'
 import { verifyLocalStorage } from '../data/db/database'
+import { StorageProtection } from '../components/StorageProtection'
 import { UpdatePanel } from './UpdatePanel'
 
 export function App() {
@@ -20,6 +21,7 @@ export function App() {
     <p>Your training companion starts here.</p>
     <p role="status">{storage}</p>
     <UpdatePanel />
+    <StorageProtection />
     {databaseReady && <FoundationPanel />}
     <p className="note">Foundation testing only. Fitness features are not built. Browser storage can be cleared; keep backups outside this app.</p>
   </main>

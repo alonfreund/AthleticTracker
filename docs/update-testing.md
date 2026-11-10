@@ -2,7 +2,7 @@
 
 ## Release stages
 
-0.1.0 is the baseline containing version display and update guards. Do not publish 0.1.1 until the user confirms that their installed Home Screen app is running 0.1.0 with a saved record and an unsaved draft. The local preview test versions 0.1.2 and 0.1.3 were never published.
+0.1.0 is the baseline containing version display and update guards. Do not publish 0.1.1 until the user confirms that their installed Home Screen app is running 0.1.0 with a saved record and an unsaved draft. The early local preview test builds were temporary. Public 0.1.2 subsequently added storage protection and backup status; those early preview builds were not released.
 
 ## Baseline installation
 

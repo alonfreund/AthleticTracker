@@ -1,0 +1,22 @@
+{
+  "format": "athletic-tracker-backup",
+  "formatVersion": 1,
+  "exportedAt": "2026-11-08T03:00:00.000Z",
+  "appVersion": "0.0.0",
+  "data": {
+    "metadata": [
+      {
+        "key": "createdAt",
+        "value": "2026-11-08T02:00:00.000Z"
+      }
+    ],
+    "foundationRecords": [
+      {
+        "id": "adab647b-0cba-4290-ae68-f51822ceab89",
+        "text": "Legacy storage test 🏃\nSecond line",
+        "createdAt": "2026-11-08T02:30:00.000Z",
+        "updatedAt": "2026-11-08T02:35:00.000Z"
+      }
+    ]
+  }
+}

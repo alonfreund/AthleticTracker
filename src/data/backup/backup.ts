@@ -1,3 +1,4 @@
+import { recordBackupRequest, type BackupStatus } from './status'
 import { APP_VERSION } from '../../app/version'
 import { db, type AthleticDatabase } from '../db/database'
 import { validateText, type AppMetadata, type FoundationRecord } from '../../domain/foundation'
@@ -88,15 +89,24 @@ export async function restoreBackup(value: unknown, database: AthleticDatabase =
     await database.foundationRecords.bulkAdd(backup.data.foundationRecords)
   })
 }
-export function downloadBackup(backup: Backup, prefix = 'athletic-tracker'): void {
-  const text = JSON.stringify(backup, null, 2)
+export function serializeBackup(backup: Backup): string {
+  const text = JSON.stringify(validateBackup(backup), null, 2)
   if (new TextEncoder().encode(text).byteLength > MAX_BACKUP_BYTES) throw new Error('Backup exceeds the supported 10 MB limit. Export cannot safely continue.')
+  return text
+}
+export function downloadBackup(backup: Backup, prefix = 'athletic-tracker'): BackupStatus {
+  const text = serializeBackup(backup)
   const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }))
   const link = document.createElement('a')
   link.href = url
   link.download = `${prefix}-${backup.exportedAt.replace(/[:.]/g, '-')}.json`
-  document.body.append(link)
-  link.click()
-  link.remove()
+  try {
+    document.body.append(link)
+    link.click()
+  } catch (error) {
+    URL.revokeObjectURL(url)
+    throw error
+  } finally { link.remove() }
   setTimeout(() => URL.revokeObjectURL(url), 60000)
+  return recordBackupRequest()
 }
