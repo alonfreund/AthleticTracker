@@ -1,8 +1,8 @@
 import { db, type AthleticDatabase } from '../db/database'
 import { validateText } from '../../domain/foundation'
 
-export function listRecords(database = db) {
-  return database.foundationRecords.orderBy('updatedAt').reverse().toArray()
+export function listRecords(database = db, limit = 50, offset = 0) {
+  return database.foundationRecords.orderBy('updatedAt').reverse().offset(offset).limit(limit).toArray()
 }
 export async function saveRecord(text: string, id?: string, database: AthleticDatabase = db) {
   validateText(text)

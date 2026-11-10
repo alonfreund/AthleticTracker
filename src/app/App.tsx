@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
-import { FoundationPanel } from '../features/foundation/FoundationPanel'
+import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { verifyLocalStorage } from '../data/db/database'
 import { StorageProtection } from '../components/StorageProtection'
 import { WorkoutsPanel } from '../features/workouts/WorkoutsPanel'
 import { ExerciseLibrary } from '../features/exercises/ExerciseLibrary'
-import { listWorkouts } from '../data/repositories/workouts'
+import { activeWorkout } from '../data/repositories/workouts'
 import type { Session } from '../domain/strength/models'
 import { updateSafety } from './updateSafety'
 import { UpdatePanel } from './UpdatePanel'
@@ -12,6 +11,8 @@ import { destinationFromHash, destinationHash, navigationDecision, type Destinat
 import { BottomNavigation } from '../components/ui/BottomNavigation'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Icon } from '../components/ui/Icon'
+
+const FoundationPanel = lazy(() => import('../features/foundation/FoundationPanel').then(module => ({ default: module.FoundationPanel })))
 
 export function App() {
   const [view, setView] = useState<Destination>(() => destinationFromHash(window.location.hash))
@@ -50,7 +51,7 @@ export function App() {
   useEffect(() => {
     if (!databaseReady) return
     let mounted = true
-    void listWorkouts().then(rows => { if (mounted) setActive(rows.find(row => row.status === 'active')) }).catch(() => { if (mounted) setActive(undefined) })
+    void activeWorkout().then(row => { if (mounted) setActive(row) }).catch(() => { if (mounted) setActive(undefined) })
     return () => { mounted = false }
   }, [view, databaseReady])
   const blocked = safety.busy || safety.restoring || safety.applying || safety.loading
@@ -64,7 +65,7 @@ export function App() {
         {databaseReady && view === 'history' && <WorkoutsPanel key="history" mode="history" />}
         {databaseReady && view === 'library' && <ExerciseLibrary />}
         <div className="settings-stack" hidden={view !== 'settings'}>
-          {databaseReady && view === 'settings' && <FoundationPanel onDataRestored={async () => { const rows = await listWorkouts(); setActive(rows.find(row => row.status === 'active')) }} />}
+          {databaseReady && view === 'settings' && <Suspense fallback={<p role="status">Opening data settings…</p>}><FoundationPanel onDataRestored={async () => { setActive(await activeWorkout()) }} /></Suspense>}
           <details><summary>Device storage</summary><StorageProtection /></details>
           <UpdatePanel onAvailabilityChange={setUpdateAvailable} />
         </div>

@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto'
 import Dexie from 'dexie'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { AthleticDatabase, BACKUP_TABLES, verifyLocalStorage } from '../src/data/db/database'
+import { AthleticDatabase, BACKUP_TABLES, INTERNAL_BACKUP_TABLES, verifyLocalStorage } from '../src/data/db/database'
 import { createBackup, parseBackup, restoreBackup, serializeBackup, validateBackup } from '../src/data/backup/backup'
 import { emptyStrengthData, massInKilograms, snapshotExercise, STRENGTH_TABLES } from '../src/domain/strength/models'
 import { validateExercise } from '../src/domain/strength/validation'
@@ -24,7 +24,7 @@ describe('additive strength migration', () => {
     old.close()
     const current = database(name)
     await verifyLocalStorage(current)
-    expect(current.verno).toBe(4)
+    expect(current.verno).toBe(5)
     expect(await current.metadata.toArray()).toEqual(historical.data.metadata)
     expect(await current.foundationRecords.toArray()).toEqual(historical.data.foundationRecords)
     for (const name of STRENGTH_TABLES) expect(await current.table(name).count()).toBe(0)
@@ -88,7 +88,7 @@ describe('strength backup and recovery', () => {
     expect((await createBackup(value)).data.foundationRecords).toEqual(historical.data.foundationRecords)
   })
   it('covers every persistent table in the backup transaction', () => {
-    expect([...database().tables.map(table => table.name)].sort()).toEqual([...BACKUP_TABLES].sort())
+    expect([...database().tables.map(table => table.name).filter(name=>!(INTERNAL_BACKUP_TABLES as readonly string[]).includes(name))].sort()).toEqual([...BACKUP_TABLES].sort())
   })
 })
 

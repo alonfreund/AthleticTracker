@@ -1,3 +1,4 @@
+// In-memory helpers support small fixtures and compatibility checks. Production file operations use pipeline.ts.
 import type { Table } from 'dexie'
 import { GLOBAL_REST_KEY, validateRestSeconds } from '../../domain/rest'
 import { recordBackupRequest, type BackupStatus } from './status'
@@ -9,7 +10,8 @@ import { validateCatalogueStates, validateExercisePreferences, validateStrengthD
 import { db, BACKUP_TABLES, type AthleticDatabase } from '../db/database'
 import { validateText, type AppMetadata, type FoundationRecord } from '../../domain/foundation'
 
-export const MAX_BACKUP_BYTES = 10 * 1024 * 1024
+import { assertBackupSize, utf8Bytes } from './limits'
+export { MAX_BACKUP_BYTES } from './limits'
 export interface BackupData extends StrengthData { metadata: AppMetadata[]; foundationRecords: FoundationRecord[]; exercisePreferences: ExercisePreference[]; catalogueState: CatalogueState[] }
 export interface Backup {
   format: 'athletic-tracker-backup'
@@ -88,7 +90,7 @@ export function validateBackup(value: unknown): Backup {
   return { format: 'athletic-tracker-backup', formatVersion: 4, exportedAt: date(root.exportedAt), appVersion: string(root.appVersion), data: { metadata, foundationRecords, ...structuredClone(strength), exercisePreferences: exercisePreferences as ExercisePreference[], catalogueState: catalogueState as CatalogueState[] } }
 }
 export function parseBackup(text: string): Backup {
-  if (new TextEncoder().encode(text).byteLength > MAX_BACKUP_BYTES) throw new Error('Backup exceeds the 10 MB limit for this foundation version.')
+  assertBackupSize(utf8Bytes(text))
   let value: unknown
   try { value = JSON.parse(text) } catch { throw new Error('The selected file is not valid JSON.') }
   return validateBackup(value)
@@ -115,7 +117,7 @@ export async function restoreBackup(value: unknown, database: AthleticDatabase =
 }
 export function serializeBackup(backup: Backup): string {
   const text = JSON.stringify(validateBackup(backup), null, 2)
-  if (new TextEncoder().encode(text).byteLength > MAX_BACKUP_BYTES) throw new Error('Backup exceeds the supported 10 MB limit. Export cannot safely continue.')
+  assertBackupSize(utf8Bytes(text))
   return text
 }
 export function downloadBackup(backup: Backup, prefix = 'athletic-tracker'): BackupStatus {
@@ -133,4 +135,36 @@ export function downloadBackup(backup: Backup, prefix = 'athletic-tracker'): Bac
   } finally { link.remove() }
   setTimeout(() => URL.revokeObjectURL(url), 60000)
   return recordBackupRequest()
+}
+
+/** Envelope/row checks shared with the disk-staged production pipeline. */
+export function validateBackupEnvelope(header: unknown, tables: string[]) {
+  const root=object(header)
+  keys(root,['format','formatVersion','exportedAt','appVersion'])
+  if(root.format!=='athletic-tracker-backup') throw new Error('This is not an AthleticTracker backup.')
+  if(![1,2,3,4].includes(root.formatVersion as number)) throw new Error('Unsupported backup version. Your data has not been changed.')
+  const version=root.formatVersion as number
+  const expected=['metadata','foundationRecords',...(version!==1?STRENGTH_TABLES:[]),...(version===4?['exercisePreferences','catalogueState']:[])]
+  if(tables.length!==expected.length || expected.some(name=>!tables.includes(name))) throw new Error('Backup contains missing or unsupported tables.')
+  return { format:'athletic-tracker-backup' as const,formatVersion:version,exportedAt:date(root.exportedAt),appVersion:string(root.appVersion) }
+}
+export function validateBackupRecord(name: string, value: unknown, version: number): void {
+  const item=object(value)
+  if(name==='metadata') {
+    keys(item,['key','value'])
+    if(item.key==='createdAt') { date(item.value); return }
+    if(version>=3 && item.key===GLOBAL_REST_KEY) {
+      const value=string(item.value);if(!/^\d+$/.test(value)) throw new Error('Invalid global rest preference.')
+      validateRestSeconds(Number(value));return
+    }
+    throw new Error('Unsupported metadata key.')
+  }
+  if(name==='foundationRecords') {
+    keys(item,['id','text','createdAt','updatedAt'])
+    const id=string(item.id)
+    if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) throw new Error('Invalid record identifier.')
+    validateText(string(item.text,10000))
+    if(date(item.updatedAt)<date(item.createdAt)) throw new Error('A record was updated before it was created.')
+  } else if(name==='exercisePreferences') validateExercisePreferences([value])
+  else if(name==='catalogueState') validateCatalogueStates([value])
 }

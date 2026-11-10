@@ -1,6 +1,18 @@
 # AthleticTracker
 
-Local-first React + TypeScript PWA. Includes disposable storage-test records and versioned JSON export/restore. No fitness features, accounts, backend or analytics services have been added. GitHub Pages deployment is configured in `.github/workflows/deploy.yml`.
+Local-first React + TypeScript PWA with strength workout logging, an exercise library and versioned JSON export/restore. No mandatory accounts or backend services. GitHub Pages deployment is configured in `.github/workflows/deploy.yml`.
+
+## Current backup support (0.9.0)
+
+Import and export share a 100 MiB limit (104,857,600 bytes; labelled “100 MB”). Export remains JSON format 4; formats 1–4 are supported on import. Production file handling uses chunked parsing, temporary IndexedDB staging and a single atomic replacement transaction. Existing schema-4 data migrates additively to schema 5 without rewriting live records. Individual records are capped at 1 MiB and nesting at 32 to bound malformed-input memory use.
+
+Large operations show progress and cancellation. Keep the app open and allow ample local storage for incoming data and a safety snapshot. A downloaded Blob can still use up to 100 MiB of browser-managed memory. Settings can remove abandoned temporary backup data after a forced close; close other copies first. Do not clear site data.
+
+166 automated tests pass, including actual near-100 MiB records, exact/over-limit checks, formats 1–4, UTF-8/escape splits, cancellation, stale safety checks and rollback. Browser verification restored 10,957 synthetic records from a 104,847,942-byte file offline, downloaded a 104,847,938-byte export and re-imported it with matching counts. Physical iPhone performance/storage/interruption acceptance remains necessary. See [the iPhone testing guide](docs/iphone-testing.md#large-backups-090) and [architecture](docs/architecture.md).
+
+Generate disposable size fixtures with `node scripts/generate-backup-size-fixtures.mjs`. **These synthetic backups contain no workouts and replace current data when restored. Keep a real backup first.** Generated large files stay in ignored `.tools/backup-size-tests`; none are deployed or committed.
+
+The milestone notes below record earlier versions and limits.
 
 ## Development
 
@@ -55,7 +67,7 @@ Vitest and fake-indexeddb are development-only dependencies. Tests cover reopeni
 
 In the production preview, save a disposable record and reload. Export, edit/save it, select the exported file, review the replacement summary, download and keep the safety backup, acknowledge replacement, then restore. The original exported text should return. Unsaved drafts are not exported; save or discard them first.
 
-The current backup format is `athletic-tracker-backup`, formatVersion 1, with exportedAt, appVersion and data containing metadata and foundationRecords arrays. Validation rejects unsupported versions, extra/missing fields, invalid dates, invalid/duplicate identifiers and files over 10 MB. The 10 MB limit is specific to this foundation version and must be revisited before larger real datasets. Export/restore work locally without network requests. A download request cannot prove that the user retained the file.
+At the original foundation milestone, the backup format was `athletic-tracker-backup`, formatVersion 1, with exportedAt, appVersion and data containing metadata and foundationRecords arrays. Validation rejects unsupported versions, extra/missing fields, invalid dates, invalid/duplicate identifiers and files over 10 MB. The 10 MB limit is specific to this foundation version and must be revisited before larger real datasets. Export/restore work locally without network requests. A download request cannot prove that the user retained the file.
 
 Restore replaces both tables in one transaction. A failure rolls back all changes. Changes made after the safety snapshot block restore; cancel and restart the flow. Avoid editing in other tabs during restore; a write made after restore completes is a separate operation. There is no automatic cross-tab UI refresh or device sync.
 

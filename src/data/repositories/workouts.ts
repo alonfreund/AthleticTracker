@@ -24,6 +24,7 @@ async function readWorkout(id: string, database: AthleticDatabase): Promise<Work
   }
 }
 export function loadWorkout(id: string, database = db): Promise<Workout> { return database.transaction('r', tables(database), () => readWorkout(id, database)) }
+export function activeWorkout(database = db): Promise<Session | undefined> { return database.sessions.where('status').equals('active').first() }
 export function listWorkouts(database = db): Promise<Session[]> { return database.sessions.orderBy('startedAt').reverse().toArray() }
 function clock(workout: Workout): string {
   const session = workout.sessions[0]

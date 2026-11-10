@@ -117,57 +117,58 @@ function positions(rows: Obj[], parentKey: string) {
   }
 }
 
-/** Validate every table and relationship before any restore writes occur. */
-export function validateStrengthData(value: unknown): asserts value is StrengthData {
-  const data = shape(value, [...STRENGTH_TABLES])
-  table(data.exercises, validateExercise)
-  const sessions = table(data.sessions, row => {
+export type StrengthLookup = (table: typeof STRENGTH_TABLES[number], id: unknown) => Obj
+/** Shared per-record rules: the streaming validator supplies only the referenced parents. */
+export function validateStrengthRecord(name: typeof STRENGTH_TABLES[number], row: unknown, lookup: StrengthLookup): Obj {
+  const sessionOfSet = (value: unknown): Obj => {
+    const set = lookup('strengthSets', value)
+    const exercise = lookup('sessionExercises', set.sessionExerciseId)
+    const activity = lookup('sessionActivities', exercise.sessionActivityId)
+    return lookup('sessions', activity.sessionId)
+  }
+  switch (name) {
+    case 'exercises': validateExercise(row); return object(row)
+    case 'sessions': {
     const item = entity(row, ['title', 'status', 'startedAt', 'endedAt', 'notes'])
     text(item.title, 200, true); text(item.notes); choice(item.status, ['active', 'finished', 'cancelled']); date(item.startedAt)
     nullable(item.endedAt, date)
     if (item.status === 'active' ? item.endedAt !== null : item.endedAt === null) fail('session end time does not match its status.')
     if (item.endedAt !== null && (item.endedAt as string) < item.startedAt) fail('session ends before it starts.')
-  })
-  if (sessions.filter(row => row.status === 'active').length > 1) fail('only one active session is supported.')
-  const sessionIndex = index(sessions)
-  const activities = table(data.sessionActivities, row => {
+      return item
+    }
+    case 'sessionActivities': {
     const item = entity(row, ['sessionId', 'activityType', 'position'])
-    reference(item.sessionId, sessionIndex); choice(item.activityType, ['strength']); num(item.position, 0, Number.MAX_SAFE_INTEGER, true)
-  })
-  positions(activities, 'sessionId')
-  // The UI initially supports one strength activity in each session.
-  if (new Set(activities.map(row => row.sessionId)).size !== activities.length) fail('duplicate strength activities in one session.')
-  const activityIndex = index(activities)
-  const groups = table(data.supersetGroups, row => {
+    lookup('sessions', item.sessionId); choice(item.activityType, ['strength']); num(item.position, 0, Number.MAX_SAFE_INTEGER, true)
+      return item
+    }
+    case 'supersetGroups': {
     const item = entity(row, ['sessionActivityId', 'name', 'betweenExerciseRestSeconds', 'betweenRoundRestSeconds'])
-    reference(item.sessionActivityId, activityIndex); text(item.name, 200, true)
+    lookup('sessionActivities', item.sessionActivityId); text(item.name, 200, true)
     num(item.betweenExerciseRestSeconds); num(item.betweenRoundRestSeconds)
-  })
-  const groupIndex = index(groups)
-  const exercises = table(data.sessionExercises, row => {
+      return item
+    }
+    case 'sessionExercises': {
     const item = entity(row, ['sessionActivityId', 'sourceExerciseId', 'snapshot', 'position', 'notes', 'restSeconds', 'supersetGroupId'])
-    reference(item.sessionActivityId, activityIndex); nullable(item.sourceExerciseId, id); validateExercise(item.snapshot)
+    lookup('sessionActivities', item.sessionActivityId); nullable(item.sourceExerciseId, id); validateExercise(item.snapshot)
     if (item.sourceExerciseId !== null && item.sourceExerciseId !== item.snapshot.id) fail('source exercise and snapshot identifiers differ.')
     // Library presence is deliberately NOT required: history survives archival/deletion.
     num(item.position, 0, Number.MAX_SAFE_INTEGER, true); text(item.notes); nullable(item.restSeconds, value => num(value))
     if (item.supersetGroupId !== null) {
-      const group = reference(item.supersetGroupId, groupIndex)
+      const group = lookup('supersetGroups', item.supersetGroupId)
       if (group.sessionActivityId !== item.sessionActivityId) fail('superset belongs to a different activity.')
     }
-  })
-  positions(exercises, 'sessionActivityId')
-  for (const group of groups) if (exercises.filter(row => row.supersetGroupId === group.id).length < 2) fail('supersets require at least two exercises.')
-  const exerciseIndex = index(exercises)
-  const sets = table(data.strengthSets, row => {
+      return item
+    }
+    case 'strengthSets': {
     const item = entity(row, ['sessionExerciseId', 'position', 'setType', 'completed', 'completedAt', 'reps', 'durationSeconds', 'load', 'rpe', 'rir', 'target'])
-    const parent = reference(item.sessionExerciseId, exerciseIndex)
+    const parent = lookup('sessionExercises', item.sessionExerciseId)
     const config = (parent.snapshot as Exercise).tracking
     num(item.position, 0, Number.MAX_SAFE_INTEGER, true)
     choice(item.setType, ['normal', 'warm-up', 'failure', 'drop-set', 'back-off', 'amrap'])
     bool(item.completed); nullable(item.completedAt, date)
     if (item.completed ? item.completedAt === null : item.completedAt !== null) fail('completion timestamp does not match set status.')
-    const activity = reference(parent.sessionActivityId, activityIndex)
-    const session = reference(activity.sessionId, sessionIndex)
+    const activity = lookup('sessionActivities', parent.sessionActivityId)
+    const session = lookup('sessions', activity.sessionId)
     if (item.completedAt !== null && ((item.completedAt as string) < (session.startedAt as string) || (session.endedAt !== null && (item.completedAt as string) > (session.endedAt as string)))) fail('set completion falls outside the session.')
     nullable(item.reps, value => num(value, 0, Number.MAX_SAFE_INTEGER, true)); nullable(item.durationSeconds, value => num(value, Number.MIN_VALUE))
     if (config.measurement === 'duration' && item.reps !== null) fail('a timed hold cannot record repetitions.')
@@ -175,18 +176,11 @@ export function validateStrengthData(value: unknown): asserts value is StrengthD
     load(item.load, config.load, item.completed)
     nullable(item.rpe, value => num(value, 1, 10)); nullable(item.rir, value => num(value, 0, Number.MAX_SAFE_INTEGER, true))
     nullable(item.target, value => target(value, config))
-  })
-  positions(sets, 'sessionExerciseId')
-  const setIndex = index(sets)
-  const sessionOfSet = (value: unknown): Obj => {
-    const set = reference(value, setIndex)
-    const exercise = reference(set.sessionExerciseId, exerciseIndex)
-    const activity = reference(exercise.sessionActivityId, activityIndex)
-    return reference(activity.sessionId, sessionIndex)
-  }
-  table(data.restTimers, row => {
+      return item
+    }
+    case 'restTimers': {
     const item = shape(row, ['sessionId', 'sourceSetId', 'status', 'deadline', 'remainingSeconds', 'createdAt', 'updatedAt'])
-    timestamps(item); const session = reference(item.sessionId, sessionIndex)
+    timestamps(item); const session = lookup('sessions', item.sessionId)
     choice(item.status, ['running', 'paused', 'finished', 'skipped'])
     nullable(item.deadline, date); nullable(item.remainingSeconds, value => num(value, 0))
     if (item.status === 'running' && (item.deadline === null || item.remainingSeconds !== null)) fail('running timer requires a deadline only.')
@@ -195,18 +189,44 @@ export function validateStrengthData(value: unknown): asserts value is StrengthD
     if (session.status !== 'active' && ['running', 'paused'].includes(item.status as string)) fail('only active sessions can have active timers.')
     if (item.sourceSetId !== null) {
       if (sessionOfSet(item.sourceSetId).id !== item.sessionId) fail('timer source belongs to another session.')
-      if (!reference(item.sourceSetId, setIndex).completed) fail('timer source set is incomplete.')
+      if (!lookup('strengthSets', item.sourceSetId).completed) fail('timer source set is incomplete.')
     }
-  }, 'sessionId')
-  const drafts = table(data.editorDrafts, row => {
+      return item
+    }
+    case 'editorDrafts': {
     const item = entity(row, ['sessionId', 'setId', 'values', 'weightUnit'])
-    const session = reference(item.sessionId, sessionIndex)
+    const session = lookup('sessions', item.sessionId)
     if (session.status !== 'active' || sessionOfSet(item.setId).id !== session.id) fail('draft must belong to its active session.')
     choice(item.weightUnit, ['kg', 'lb'])
     const values = shape(item.values, ['weight', 'bodyweight', 'reps', 'durationSeconds', 'rpe', 'rir'])
     Object.values(values).forEach(value => text(value, 128))
-  })
-  if (new Set(drafts.map(row => row.setId)).size !== drafts.length) fail('duplicate drafts for the same set.')
+      return item
+    }
+  }
+}
+
+/** Validate every table and relationship before any restore writes occur. */
+export function validateStrengthData(value: unknown): asserts value is StrengthData {
+  const data = shape(value, [...STRENGTH_TABLES])
+  const indexes = new Map<string, Map<string,Obj>>()
+  const lookup: StrengthLookup = (name,value) => { id(value); const row=indexes.get(name)?.get(value); if(!row) fail('missing parent record.'); return row }
+  for(const name of ['exercises','sessions','sessionActivities','supersetGroups','sessionExercises','strengthSets','restTimers','editorDrafts'] as const) {
+    const rows=table(data[name],row=>validateStrengthRecord(name,row,lookup),name==='restTimers'?'sessionId':'id')
+    indexes.set(name,index(rows,name==='restTimers'?'sessionId':'id'))
+  }
+  const sessions=[...indexes.get('sessions')!.values()]
+  if(sessions.filter(row=>row.status==='active').length>1) fail('only one active session is supported.')
+  const activities=[...indexes.get('sessionActivities')!.values()]
+  positions(activities,'sessionId')
+  if(new Set(activities.map(row=>row.sessionId)).size!==activities.length) fail('duplicate strength activities in one session.')
+  const exercises=[...indexes.get('sessionExercises')!.values()]
+  positions(exercises,'sessionActivityId')
+  const groupCounts=new Map<unknown,number>()
+  exercises.forEach(row=>{if(row.supersetGroupId!==null)groupCounts.set(row.supersetGroupId,(groupCounts.get(row.supersetGroupId)??0)+1)})
+  for(const group of indexes.get('supersetGroups')!.values()) if((groupCounts.get(group.id)??0)<2) fail('supersets require at least two exercises.')
+  positions([...indexes.get('strengthSets')!.values()],'sessionExerciseId')
+  const drafts=[...indexes.get('editorDrafts')!.values()]
+  if(new Set(drafts.map(row=>row.setId)).size!==drafts.length) fail('duplicate drafts for the same set.')
 }
 
 export function validateExerciseMetadata(value: unknown): void {

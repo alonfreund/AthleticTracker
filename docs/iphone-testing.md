@@ -61,3 +61,19 @@ Physical iPhone acceptance: confirm hold-to-drag, edge scrolling, numeric keyboa
 6. Export a current backup and use the existing safety-backup/review flow to restore it. Confirm custom metadata, personal rest, workouts and drafts. New files are format 4 and require the updated app. Older formats 1–3 still import and migrate; replacement still replaces all current data.
 
 Physical-device update/restore testing is recommended before expanding catalogue content. Do not clear site data to troubleshoot an update; use backups to protect your local records.
+
+## Large backups (0.9.0)
+
+Back up your real data first. Synthetic size fixtures contain storage-test records and NO workouts; restoring them replaces real workouts. Use disposable data for destructive/interruption tests, then restore your real backup afterwards. Do not clear Safari website data.
+
+1. Update to 0.9.0 through Settings → About & updates. Existing history, preferences and unfinished drafts should remain intact. Export a small real backup and confirm it exists in Files.
+2. With the installation cached, enable Airplane Mode and disable Wi-Fi. Open Settings, even if it was not opened since installation. Data & backups should load offline.
+3. Select a valid older backup (formats 1–3) or a current format-4 backup. Expect reading/validation status, then accurate review counts. No saved records should change before confirmation. Cancel restore to keep current data.
+4. For size testing, generate fixtures on your Mac with Node 24+: `node scripts/generate-backup-size-fixtures.mjs`. AirDrop the desired files into On My iPhone. `near-limit-valid.json` is just under 100 MiB; `over-limit-valid.json` is 104,857,601 bytes. They are test data, not copies of your workouts.
+5. Select the over-limit file. Expect “Backup exceeds the 100 MB limit.” Existing data must remain unchanged. Select the near-limit file. Reading and validation should remain responsive; Cancel operation should work. Cancelling import must keep original records.
+6. Import the near-limit file again. Download and keep the safety backup, acknowledge replacement and restore. Expect successful completion and 10,957 synthetic records (check the fixture generator's output if parameters change). Advanced storage records show at most 50 per page, with Older/Previous controls.
+7. Export that restored large database. Confirm the JSON file exists in Files and its size is close to the input size. Reopen the app offline, then select the exported file again: counts should match. Cancel review or restore it after keeping the safety file.
+8. Test Cancel operation during export and, with disposable data, during restore. A cancelled restore should keep original data; an operation that finished before cancellation may already have committed. Force-closing during import must not alter live data. During replacement, reopening should show the old state or the fully committed restored state, never a partial mix. These interruption checks require physical-device verification.
+9. If a forced close left temporary backup data, reopen Settings and use Remove temporary backup files after closing other copies. This frees staging storage and keeps saved records. Restore your real backup when testing is finished.
+
+Keep the app foregrounded for large operations and allow ample free local storage. The download Blob can still use up to 100 MiB of browser-managed memory; staged copies and indexes consume additional disk space. Exact device peak memory, storage quota and sustained Safari performance must be checked on the iPhone. A background alarm, background completion or unlimited storage is not promised.

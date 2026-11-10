@@ -1,4 +1,5 @@
 import { legacyPreference, normalizeDefinition } from '../../domain/strength/exerciseMetadata'
+import type { BackupJob, BackupRow, BackupKey } from '../backup/stagingTypes'
 import Dexie, { type Table } from 'dexie'
 import type { Exercise, Session, SessionActivity, SessionExercise, StrengthSet, SupersetGroup, RestTimer, EditorDraft, ExercisePreference, CatalogueState } from '../../domain/strength/models'
 import { STRENGTH_TABLES } from '../../domain/strength/models'
@@ -6,7 +7,12 @@ import type { AppMetadata, FoundationRecord } from '../../domain/foundation'
 
 export const BACKUP_TABLES = ['metadata', 'foundationRecords', ...STRENGTH_TABLES, 'exercisePreferences', 'catalogueState'] as const
 
+export const INTERNAL_BACKUP_TABLES = ['backupJobs','backupRows','backupKeys'] as const
+
 export class AthleticDatabase extends Dexie {
+  backupJobs!: Table<BackupJob,string>
+  backupRows!: Table<BackupRow,[string,string,string]>
+  backupKeys!: Table<BackupKey,[string,string,string]>
   exercisePreferences!: Table<ExercisePreference, string>
   catalogueState!: Table<CatalogueState, string>
   metadata!: Table<AppMetadata, string>
@@ -41,6 +47,7 @@ export class AthleticDatabase extends Dexie {
       }
       // No session, snapshot, set, draft or timer rows are touched.
     })
+    this.version(5).stores({ backupJobs:'&id, touchedAt', backupRows:'[jobId+table+key], jobId, [jobId+table], [jobId+table+group]', backupKeys:'[jobId+scope+key], jobId' })
     this.on('versionchange', () => this.close())
   }
 }

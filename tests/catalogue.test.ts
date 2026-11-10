@@ -26,7 +26,7 @@ async function legacyDatabase(){
 function nextDefinition(index=0){const definition=structuredClone(STARTER_EXERCISES[index]);definition.revision++;definition.instructions+=' Updated original guidance.';return definition}
 describe('schema 4 migration and preference separation',()=>{
   it('upgrades an actual v3 database, preserving every workout row and snapshot verbatim',async()=>{
-    const db=await legacyDatabase();await db.open();expect(db.verno).toBe(4)
+    const db=await legacyDatabase();await db.open();expect(db.verno).toBe(5)
     for(const name of ['sessions','sessionActivities','sessionExercises','strengthSets','supersetGroups','restTimers','editorDrafts'] as const)expect(await db[name].toArray()).toEqual(previous.data[name])
     expect(await db.metadata.toArray()).toEqual(previous.data.metadata)
     expect(await db.exercisePreferences.get(previous.data.exercises[0].id)).toMatchObject({restSeconds:83,favourite:false})

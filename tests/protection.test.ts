@@ -87,7 +87,7 @@ describe('fixed historical backup fixtures', () => {
     expect(parseBackup(serializeBackup(exported)).data).toEqual({ ...fixture.data, ...emptyStrengthData(), exercisePreferences: [], catalogueState: [] })
   })
   it('rejects oversized JSON and validates export before any download', () => {
-    expect(() => parseBackup(' '.repeat(MAX_BACKUP_BYTES + 1))).toThrow('10 MB')
+    expect(() => parseBackup(' '.repeat(MAX_BACKUP_BYTES + 1))).toThrow('100 MB')
     const backup = parseBackup(JSON.stringify(legacy))
     backup.data.foundationRecords[0].updatedAt = 'invalid'
     expect(() => serializeBackup(backup)).toThrow('UTC date')
