@@ -17,7 +17,7 @@ export async function setFavourite(exerciseId: string, favourite: boolean, datab
   await database.transaction('rw',database.exercises,database.exercisePreferences,async()=>{
     if(!await database.exercises.get(exerciseId)) throw new Error('Exercise no longer exists.')
     const previous=await database.exercisePreferences.get(exerciseId)
-    const now=new Date().toISOString()
+    const now=new Date(Math.max(Date.now(), Date.parse(previous?.updatedAt ?? '1970-01-01T00:00:00.000Z'))).toISOString()
     await database.exercisePreferences.put({ exerciseId, restSeconds:previous?.restSeconds ?? null, favourite, createdAt:previous?.createdAt ?? now, updatedAt:now })
   })
 }

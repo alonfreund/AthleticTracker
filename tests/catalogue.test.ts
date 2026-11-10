@@ -49,6 +49,16 @@ describe('schema 4 migration and preference separation',()=>{
       expect(old.tables.some(table=>table.name==='exercisePreferences')).toBe(false)
     } finally { old.close() }
   })
+  it('keeps preference timestamps valid when an imported backup is ahead of the device clock',async()=>{
+    const db=database();await restoreBackup(previous,db)
+    const source=previous.data.exercises[0].id
+    await db.exercisePreferences.update(source,{createdAt:'2090-01-01T00:00:00.000Z',updatedAt:'2090-01-01T00:00:00.000Z'})
+    await setFavourite(source,true,db)
+    const session=await startWorkout(db),instance=await addWorkoutExercise(session,source,db)
+    await saveExerciseRest(session,instance,81,db)
+    expect((await db.exercisePreferences.get(source))?.updatedAt).toBe('2090-01-01T00:00:00.000Z')
+    await expect(createBackup(db)).resolves.toBeDefined()
+  })
   it('updates a migrated built-in despite legacy rest revisions, preserving its personal preference',async()=>{
     const db=await legacyDatabase();await initializeExerciseLibrary(db)
     const id=LEGACY_STARTER_EXERCISES[0].id

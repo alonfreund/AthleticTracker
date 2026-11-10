@@ -256,7 +256,7 @@ export function saveExerciseRest(id: string, exerciseId: string, seconds: number
     const source = exercise.sourceExerciseId ? await database.exercises.get(exercise.sourceExerciseId) : undefined
     if (!source) throw new Error('This exercise has no library entry. Its rest can only be changed for this workout.')
     const previous = await database.exercisePreferences.get(source.id)
-    await database.exercisePreferences.put({ exerciseId:source.id, restSeconds:seconds, favourite:previous?.favourite ?? false, createdAt:previous?.createdAt ?? now, updatedAt:now })
+    await database.exercisePreferences.put({ exerciseId:source.id, restSeconds:seconds, favourite:previous?.favourite ?? false, createdAt:previous?.createdAt ?? now, updatedAt:new Date(Math.max(Date.parse(now),Date.parse(previous?.updatedAt ?? now))).toISOString() })
     const resolved = await exerciseRest(source.id,database)
     // Multiple copies of this exercise in the current workout share the preference.
     workout.sessionExercises.filter(row => row.sourceExerciseId === source.id).forEach(row => { row.restSeconds = resolved; row.updatedAt = now })
