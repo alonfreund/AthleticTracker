@@ -26,8 +26,8 @@ afterEach(async()=>{
 })
 describe('combined Batches 5–8 catalogue expansion',()=>{
   it('adds exactly 100 permanent IDs and leaves every released definition unchanged',()=>{
-    expect(BUILTIN_EXERCISES).toHaveLength(432)
-    expect(CATALOGUE_BATCHES.map(batch=>batch.id)).toEqual(['original','batch-1','batch-2','batch-3','batch-4','batches-5-8'])
+    expect([...prior,...COMBINED_BATCH_EXERCISES]).toHaveLength(432)
+    expect(CATALOGUE_BATCHES.map(batch=>batch.id)).toEqual(['original','batch-1','batch-2','batch-3','batch-4','batches-5-8','grip-variations'])
     expect(COMBINED_BATCH_EXERCISES).toHaveLength(100)
     expect(BUILTIN_EXERCISES.filter(row=>prior.some(old=>old.id===row.id))).toEqual(prior)
     expect(Object.fromEntries(COMBINED_BATCH_EXERCISES.map(row=>[row.id,row.name]))).toEqual(reservations)
@@ -107,20 +107,20 @@ describe('combined Batches 5–8 catalogue expansion',()=>{
     await setFavourite(custom.id,true,db)
     await db.exercises.update(prior[12].id,{notes:'My existing note',archived:true})
     const before=(await createBackup(db)).data
-    expect(await installCatalogue(undefined,db)).toEqual({added:100,updated:0,preserved:[]})
+    expect(await installCatalogue([...prior,...COMBINED_BATCH_EXERCISES],db)).toEqual({added:100,updated:0,preserved:[]})
     const after=(await createBackup(db)).data
     for(const key of Object.keys(before) as (keyof typeof before)[])if(key!=='exercises'&&key!=='catalogueState')expect(after[key]).toEqual(before[key])
     for(const row of before.exercises)expect(await db.exercises.get(row.id)).toEqual(row)
     for(const marker of before.catalogueState)expect(await db.catalogueState.get(marker.exerciseId)).toEqual(marker)
     expect(await db.exercises.get(custom.id)).toEqual(custom)
     db.close();const reopened=database(db.name);await reopened.open()
-    expect(await installCatalogue(undefined,reopened)).toEqual({added:0,updated:0,preserved:[]})
+    expect(await installCatalogue([...prior,...COMBINED_BATCH_EXERCISES],reopened)).toEqual({added:0,updated:0,preserved:[]})
     expect((await createBackup(reopened)).data).toEqual(after)
     const output=await exportBackupFile(reopened),target=database();await verifyLocalStorage(target)
     const incoming=await stageImport(output.blob,target),safety=await stageSnapshot(target)
     await restoreStagedBackup(incoming,safety,target)
     expect((await createBackup(target)).data).toEqual(after)
-    expect(await installCatalogue(undefined,target)).toEqual({added:0,updated:0,preserved:[]})
+    expect(await installCatalogue([...prior,...COMBINED_BATCH_EXERCISES],target)).toEqual({added:0,updated:0,preserved:[]})
     await discardStage(output.snapshot.id,reopened)
   })
   it('preserves a custom definition and preference even if its ID collides with a new reservation',async()=>{
@@ -130,7 +130,7 @@ describe('combined Batches 5–8 catalogue expansion',()=>{
     await db.exercises.put(custom)
     await setFavourite(custom.id,true,db)
     const preference=await db.exercisePreferences.get(custom.id)
-    expect(await installCatalogue(undefined,db)).toEqual({added:99,updated:0,preserved:[custom.id]})
+    expect(await installCatalogue([...prior,...COMBINED_BATCH_EXERCISES],db)).toEqual({added:99,updated:0,preserved:[custom.id]})
     expect(await db.exercises.get(custom.id)).toEqual(custom)
     expect(await db.exercisePreferences.get(custom.id)).toEqual(preference)
     expect(await db.catalogueState.get(custom.id)).toBeUndefined()
@@ -140,24 +140,24 @@ describe('combined Batches 5–8 catalogue expansion',()=>{
     const before=(await createBackup(db)).data;let writes=0
     const fail=()=>{if(++writes===50)throw new Error('combined Batches 5–8 quota failure')}
     db.catalogueState.hook('creating',fail)
-    await expect(installCatalogue(undefined,db)).rejects.toThrow('combined Batches 5–8 quota failure')
+    await expect(installCatalogue([...prior,...COMBINED_BATCH_EXERCISES],db)).rejects.toThrow('combined Batches 5–8 quota failure')
     expect((await createBackup(db)).data).toEqual(before)
     db.catalogueState.hook('creating').unsubscribe(fail)
-    const results=await Promise.all([installCatalogue(undefined,db),installCatalogue(undefined,db)])
+    const results=await Promise.all([installCatalogue([...prior,...COMBINED_BATCH_EXERCISES],db),installCatalogue([...prior,...COMBINED_BATCH_EXERCISES],db)])
     expect(results.map(row=>row.added).sort((a,b)=>a-b)).toEqual([0,100])
     expect(await db.exercises.count()).toBe(432);expect(await db.catalogueState.count()).toBe(432)
   })
   it('restoring an older backup and reinstalling adds the missing definitions without rewriting imported history',async()=>{
-    const db=database();await installCatalogue(undefined,db);await restoreBackup(history,db)
+    const db=database();await installCatalogue([...prior,...COMBINED_BATCH_EXERCISES],db);await restoreBackup(history,db)
     const before=(await createBackup(db)).data
-    await installCatalogue(undefined,db)
+    await installCatalogue([...prior,...COMBINED_BATCH_EXERCISES],db)
     const after=(await createBackup(db)).data
     for(const key of ['sessions','sessionExercises','strengthSets','editorDrafts','restTimers','exercisePreferences'] as const)expect(after[key]).toEqual(before[key])
     for(const row of before.exercises)expect(await db.exercises.get(row.id)).toEqual(row)
     expect(COMBINED_BATCH_EXERCISES.every(row=>after.exercises.some(saved=>saved.id===row.id))).toBe(true)
   })
   it('can complete every combined Batches 5–8 exercise with its declared measurement and load, and retain all snapshots in history',async()=>{
-    const db=database();await verifyLocalStorage(db);await installCatalogue(undefined,db)
+    const db=database();await verifyLocalStorage(db);await installCatalogue([...prior,...COMBINED_BATCH_EXERCISES],db)
     const session=await startWorkout(db)
     for(const source of COMBINED_BATCH_EXERCISES){
       const instance=await addWorkoutExercise(session,source.id,db)
@@ -179,7 +179,7 @@ describe('combined Batches 5–8 catalogue expansion',()=>{
     ['Ring support hold',''],['Hand-resisted lateral neck hold',''],
     ['Weighted 45-degree back extension','5'],['Timed sled push','20'],
   ])('logs, recovers, finishes and backs up %s using existing workout storage',async(name,weight)=>{
-    const db=database();await verifyLocalStorage(db);await installCatalogue(undefined,db)
+    const db=database();await verifyLocalStorage(db);await installCatalogue([...prior,...COMBINED_BATCH_EXERCISES],db)
     const source=named(name),session=await startWorkout(db),instance=await addWorkoutExercise(session,source.id,db)
     await saveExerciseRest(session,instance,103,db);await setFavourite(source.id,true,db)
     const input=values(weight)

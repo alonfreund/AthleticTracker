@@ -60,6 +60,7 @@ export const EQUIPMENT: Record<string, string> = {
   'heel-wedge': 'Stable heel-elevation wedge', 'squat-box': 'Squat box / stable seat', 'bar-pad': 'Barbell hip pad',
   'incline-leg-press-machine': 'Plate-loaded 45-degree leg press', 'horizontal-leg-press-machine': 'Selectorized horizontal leg press',
   'hack-squat-machine': 'Plate-loaded hack squat machine', 'pendulum-squat-machine': 'Plate-loaded pendulum squat machine', 'belt-squat-machine': 'Plate-loaded belt squat machine with belt', 'hip-thrust-machine': 'Plate-loaded hip thrust machine',
+  'triceps-v-bar': 'Rigid triceps V-bar attachment',
   'plate-loaded-pulldown-machine': 'Plate-loaded pulldown machine', 'pulldown-machine': 'Pulldown machine', 'cable-rope': 'Cable rope', 'cable-bar': 'Cable bar', 'cable-handle': 'Cable handle',
 }
 export const EXERCISE_TYPES = { compound: 'Compound', isolation: 'Isolation', stability: 'Stability', conditioning: 'Conditioning', unspecified: 'Unspecified' } as const
