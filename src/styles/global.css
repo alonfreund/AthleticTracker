@@ -265,3 +265,30 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 .rest-timer--superset { border: 2px solid var(--superset-border); }
 .rest-timer--superset .rest-timer__heading { flex-wrap: wrap; gap: 4px 12px; }
 .rest-timer--superset .rest-timer__heading span { white-space: normal; }
+
+.exercise-history-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 8px;
+  margin: 4px;
+}
+.exercise-history-tools .previous-date { margin: 0; }
+.exercise-history-tools button, .exercise-history-panel button {
+  min-height: 44px;
+  padding: 6px 10px;
+  font-size: .8125rem;
+}
+.exercise-history-panel {
+  margin: 8px 4px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-soft);
+  overflow-wrap: anywhere;
+}
+.exercise-history-session { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0; }
+.exercise-history-session time { color: var(--color-muted); }
+.exercise-history-panel ol { padding-inline-start: 1.5rem; margin: 6px 0 12px; }
+.exercise-history-panel li { margin-block: 4px; }

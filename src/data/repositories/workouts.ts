@@ -393,6 +393,42 @@ export async function previousPerformance(id: string, database = db): Promise<Re
   })
 }
 
+export type ExerciseHistorySession = Pick<Session, 'id' | 'title' | 'startedAt'> & { sets: StrengthSet[] }
+
+export async function recentExerciseHistory(exerciseId: string, database = db): Promise<ExerciseHistorySession[]> {
+  const { sessions, sessionActivities, sessionExercises, strengthSets } = database
+  return database.transaction('r', [sessions, sessionActivities, sessionExercises, strengthSets], async () => {
+    // Match the saved identity even when a historical card no longer has a library link.
+    const exercises = await sessionExercises.filter(row => row.snapshot.id === exerciseId).toArray()
+    if (!exercises.length) return []
+    const activities = await sessionActivities.bulkGet([...new Set(exercises.map(row => row.sessionActivityId))])
+    const sessionByActivity = new Map(activities.flatMap(row => row ? [[row.id, row.sessionId] as const] : []))
+    const exercisesBySession = new Map<string, typeof exercises>()
+    for (const exercise of exercises) {
+      const sessionId = sessionByActivity.get(exercise.sessionActivityId)
+      if (!sessionId) continue
+      const entries = exercisesBySession.get(sessionId) ?? []
+      entries.push(exercise)
+      exercisesBySession.set(sessionId, entries)
+    }
+    const candidates = (await sessions.bulkGet([...exercisesBySession.keys()]))
+      .filter((session): session is Session => session?.status === 'finished')
+      .sort((a, b) => b.startedAt.localeCompare(a.startedAt) || b.id.localeCompare(a.id))
+    const history: ExerciseHistorySession[] = []
+    for (const session of candidates) {
+      const entries = exercisesBySession.get(session.id)!
+      const sets = await strengthSets.where('sessionExerciseId').anyOf(entries.map(row => row.id))
+        .filter(set => set.completed).toArray()
+      if (!sets.length) continue
+      const positions = new Map(entries.map(row => [row.id, row.position]))
+      sets.sort((a, b) => positions.get(a.sessionExerciseId)! - positions.get(b.sessionExerciseId)! || a.position - b.position)
+      history.push({ id: session.id, title: session.title, startedAt: session.startedAt, sets })
+      if (history.length === 5) break
+    }
+    return history
+  })
+}
+
 function applyExerciseOrder(workout: Workout, orderedIds: string[], now: string) {
   const existing = new Set(workout.sessionExercises.map(row => row.id))
   if (orderedIds.length !== existing.size || new Set(orderedIds).size !== existing.size || orderedIds.some(id => !existing.has(id))) throw new Error('The exercise list changed. Try reordering again.')

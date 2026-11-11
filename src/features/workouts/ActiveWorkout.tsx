@@ -17,6 +17,7 @@ import { workoutLoadLabel } from '../../domain/strength/catalog'
 import { useAutosave } from './useAutosave'
 import { durationText } from './WorkoutHistory'
 import { InlineSetStore } from './InlineSetStore'
+import { ExerciseHistory } from './ExerciseHistory'
 import { InlineSetRow } from './InlineSetRow'
 
 const workoutCollision: CollisionDetection = args => {
@@ -167,19 +168,20 @@ export function ActiveWorkout({ initial, library, onBack }: { initial: Workout; 
     const weightLabel = config.load === 'added' ? 'Added' : config.load === 'assisted' ? 'Assist' : config.load === 'bodyweight' ? 'BW' : config.load === 'none' ? 'Load' : units.size > 1 ? 'Weight' : ([...units][0] ?? 'kg').toUpperCase()
     const canReplace = !sets.length || sets.some(set => !set.completed)
     return <div className={code ? 'superset-exercise inline-exercise' : undefined} key={exercise.id} role={code ? 'group' : undefined} aria-labelledby={code ? 'exercise-' + exercise.id : undefined}>
-      <div className="exercise-card-heading"><Heading id={'exercise-' + exercise.id} tabIndex={-1}>{code && <span className="superset-member-label">{code} </span>}{exerciseDisplayName(exercise.snapshot)}</Heading><details className="exercise-menu"><summary aria-label={`${exerciseDisplayName(exercise.snapshot)}, exercise options`}>⋯</summary><div className="actions">{canReplace && <button className="secondary" disabled={structuralBlocked} onClick={() => {
+      <div className="exercise-card-heading"><Heading id={'exercise-' + exercise.id} tabIndex={-1}>{code && <span className="superset-member-label">{code} </span>}{exerciseDisplayName(exercise.snapshot)}</Heading><details className="exercise-menu"><summary aria-label={`${exerciseDisplayName(exercise.snapshot)}, exercise options`}>⋯</summary><div className="actions"><button className="secondary" disabled={structuralBlocked || !canReplace} onClick={() => {
         invoke(async () => {}, () => {
           returnGroupFocus.current = exercise.id
           setReplacement({ exerciseId: exercise.id })
         })
-      }}>Replace exercise</button>}{!exercise.supersetGroupId && <button className="secondary" disabled={structuralBlocked || workout.sessionExercises.filter(row => !row.supersetGroupId).length < 2} onClick={() => openSuperset(exercise.id)}>Create superset</button>}<button className="secondary" disabled={structuralBlocked} onClick={() => setRemoval({ kind: 'exercise', id: exercise.id })}>Remove exercise</button></div></details></div>
+      }}>Replace exercise</button>{!canReplace && <p className="note">All sets are complete. Use Add exercise to log a substitute.</p>}{!exercise.supersetGroupId && <button className="secondary" disabled={structuralBlocked || workout.sessionExercises.filter(row => !row.supersetGroupId).length < 2} onClick={() => openSuperset(exercise.id)}>Create superset</button>}<button className="secondary" disabled={structuralBlocked} onClick={() => setRemoval({ kind: 'exercise', id: exercise.id })}>Remove exercise</button></div></details></div>
       {exercise.supersetGroupId && <div className="superset-member-actions">
         <button className="secondary" aria-label={`Move ${code} ${exerciseDisplayName(exercise.snapshot)} earlier in superset`} disabled={structuralBlocked || memberIndex === 0} onClick={() => invoke(() => moveSupersetExercise(id, exercise.supersetGroupId!, exercise.id, -1))}>Move earlier</button>
         <button className="secondary" aria-label={`Move ${code} ${exerciseDisplayName(exercise.snapshot)} later in superset`} disabled={structuralBlocked || memberIndex === memberCount - 1} onClick={() => invoke(() => moveSupersetExercise(id, exercise.supersetGroupId!, exercise.id, 1))}>Move later</button>
       </div>}
       <div className="exercise-card-subtitle"><span>{workoutLoadLabel(config)}{config.load !== 'none' && ` · ${units.size > 1 ? 'units per row' : [...units][0]}`}</span><details className="rest-preference"><summary>{exercise.supersetGroupId ? 'Warm-up / individual rest' : 'Rest'} {rest ? time(rest) : 'off'}</summary><div className="rest-preference__editor"><p><strong>Saved exercise preference</strong></p><p className="note">{exercise.supersetGroupId ? 'Used for warm-up sets and independent exercises. Working sets use the superset rest settings.' : 'Applies to this workout and future workouts. Does not change a countdown already running.'}</p><DurationEditor seconds={rest ?? 0} label={`${exerciseDisplayName(exercise.snapshot)}, saved rest`} saveLabel={exercise.sourceExerciseId ? 'Save exercise default' : 'Save for this workout'} disabled={blocked} onDirty={value => reportRest(exercise.id, value)} onSave={seconds => saveRest(() => exercise.sourceExerciseId ? saveExerciseRest(id, exercise.id, seconds) : setExerciseRest(id, exercise.id, seconds))} onUseGlobal={exercise.sourceExerciseId ? () => saveRest(() => saveExerciseRest(id, exercise.id, null)) : undefined} /></div></details></div>
       {exercise.notes && <p className="note multiline">{exercise.notes}</p>}
-      {prior && <p className="previous-date">Previous: {new Date(prior.date).toLocaleDateString()}</p>}
+      <ExerciseHistory exerciseId={exercise.snapshot.id} name={exerciseDisplayName(exercise.snapshot)}
+        previousDate={prior?.date} disabled={blocked} />
       <div className="inline-set__head" aria-hidden="true"><span>Set</span><span>Previous</span><span>{weightLabel}</span><span>{config.measurement === 'reps' ? 'Reps' : 'Secs'}</span><span>✓</span></div>
       {sets.map((set, index) => {
         const row = rows.rows[set.id]
