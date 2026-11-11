@@ -15,7 +15,7 @@ function inUnit(mass: Mass | null, unit: WeightUnit): string {
   if (mass.unit === unit) return String(mass.value)
   return String(Number((massInKilograms(mass) / (unit === 'kg' ? 1 : 0.45359237)).toFixed(8)))
 }
-export function inputFromSet(set: StrengthSet): SetInput {
+export function inputFromSet(set: Pick<StrengthSet, 'load' | 'reps' | 'durationSeconds' | 'rpe' | 'rir'>): SetInput {
   const load = set.load
   const weight = load.mode === 'external' ? load.weight : load.mode === 'added' ? load.addedWeight : load.mode === 'assisted' ? load.assistance : null
   const bodyweight = 'bodyweight' in load ? load.bodyweight : null

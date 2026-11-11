@@ -7,9 +7,9 @@ import type { Table } from 'dexie'
 import { globalRest, exerciseRest } from './preferences'
 import { validateRestSeconds } from '../../domain/rest'
 import { db, type AthleticDatabase } from '../db/database'
-import { STRENGTH_TABLES, snapshotExercise, type Session, type StrengthData, type StrengthSet } from '../../domain/strength/models'
+import { STRENGTH_TABLES, emptyStrengthData, snapshotExercise, type Session, type StrengthData, type StrengthSet } from '../../domain/strength/models'
 import { validateStrengthData } from '../../domain/strength/validation'
-import { emptyLoad, measurements, type SetInput } from '../../domain/strength/logging'
+import { emptyLoad, inputFromSet, measurements, type SetInput } from '../../domain/strength/logging'
 export type Workout = StrengthData
 const tables = (database: AthleticDatabase) => [database.metadata, database.exercisePreferences, ...STRENGTH_TABLES.map(name => database[name])]
 async function readWorkout(id: string, database: AthleticDatabase): Promise<Workout> {
@@ -35,14 +35,14 @@ function clock(workout: Workout): string {
   const session = workout.sessions[0]
   return new Date(Math.max(Date.now(), Date.parse(session.startedAt), Date.parse(session.updatedAt), ...workout.strengthSets.flatMap(set => [Date.parse(set.updatedAt), set.completedAt ? Date.parse(set.completedAt) : 0]))).toISOString()
 }
-async function mutate<T>(id: string, action: (workout: Workout, now: string) => Promise<T> | T, database: AthleticDatabase): Promise<T> {
+async function mutate<T>(id: string, action: (workout: Workout, now: string) => Promise<T> | T, database: AthleticDatabase, status: Session['status'] = 'active'): Promise<T> {
   return database.transaction('rw', tables(database), async () => {
     const workout = await readWorkout(id, database)
-    if (workout.sessions[0].status !== 'active') throw new Error('Only active workouts can be changed.')
+    if (workout.sessions[0].status !== status) throw new Error(`Only ${status} workouts can be changed here.`)
     const before = structuredClone(workout)
     const now = clock(workout)
     const result = await action(workout, now)
-    workout.sessions[0].updatedAt = now
+    if (workout.sessions[0]) workout.sessions[0].updatedAt = now
     validateStrengthData(workout)
     for (const name of STRENGTH_TABLES) {
       if (name === 'exercises') continue // Library rows and snapshots are never rewritten together.
@@ -305,6 +305,97 @@ export function finishWorkout(id: string, allowIncomplete = false, database = db
     for (const timer of workout.restTimers) Object.assign(timer, { status: 'finished', deadline: null, remainingSeconds: 0, updatedAt: now })
   }, database)
 }
+export type FinishedSetEdit = { id?: string; exerciseId: string; input: SetInput; setType: StrengthSet['setType']; completed: boolean }
+export type FinishedWorkoutEdit = Pick<Session, 'title' | 'notes' | 'startedAt'> & { sets: FinishedSetEdit[]; removedSetIds: string[] }
+
+function checkHistoryVersion(current: Workout, baseline: Workout) {
+  for (const table of STRENGTH_TABLES) {
+    const key = (row: Workout[typeof table][number]) => 'id' in row ? row.id : row.sessionId
+    const original = new Map(baseline[table].map(row => [key(row), JSON.stringify(row)]))
+    if (current[table].length !== original.size || current[table].some(row => original.get(key(row)) !== JSON.stringify(row))) {
+      throw new Error('This workout changed since it was opened. Reopen it to see the latest version.')
+    }
+  }
+}
+
+export function editFinishedWorkout(baseline: Workout, edit: FinishedWorkoutEdit, database = db) {
+  return mutate(baseline.sessions[0].id, (workout, now) => {
+    checkHistoryVersion(workout, baseline)
+    const session = workout.sessions[0]
+    const delta = Date.parse(edit.startedAt) - Date.parse(session.startedAt)
+    const shift = (date: string) => new Date(Date.parse(date) + delta).toISOString()
+    Object.assign(session, { title: edit.title.trim(), notes: edit.notes, startedAt: edit.startedAt, endedAt: shift(session.endedAt!) })
+    const removed = new Set(edit.removedSetIds)
+    const edited = new Set<string>()
+    const detachTimer = new Set(removed)
+    if ([...removed].some(id => !workout.strengthSets.some(set => set.id === id))) throw new Error('A removed set no longer exists.')
+    const changedTypes = new Map(edit.sets.map(change => [change.id, change.setType]))
+    for (const exercise of workout.sessionExercises) {
+      if (!exercise.supersetGroupId || exercise.supersetSlotId) continue
+      const working = workingSets(workout, exercise.id)
+      const changesOrder = working.some(set => removed.has(set.id) || changedTypes.get(set.id) === 'warm-up') ||
+        workout.strengthSets.some(set => set.sessionExerciseId === exercise.id && set.setType === 'warm-up' && changedTypes.has(set.id) && changedTypes.get(set.id) !== 'warm-up')
+      if (changesOrder) {
+        exercise.supersetSlotId = crypto.randomUUID()
+        exercise.updatedAt = now
+        working.forEach((set, index) => { set.supersetRoundIndex = index; set.updatedAt = now })
+      }
+    }
+    workout.strengthSets = workout.strengthSets.filter(set => !removed.has(set.id))
+    for (const set of workout.strengthSets) if (delta && set.completedAt) {
+      set.completedAt = shift(set.completedAt)
+      set.updatedAt = now
+    }
+    const assignRounds: { set: StrengthSet; exercise: Workout['sessionExercises'][number] }[] = []
+    for (const change of edit.sets) {
+      const exercise = workout.sessionExercises.find(row => row.id === change.exerciseId)
+      const existing = change.id ? workout.strengthSets.find(row => row.id === change.id) : undefined
+      if (!exercise || (change.id && (!existing || existing.sessionExerciseId !== exercise.id || edited.has(change.id)))) throw new Error('A set no longer matches its exercise.')
+      const tracking = exercise.snapshot.tracking
+      const position = existing?.position ?? Math.max(-1, ...workout.strengthSets.filter(row => row.sessionExerciseId === exercise.id).map(row => row.position)) + 1
+      const set = existing ?? newSet(exercise.id, tracking.load, position, now)
+      edited.add(set.id)
+      const original = inputFromSet(set)
+      const unchanged = <K extends keyof SetInput['values']>(key: K) => !!existing && original.values[key] === change.input.values[key]
+      const parsedInput = structuredClone(change.input)
+      for (const key of ['reps', 'durationSeconds', 'rpe', 'rir'] as const) if (unchanged(key)) parsedInput.values[key] = ''
+      const sameUnit = original.weightUnit === change.input.weightUnit
+      for (const key of ['weight', 'bodyweight'] as const) if (sameUnit && unchanged(key)) parsedInput.values[key] = ''
+      const values = measurements(parsedInput, tracking)
+      for (const key of ['reps', 'durationSeconds', 'rpe', 'rir'] as const) if (unchanged(key)) values[key] = set[key]
+      // Historical rows can contain mixed units. Keep any mass the user did not edit.
+      if (existing && original.weightUnit === change.input.weightUnit) {
+        const load = set.load
+        if (original.values.weight === change.input.values.weight) {
+          if (load.mode === 'external' && values.load.mode === 'external') values.load.weight = load.weight
+          if (load.mode === 'added' && values.load.mode === 'added') values.load.addedWeight = load.addedWeight
+          if (load.mode === 'assisted' && values.load.mode === 'assisted') values.load.assistance = load.assistance
+        }
+        if (original.values.bodyweight === change.input.values.bodyweight && 'bodyweight' in load && 'bodyweight' in values.load) values.load.bodyweight = load.bodyweight
+      }
+      Object.assign(set, values, { setType: change.setType, completed: change.completed,
+        completedAt: change.completed ? set.completedAt ?? session.endedAt : null, updatedAt: now })
+      if (change.setType === 'warm-up') delete set.supersetRoundIndex
+      else if (exercise.supersetSlotId && set.supersetRoundIndex === undefined) assignRounds.push({ set, exercise })
+      if (!existing) workout.strengthSets.push(set)
+      if (!set.completed) detachTimer.add(set.id) // Detach timers that can no longer point to a completed set.
+    }
+    for (const { set, exercise } of assignRounds) set.supersetRoundIndex = nextSlotRound(workout, exercise)
+    if (baseline.strengthSets.some(set => set.completed) && !workout.strengthSets.some(set => set.completed)) {
+      throw new Error('Keep at least one completed set, or delete the workout.')
+    }
+    stopTimer(workout, [...detachTimer], now)
+    return workout
+  }, database, 'finished')
+}
+
+export function deleteFinishedWorkout(baseline: Workout, database = db) {
+  return mutate(baseline.sessions[0].id, workout => {
+    checkHistoryVersion(workout, baseline)
+    Object.assign(workout, emptyStrengthData())
+  }, database, 'finished')
+}
+
 export function cancelWorkout(id: string, database = db) {
   return mutate(id, (workout, now) => {
     Object.assign(workout.sessions[0], { status: 'cancelled', endedAt: now }); workout.editorDrafts = []

@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+import { Button } from '../../components/ui/Button'
 import { groupLetter, supersetSlots, workoutBlocks } from '../../domain/strength/supersets'
 import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
 import { SET_TYPES } from '../../domain/strength/setTypes'
@@ -9,8 +11,13 @@ export function durationText(start: string, end: string) {
   const minutes = Math.max(0, Math.floor((Date.parse(end) - Date.parse(start)) / 60000))
   return minutes >= 60 ? `${Math.floor(minutes / 60)} h ${minutes % 60} min` : `${minutes} min`
 }
-export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Train' }: { workout: Workout; onBack: () => void; backLabel?: string }) {
+export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Train', disabled, message, error, onEdit, onDelete }: {
+  workout: Workout; onBack: () => void; backLabel?: string; disabled?: boolean; message?: string; error?: string
+  onEdit?: () => void; onDelete?: () => void
+}) {
   const session = workout.sessions[0]
+  const heading = useRef<HTMLHeadingElement>(null)
+  useEffect(() => { heading.current?.focus() }, [session.id])
   const blocks = workoutBlocks(workout)
   const groups = blocks.filter(block => block.group)
   function exerciseCard(exercise: SessionExercise, code?: string) {
@@ -25,12 +32,18 @@ export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Train' }:
     </article>
   }
   return <section aria-label="Workout details" className="workout-history">
-    <button className="secondary" onClick={onBack}>{backLabel}</button>
+    <button className="secondary" disabled={disabled} onClick={onBack}>{backLabel}</button>
     <p className="eyebrow">{session.status === 'cancelled' ? 'CANCELLED WORKOUT' : 'FINISHED WORKOUT'}</p>
-    <h2>{session.title}</h2>
+    <h2 ref={heading} tabIndex={-1}>{session.title}</h2>
     <p>{new Date(session.startedAt).toLocaleString()} · {durationText(session.startedAt, session.endedAt!)}</p>
     <p>{workout.strengthSets.filter(set => set.completed).length} completed sets</p>
     {session.notes && <p className="multiline">{session.notes}</p>}
+    {message && <p role="status">{message}</p>}
+    {error && <p role="alert" className="error">{error}</p>}
+    {session.status === 'finished' && (onEdit || onDelete) && <div className="actions">
+      {onEdit && <Button variant="secondary" disabled={disabled} onClick={onEdit}>Edit workout</Button>}
+      {onDelete && <Button variant="danger" disabled={disabled} onClick={onDelete}>Delete workout</Button>}
+    </div>}
     {blocks.map(block => {
       if (!block.group) return exerciseCard(block.exercises[0])
       const code = groupLetter(groups.findIndex(row => row.id === block.id))

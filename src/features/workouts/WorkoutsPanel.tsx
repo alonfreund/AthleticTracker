@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { updateSafety } from '../../app/updateSafety'
 import { initializeExerciseLibrary, listExercises } from '../../data/repositories/exercises'
-import { startWorkout, startRoutine, listWorkouts, loadWorkout, type Workout } from '../../data/repositories/workouts'
+import { deleteFinishedWorkout, editFinishedWorkout, startWorkout, startRoutine, listWorkouts, loadWorkout, type Workout } from '../../data/repositories/workouts'
 import type { Exercise, Session } from '../../domain/strength/models'
 import { deleteRoutine, listRoutines, saveRoutine } from '../../data/repositories/routines'
 import { RoutineEditor, type SavedRoutine } from './RoutineEditor'
@@ -9,6 +9,7 @@ import { Button } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
 import { ActiveWorkout } from './ActiveWorkout'
 import { durationText, WorkoutHistory } from './WorkoutHistory'
+import { FinishedWorkoutEditor } from './FinishedWorkoutEditor'
 
 export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHistory }: { mode?: 'train' | 'history'; initialSessionId?: string; onNavigateHistory?: () => void }) {
   const [sessions, setSessions] = useState<Session[]>([])
@@ -17,13 +18,21 @@ export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHist
   const [routines, setRoutines] = useState<SavedRoutine[]>([])
   const [editing, setEditing] = useState<SavedRoutine | null>()
   const [deleting, setDeleting] = useState<string>()
+  const [editingHistory, setEditingHistory] = useState(false)
+  const [historyDirty, setHistoryDirty] = useState(false)
+  const [historyMessage, setHistoryMessage] = useState('')
   const [routineDirty, setRoutineDirty] = useState(false)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const lock = useRef(false)
   const [error, setError] = useState('')
   const { applying } = useSyncExternalStore(updateSafety.subscribe, updateSafety.getSnapshot)
-  useLayoutEffect(() => { if (!selected || selected.sessions[0].status !== 'active') updateSafety.setSafety({ dirty: routineDirty, busy, restoring: false, loading }) }, [selected, busy, loading, routineDirty])
+  useLayoutEffect(() => { if (!selected || selected.sessions[0].status !== 'active') updateSafety.setSafety({ dirty: routineDirty || historyDirty, busy, restoring: false, loading }) }, [selected, busy, loading, routineDirty, historyDirty])
+  useEffect(() => {
+    const guard = (event: BeforeUnloadEvent) => { if (historyDirty || (selected?.sessions[0].status === 'finished' && lock.current)) event.preventDefault() }
+    window.addEventListener('beforeunload', guard)
+    return () => window.removeEventListener('beforeunload', guard)
+  }, [historyDirty, selected])
   async function refresh() { setSessions(await listWorkouts()) }
   useEffect(() => {
     let active = true
@@ -44,7 +53,7 @@ export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHist
   function open(id?: string, routineId?: string) {
     return perform(async () => {
       const sessionId = id ?? (routineId ? await startRoutine(routineId) : await startWorkout())
-      setSelected(await loadWorkout(sessionId))
+      setHistoryMessage(''); setSelected(await loadWorkout(sessionId))
     }, 'Could not open workout.')
   }
   function closeEditor() {
@@ -63,12 +72,34 @@ export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHist
       }, 'Could not save routine.')} />
     {busy && <p role="status">Saving routine…</p>}{error && <p role="alert" className="error">{error}</p>}
   </>
-  function back() { setSelected(undefined); void refresh().catch(() => setError('Could not refresh workout list. Reopen to retry.')) }
+  function back() { setSelected(undefined); setHistoryMessage(''); setError(''); void refresh().catch(() => setError('Could not refresh workout list. Reopen to retry.')) }
   const active = sessions.find(session => session.status === 'active')
-  if (selected) return selected.sessions[0].status === 'active' ? <ActiveWorkout key={selected.sessions[0].id} initial={selected} library={library} onBack={back} /> : <WorkoutHistory workout={selected} onBack={back} backLabel={mode === 'history' ? 'Back to history' : 'Back to Train'} />
+  function closeHistoryEditor() { setEditingHistory(false); setHistoryDirty(false); setError('') }
+  if (selected) {
+    const session = selected.sessions[0]
+    if (session.status === 'active') return <ActiveWorkout key={session.id} initial={selected} library={library} onBack={back} />
+    const disabled = busy || applying
+    if (editingHistory) return <FinishedWorkoutEditor key={session.id} workout={selected} disabled={disabled} error={error}
+      onDirty={setHistoryDirty} onCancel={closeHistoryEditor} onSave={edit => void perform(async () => {
+        const updated = await editFinishedWorkout(selected, edit)
+        setSelected(updated); closeHistoryEditor(); setHistoryMessage('Workout changes saved on this device.')
+      }, 'Could not save workout changes.')} />
+    return <WorkoutHistory workout={selected} onBack={back} backLabel={mode === 'history' ? 'Back to history' : 'Back to Train'}
+      disabled={disabled} message={historyMessage} error={error}
+      onEdit={() => { setError(''); setEditingHistory(true) }}
+      onDelete={() => {
+        if (!window.confirm(`Delete “${session.title}” from ${new Date(session.startedAt).toLocaleString()}? This permanently removes the workout and its sets from this device.`)) return
+        void perform(async () => {
+          await deleteFinishedWorkout(selected)
+          setSessions(current => current.filter(row => row.id !== session.id))
+          setSelected(undefined); setHistoryMessage('Workout deleted from this device.')
+        }, 'Could not delete workout.')
+      }} />
+  }
   const history = sessions.filter(session => session.status !== 'active')
   const visibleHistory = mode === 'train' ? history.slice(0, 3) : history
   return <section aria-label={mode === 'train' ? 'Training' : 'Workout history'}>
+    {historyMessage && <p role="status">{historyMessage}</p>}
     {mode === 'train' && <div className="training-hero">
       <span className="hero-symbol"><Icon name="train" /></span>
       {loading ? <p role="status">Opening your workouts…</p> : active ? <>
