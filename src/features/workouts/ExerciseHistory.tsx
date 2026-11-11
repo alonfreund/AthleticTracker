@@ -1,23 +1,30 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { recentExerciseHistory, type ExerciseHistorySession } from '../../data/repositories/workouts'
 import { performanceText } from '../../domain/strength/logging'
+import { Icon } from '../../components/ui/Icon'
 import { SET_TYPES } from '../../domain/strength/setTypes'
 
-export function ExerciseHistory({ exerciseId, name, previousDate, disabled }: {
+export function ExerciseHistory({ exerciseId, name, heading, menu, disabled }: {
   exerciseId: string
   name: string
-  previousDate?: string
+  heading: ReactNode
+  menu: ReactNode
   disabled: boolean
 }) {
   const panelId = useId()
   const trigger = useRef<HTMLButtonElement>(null)
   const [open, setOpen] = useState(false)
   return <>
-    <div className="exercise-history-tools">
-      {previousDate && <span className="previous-date">Previous: {new Date(previousDate).toLocaleDateString()}</span>}
-      <button ref={trigger} type="button" className="secondary" disabled={disabled}
-        aria-label={`Exercise history for ${name}`} aria-expanded={open} aria-controls={panelId}
-        onClick={() => setOpen(!open)}>Exercise history</button>
+    <div className="exercise-card-heading">
+      {heading}
+      <div className="exercise-card-actions">
+        <button ref={trigger} type="button" className="exercise-history-button" disabled={disabled}
+          aria-label={`Exercise history for ${name}`} aria-expanded={open} aria-controls={panelId}
+          onClick={() => setOpen(!open)}>
+          <Icon name="history" />
+        </button>
+        {menu}
+      </div>
     </div>
     <div id={panelId} hidden={!open}>
       {open && <ExerciseHistoryPanel key={exerciseId} exerciseId={exerciseId} name={name} onClose={() => {
