@@ -1,3 +1,4 @@
+import { SUPPORTED_BACKUP_VERSIONS } from './backup'
 import { JSONParser, TokenType } from '@streamparser/json'
 import { BACKUP_TABLES } from '../db/database'
 import { BACKUP_CHUNK_BYTES, MAX_BACKUP_ROW_BYTES, assertBackupSize } from './limits'
@@ -49,7 +50,7 @@ export async function streamBackupJson(file: BackupFile, rows: (table:string,val
     if(partial)return
     if(stack.length===1 && typeof key==='string') {
       if(typeof value==='string' && value.length>200)throw new Error('Invalid backup header.')
-      if(key==='formatVersion' && ![1,2,3,4].includes(value as number))throw new Error('Unsupported backup version.')
+      if(key==='formatVersion' && !SUPPORTED_BACKUP_VERSIONS.includes(value as number))throw new Error('Unsupported backup version.')
       header[key]=value
     } else if(stack.length===3 && typeof key==='number') rows(String(stack[2].key),value)
   }

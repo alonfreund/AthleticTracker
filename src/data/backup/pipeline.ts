@@ -5,7 +5,7 @@ import { legacyPreference, normalizeDefinition } from '../../domain/strength/exe
 import { validateStrengthRecord, type StrengthLookup } from '../../domain/strength/validation'
 import { db, BACKUP_TABLES, INTERNAL_BACKUP_TABLES, type AthleticDatabase } from '../db/database'
 import { recordBackupRequest } from './status'
-import { validateBackupEnvelope, validateBackupRecord } from './backup'
+import { BACKUP_VERSION, validateBackupEnvelope, validateBackupRecord } from './backup'
 import { streamBackupJson, type BackupFile } from './jsonStream'
 import { BACKUP_PAGE_ROWS, MAX_BACKUP_ROW_BYTES, assertBackupSize, utf8Bytes } from './limits'
 import type { BackupJob, BackupRow, BackupKey } from './stagingTypes'
@@ -35,6 +35,7 @@ function extraKeys(row:BackupRow):BackupKey[] {
   if(row.table==='sessionActivities'){add('activity-session',data.sessionId);add('activity-position',[data.sessionId,data.position])}
   if(row.table==='sessionExercises')add('exercise-position',[data.sessionActivityId,data.position])
   if(row.table==='strengthSets')add('set-position',[data.sessionExerciseId,data.position])
+  if(row.table==='routineExercises')add('routine-position',[data.routineId,data.position])
   if(row.table==='editorDrafts')add('draft-set',data.setId)
   return keys
 }
@@ -95,7 +96,7 @@ async function validateStage(id:string,header:StagedBackup['header'],database:At
     while(cache.size>16 || cacheBytes>2*MAX_BACKUP_ROW_BYTES){const first=cache.keys().next().value!;cacheBytes-=cache.get(first)!.bytes;cache.delete(first)}
     return value
   }
-  const order=['metadata','foundationRecords','exercises','sessions','sessionActivities','supersetGroups','sessionExercises','strengthSets','restTimers','editorDrafts','exercisePreferences','catalogueState'] as const
+  const order=['metadata','foundationRecords','exercises','sessions','sessionActivities','supersetGroups','sessionExercises','strengthSets','restTimers','editorDrafts','exercisePreferences','catalogueState','routines','routineExercises'] as const
   for(const name of order) {
     options.onProgress?.(`Validating ${name}…`)
     await eachPage(database,id,name,async rows=>{
@@ -117,6 +118,7 @@ async function validateStage(id:string,header:StagedBackup['header'],database:At
             const members=await database.backupRows.where('[jobId+table+group]').equals([id,'sessionExercises',row.key]).limit(2).count()
             if(members<2)throw new Error('Invalid strength data: supersets require at least two exercises.')
           }
+          if(name==='routineExercises' && !await database.backupRows.get([id,'routines',value.routineId]))throw new Error('Routine exercise has no parent routine.')
           if(name==='catalogueState' && !await database.backupRows.get([id,'exercises',String(value.exerciseId)]))throw new Error('Catalogue state refers to a missing definition.')
         }
         const state=await database.backupJobs.get(id)
@@ -128,7 +130,7 @@ async function validateStage(id:string,header:StagedBackup['header'],database:At
   const counts=blankCounts()
   for(const name of BACKUP_TABLES)counts[name]=await database.backupRows.where('[jobId+table]').equals([id,name]).count()
   const state=await database.backupJobs.get(id)
-  let canonicalBytes=utf8Bytes(JSON.stringify({...header,formatVersion:4,data:{}}))+(BACKUP_TABLES.length-1)+(state?.rowBytes??0)
+  let canonicalBytes=utf8Bytes(JSON.stringify({...header,formatVersion:BACKUP_VERSION,data:{}}))+(BACKUP_TABLES.length-1)+(state?.rowBytes??0)
   for(const name of BACKUP_TABLES)canonicalBytes+=utf8Bytes(JSON.stringify(name))+3+Math.max(0,counts[name]-1)
   assertBackupSize(canonicalBytes)
   return counts
@@ -155,7 +157,7 @@ export async function stageImport(file:BackupFile,database:AthleticDatabase=db,o
 export async function stageSnapshot(database:AthleticDatabase=db,options:PipelineOptions={}):Promise<StagedBackup> {
   abort(options);options.onProgress?.('Preparing backup snapshot…');abort(options)
   const id=await begin(database)
-  const header={format:'athletic-tracker-backup' as const,formatVersion:4,exportedAt:new Date().toISOString(),appVersion:APP_VERSION}
+  const header={format:'athletic-tracker-backup' as const,formatVersion:BACKUP_VERSION,exportedAt:new Date().toISOString(),appVersion:APP_VERSION}
   try {
     let bytes=0
     await database.transaction('rw',[...tables(database),...internals(database)],async()=>{
@@ -183,11 +185,11 @@ async function job(stage:StagedBackup,database:AthleticDatabase){const value=awa
 /** Blob parts are byte chunks, not one giant JSON string or an in-memory database clone. */
 export async function exportStage(stage:StagedBackup,database:AthleticDatabase=db,options:PipelineOptions={}):Promise<Blob> {
   const state=await job(stage,database)
-  const header={...state.header,formatVersion:4}
+  const header={...state.header,formatVersion:BACKUP_VERSION}
   const parts:Blob[]=[]
   let bytes=0,buffer=''
   const append=(text:string)=>{bytes+=utf8Bytes(text);assertBackupSize(bytes);buffer+=text;if(buffer.length>=64*1024){parts.push(new Blob([buffer]));buffer=''}}
-  append(`{"format":${JSON.stringify(header.format)},"formatVersion":4,"exportedAt":${JSON.stringify(header.exportedAt)},"appVersion":${JSON.stringify(header.appVersion)},"data":{`)
+  append(`{"format":${JSON.stringify(header.format)},"formatVersion":${header.formatVersion},"exportedAt":${JSON.stringify(header.exportedAt)},"appVersion":${JSON.stringify(header.appVersion)},"data":{`)
   let firstTable=true
   for(const name of BACKUP_TABLES) {
     abort(options);options.onProgress?.(`Writing ${name}…`)

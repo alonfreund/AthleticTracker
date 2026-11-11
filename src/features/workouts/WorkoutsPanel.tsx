@@ -1,9 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { updateSafety } from '../../app/updateSafety'
 import { initializeExerciseLibrary, listExercises } from '../../data/repositories/exercises'
-import { startWorkout, listWorkouts, loadWorkout, type Workout } from '../../data/repositories/workouts'
+import { startWorkout, startRoutine, listWorkouts, loadWorkout, type Workout } from '../../data/repositories/workouts'
 import type { Exercise, Session } from '../../domain/strength/models'
-import { trackingLabel } from '../../domain/strength/catalog'
+import { deleteRoutine, listRoutines, saveRoutine } from '../../data/repositories/routines'
+import { RoutineEditor, type SavedRoutine } from './RoutineEditor'
 import { Button } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
 import { ActiveWorkout } from './ActiveWorkout'
@@ -13,29 +14,55 @@ export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHist
   const [sessions, setSessions] = useState<Session[]>([])
   const [library, setLibrary] = useState<Exercise[]>([])
   const [selected, setSelected] = useState<Workout>()
+  const [routines, setRoutines] = useState<SavedRoutine[]>([])
+  const [editing, setEditing] = useState<SavedRoutine | null>()
+  const [deleting, setDeleting] = useState<string>()
+  const [routineDirty, setRoutineDirty] = useState(false)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const lock = useRef(false)
   const [error, setError] = useState('')
   const { applying } = useSyncExternalStore(updateSafety.subscribe, updateSafety.getSnapshot)
-  useLayoutEffect(() => { if (!selected || selected.sessions[0].status !== 'active') updateSafety.setSafety({ dirty: false, busy, restoring: false, loading }) }, [selected, busy, loading])
+  useLayoutEffect(() => { if (!selected || selected.sessions[0].status !== 'active') updateSafety.setSafety({ dirty: routineDirty, busy, restoring: false, loading }) }, [selected, busy, loading, routineDirty])
   async function refresh() { setSessions(await listWorkouts()) }
   useEffect(() => {
     let active = true
     void initializeExerciseLibrary().then(async () => {
-      const [sessions, library] = await Promise.all([listWorkouts(), listExercises()])
+      const [sessions, library, savedRoutines] = await Promise.all([listWorkouts(), listExercises(), mode === 'train' ? listRoutines() : []])
       const requested = initialSessionId ? await loadWorkout(initialSessionId) : undefined
-      if (active) { setSessions(sessions); setLibrary(library); setSelected(requested); setLoading(false) }
+      if (active) { setSessions(sessions); setLibrary(library); setRoutines(savedRoutines); setSelected(requested); setLoading(false) }
     }).catch(() => { if (active) { setError('Could not load workouts. Reopen the app to retry.'); setLoading(false) } })
     return () => { active = false }
-  }, [initialSessionId])
-  async function open(id?: string) {
-    if (lock.current || applying) return
+  }, [initialSessionId, mode])
+  async function perform(action: () => Promise<void>, fallback: string) {
+    if (lock.current || updateSafety.getSnapshot().applying) return
     lock.current = true; setBusy(true); updateSafety.setBusy(true); setError('')
-    try { const sessionId = id ?? await startWorkout(); setSelected(await loadWorkout(sessionId)) }
-    catch (error) { setError(error instanceof Error ? error.message : 'Could not open workout.') }
+    try { await action() }
+    catch (error) { setError(error instanceof Error ? error.message : fallback) }
     finally { lock.current = false; updateSafety.setBusy(false); setBusy(false) }
   }
+  function open(id?: string, routineId?: string) {
+    return perform(async () => {
+      const sessionId = id ?? (routineId ? await startRoutine(routineId) : await startWorkout())
+      setSelected(await loadWorkout(sessionId))
+    }, 'Could not open workout.')
+  }
+  function closeEditor() {
+    setEditing(undefined)
+    setRoutineDirty(false)
+    setError('')
+  }
+  if (editing !== undefined) return <>
+    <RoutineEditor routine={editing} library={library} disabled={busy || applying} onDirty={() => setRoutineDirty(true)}
+      onCancel={() => { if (!routineDirty || window.confirm('Discard your unsaved routine changes?')) closeEditor() }}
+      onSave={(input, exercises) => void perform(async () => {
+        await saveRoutine(input, exercises)
+        const updated = await listRoutines()
+        setRoutines(updated)
+        closeEditor()
+      }, 'Could not save routine.')} />
+    {busy && <p role="status">Saving routine…</p>}{error && <p role="alert" className="error">{error}</p>}
+  </>
   function back() { setSelected(undefined); void refresh().catch(() => setError('Could not refresh workout list. Reopen to retry.')) }
   const active = sessions.find(session => session.status === 'active')
   if (selected) return selected.sessions[0].status === 'active' ? <ActiveWorkout key={selected.sessions[0].id} initial={selected} library={library} onBack={back} /> : <WorkoutHistory workout={selected} onBack={back} backLabel={mode === 'history' ? 'Back to history' : 'Back to Train'} />
@@ -48,6 +75,33 @@ export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHist
         <h2>Pick up where you left off</h2><div className="resume-card"><h3>{active.title}</h3><p>Started {new Date(active.startedAt).toLocaleString()}</p><Button disabled={busy || applying} onClick={() => void open(active.id)}>Resume workout <Icon name="arrow" /></Button></div>
       </> : <><h2>Strength workout</h2><Button disabled={busy || applying} onClick={() => void open()}>Start workout <Icon name="arrow" /></Button></>}
     </div>}
+    {mode === 'train' && !loading && <section aria-labelledby="routines-heading">
+      <div className="section-heading">
+        <h2 id="routines-heading">Routines</h2>
+        <Button variant="quiet" disabled={busy || applying} onClick={() => { setError(''); setEditing(null) }}>New routine</Button>
+      </div>
+      {!routines.length && <p className="note">Save your exercises and set targets to use them again.</p>}
+      <ul className="exercise-list">{routines.map(routine => <li className="routine-card" key={routine.id}>
+        <h3>{routine.title}</h3>
+        <p className="note">{routine.exercises.length} {routine.exercises.length === 1 ? 'exercise' : 'exercises'}</p>
+        <div className="actions">
+          <Button disabled={busy || applying || !!active} aria-label={`Start routine: ${routine.title}`} onClick={() => void open(undefined, routine.id)}>Start routine</Button>
+          <Button variant="quiet" disabled={busy || applying} aria-label={`Edit routine: ${routine.title}`} onClick={() => { setError(''); setEditing(routine) }}>Edit</Button>
+          <Button variant="quiet" disabled={busy || applying} aria-label={`Delete routine: ${routine.title}`} onClick={() => setDeleting(routine.id)}>Delete</Button>
+        </div>
+        {deleting === routine.id && <div>
+          <p>Delete this routine?</p>
+          <div className="actions">
+            <button className="secondary" disabled={busy || applying} onClick={() => void perform(async () => {
+              await deleteRoutine(routine.id)
+              setRoutines(rows => rows.filter(row => row.id !== routine.id))
+              setDeleting(undefined)
+            }, 'Could not delete routine.')}>Confirm delete</button>
+            <button className="secondary" disabled={busy || applying} onClick={() => setDeleting(undefined)}>Keep routine</button>
+          </div>
+        </div>}
+      </li>)}</ul>
+    </section>}
     <div className="section-heading"><h2>{mode === 'history' ? 'All sessions' : 'Recent sessions'}</h2>{mode === 'train' && onNavigateHistory && <Button variant="quiet" disabled={busy || applying || loading} onClick={onNavigateHistory}>View history <Icon name="arrow" /></Button>}</div>
     {mode === 'history' && loading && <p role="status">Opening your history…</p>}
     {!loading && !history.length && <div className="empty-state"><Icon name="history" /><h3>No sessions recorded yet</h3><p>Your finished workouts will appear here.</p></div>}

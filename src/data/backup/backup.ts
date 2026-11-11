@@ -1,3 +1,4 @@
+import type { Routine, RoutineExercise } from '../../domain/strength/routines'
 // In-memory helpers support small fixtures and compatibility checks. Production file operations use pipeline.ts.
 import type { Table } from 'dexie'
 import { GLOBAL_REST_KEY, validateRestSeconds } from '../../domain/rest'
@@ -6,16 +7,25 @@ import { APP_VERSION } from '../../app/version'
 import { emptyStrengthData, STRENGTH_TABLES, type StrengthData } from '../../domain/strength/models'
 import { legacyPreference, normalizeDefinition } from '../../domain/strength/exerciseMetadata'
 import type { CatalogueState, ExercisePreference } from '../../domain/strength/models'
-import { validateCatalogueStates, validateExercisePreferences, validateStrengthData } from '../../domain/strength/validation'
+import { validateCatalogueStates, validateExercisePreferences, validateRoutine, validateRoutineExercise, validateStrengthData } from '../../domain/strength/validation'
 import { db, BACKUP_TABLES, type AthleticDatabase } from '../db/database'
 import { validateText, type AppMetadata, type FoundationRecord } from '../../domain/foundation'
 
 import { assertBackupSize, utf8Bytes } from './limits'
 export { MAX_BACKUP_BYTES } from './limits'
-export interface BackupData extends StrengthData { metadata: AppMetadata[]; foundationRecords: FoundationRecord[]; exercisePreferences: ExercisePreference[]; catalogueState: CatalogueState[] }
+export const BACKUP_VERSION = 5
+export const SUPPORTED_BACKUP_VERSIONS = [1, 2, 3, 4, BACKUP_VERSION]
+
+function backupTables(version: number) {
+  if (version >= 5) return [...BACKUP_TABLES]
+  return ['metadata', 'foundationRecords', ...(version > 1 ? STRENGTH_TABLES : []),
+    ...(version >= 4 ? ['exercisePreferences', 'catalogueState'] : [])]
+}
+
+export interface BackupData extends StrengthData { metadata: AppMetadata[]; foundationRecords: FoundationRecord[]; exercisePreferences: ExercisePreference[]; catalogueState: CatalogueState[]; routines: Routine[]; routineExercises: RoutineExercise[] }
 export interface Backup {
   format: 'athletic-tracker-backup'
-  formatVersion: 4
+  formatVersion: typeof BACKUP_VERSION
   exportedAt: string
   appVersion: string
   data: BackupData
@@ -42,10 +52,11 @@ function date(value: unknown): string {
 export function validateBackup(value: unknown): Backup {
   const root = object(value)
   if (root.format !== 'athletic-tracker-backup') throw new Error('This is not an AthleticTracker backup.')
-  if (root.formatVersion !== 1 && root.formatVersion !== 2 && root.formatVersion !== 3 && root.formatVersion !== 4) throw new Error('Unsupported backup version. Your data has not been changed.')
+  const version = root.formatVersion as number
+  if (!SUPPORTED_BACKUP_VERSIONS.includes(version)) throw new Error('Unsupported backup version. Your data has not been changed.')
   keys(root, ['format', 'formatVersion', 'exportedAt', 'appVersion', 'data'])
   const data = object(root.data)
-  keys(data, ['metadata', 'foundationRecords', ...(root.formatVersion !== 1 ? STRENGTH_TABLES : []), ...(root.formatVersion === 4 ? ['exercisePreferences','catalogueState'] : [])])
+  keys(data, backupTables(version))
   if (!Array.isArray(data.metadata) || !Array.isArray(data.foundationRecords)) throw new Error('Backup tables must be arrays.')
   if (data.metadata.filter(value => object(value).key === 'createdAt').length !== 1) throw new Error('Backup must contain the database creation date.')
   const metadataKeys = new Set<string>()
@@ -56,7 +67,7 @@ export function validateBackup(value: unknown): Backup {
     if (metadataKeys.has(key)) throw new Error('Duplicate metadata key.')
     metadataKeys.add(key)
     if (key === 'createdAt') return { key, value: date(item.value) }
-    if ((root.formatVersion === 3 || root.formatVersion === 4) && key === GLOBAL_REST_KEY) {
+    if (version >= 3 && key === GLOBAL_REST_KEY) {
       const value = string(item.value)
       if (!/^\d+$/.test(value)) throw new Error('Invalid global rest preference.')
       validateRestSeconds(Number(value))
@@ -80,14 +91,31 @@ export function validateBackup(value: unknown): Backup {
   })
   const strength = root.formatVersion === 1 ? emptyStrengthData() : Object.fromEntries(STRENGTH_TABLES.map(name => [name, data[name]]))
   validateStrengthData(strength)
-  const exercisePreferences = root.formatVersion === 4 ? structuredClone(data.exercisePreferences) : strength.exercises.map(legacyPreference)
-  const catalogueState = root.formatVersion === 4 ? structuredClone(data.catalogueState) : []
+  const exercisePreferences = version >= 4 ? structuredClone(data.exercisePreferences) : strength.exercises.map(legacyPreference)
+  const catalogueState = version >= 4 ? structuredClone(data.catalogueState) : []
   validateExercisePreferences(exercisePreferences); validateCatalogueStates(catalogueState)
   const libraryIds = new Set(strength.exercises.map(row=>row.id))
   if ((catalogueState as CatalogueState[]).some(row=>!libraryIds.has(row.exerciseId))) throw new Error('Catalogue state refers to a missing definition.')
   // Older imports split personal rest from definitions; snapshots stay byte-for-byte unchanged.
-  if (root.formatVersion !== 4) strength.exercises = strength.exercises.map(normalizeDefinition)
-  return { format: 'athletic-tracker-backup', formatVersion: 4, exportedAt: date(root.exportedAt), appVersion: string(root.appVersion), data: { metadata, foundationRecords, ...structuredClone(strength), exercisePreferences: exercisePreferences as ExercisePreference[], catalogueState: catalogueState as CatalogueState[] } }
+  if (version < 4) strength.exercises = strength.exercises.map(normalizeDefinition)
+  const routines = version >= 5 ? data.routines : []
+  const routineExercises = version >= 5 ? data.routineExercises : []
+  if (!Array.isArray(routines) || !Array.isArray(routineExercises)) throw new Error('Invalid routine tables.')
+  const routineIds = new Set<string>()
+  for (const row of routines) {
+    validateRoutine(row)
+    if (routineIds.has(row.id)) throw new Error('Duplicate routine.')
+    routineIds.add(row.id)
+  }
+  const exerciseIds = new Set<string>(), positions = new Set<string>()
+  for (const row of routineExercises) {
+    validateRoutineExercise(row)
+    if (!routineIds.has(row.routineId)) throw new Error('Routine exercise has no parent routine.')
+    const position = `${row.routineId}:${row.position}`
+    if (exerciseIds.has(row.id) || positions.has(position)) throw new Error('Duplicate routine exercise or position.')
+    exerciseIds.add(row.id); positions.add(position)
+  }
+  return { format: 'athletic-tracker-backup', formatVersion: BACKUP_VERSION, exportedAt: date(root.exportedAt), appVersion: string(root.appVersion), data: { metadata, foundationRecords, ...structuredClone(strength), exercisePreferences: exercisePreferences as ExercisePreference[], catalogueState: catalogueState as CatalogueState[], routines: structuredClone(routines), routineExercises: structuredClone(routineExercises) } }
 }
 export function parseBackup(text: string): Backup {
   assertBackupSize(utf8Bytes(text))
@@ -101,7 +129,7 @@ async function readData(database: AthleticDatabase): Promise<BackupData> {
 }
 export async function createBackup(database: AthleticDatabase = db): Promise<Backup> {
   const data = await database.transaction('r', BACKUP_TABLES.map(name => database.table(name)), () => readData(database))
-  return validateBackup({ format: 'athletic-tracker-backup', formatVersion: 4, exportedAt: new Date().toISOString(), appVersion: APP_VERSION, data })
+  return validateBackup({ format: 'athletic-tracker-backup', formatVersion: BACKUP_VERSION, exportedAt: new Date().toISOString(), appVersion: APP_VERSION, data })
 }
 export async function restoreBackup(value: unknown, database: AthleticDatabase = db, expectedCurrent?: Backup): Promise<void> {
   // Validate and detach the complete input before starting any write transaction.
@@ -142,9 +170,9 @@ export function validateBackupEnvelope(header: unknown, tables: string[]) {
   const root=object(header)
   keys(root,['format','formatVersion','exportedAt','appVersion'])
   if(root.format!=='athletic-tracker-backup') throw new Error('This is not an AthleticTracker backup.')
-  if(![1,2,3,4].includes(root.formatVersion as number)) throw new Error('Unsupported backup version. Your data has not been changed.')
+  if(!SUPPORTED_BACKUP_VERSIONS.includes(root.formatVersion as number)) throw new Error('Unsupported backup version. Your data has not been changed.')
   const version=root.formatVersion as number
-  const expected=['metadata','foundationRecords',...(version!==1?STRENGTH_TABLES:[]),...(version===4?['exercisePreferences','catalogueState']:[])]
+  const expected=backupTables(version)
   if(tables.length!==expected.length || expected.some(name=>!tables.includes(name))) throw new Error('Backup contains missing or unsupported tables.')
   return { format:'athletic-tracker-backup' as const,formatVersion:version,exportedAt:date(root.exportedAt),appVersion:string(root.appVersion) }
 }
@@ -167,4 +195,6 @@ export function validateBackupRecord(name: string, value: unknown, version: numb
     if(date(item.updatedAt)<date(item.createdAt)) throw new Error('A record was updated before it was created.')
   } else if(name==='exercisePreferences') validateExercisePreferences([value])
   else if(name==='catalogueState') validateCatalogueStates([value])
+  else if(name==='routines') validateRoutine(value)
+  else if(name==='routineExercises') validateRoutineExercise(value)
 }

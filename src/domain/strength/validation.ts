@@ -1,3 +1,6 @@
+import type { Routine, RoutineExercise } from './routines'
+import { SET_TYPES } from './setTypes'
+
 import type { Exercise, StrengthData, Tracking } from './models'
 import { EXERCISE_TYPES, REPETITION_CONVENTIONS } from './taxonomy'
 import { STRENGTH_TABLES } from './models'
@@ -249,4 +252,23 @@ export function validateCatalogueStates(value: unknown): void {
     id(item.exerciseId); num(item.appliedRevision,0,Number.MAX_SAFE_INTEGER,true); text(item.fingerprint,100000,true)
     choice(item.status,['managed','preserved'])
   },'exerciseId')
+}
+
+export function validateRoutine(value: unknown): asserts value is Routine {
+  const row = entity(value, ['title', 'notes'])
+  text(row.title, 200, true)
+  text(row.notes)
+}
+
+export function validateRoutineExercise(value: unknown): asserts value is RoutineExercise {
+  const row = shape(value, ['id', 'routineId', 'exerciseId', 'tracking', 'position', 'sets'])
+  id(row.id); id(row.routineId); id(row.exerciseId)
+  num(row.position, 0, Number.MAX_SAFE_INTEGER, true)
+  tracking(row.tracking)
+  if (!Array.isArray(row.sets) || !row.sets.length || row.sets.length > 100) fail('each routine exercise needs 1–100 planned sets.')
+  for (const value of row.sets) {
+    const set = shape(value, ['setType', 'target'])
+    choice(set.setType, Object.keys(SET_TYPES))
+    nullable(set.target, value => target(value, row.tracking as Tracking))
+  }
 }

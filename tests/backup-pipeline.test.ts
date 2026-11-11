@@ -15,7 +15,9 @@ function file(value:unknown){return new Blob([JSON.stringify(value)])}
 async function emptyStages(db:AthleticDatabase){for(const name of INTERNAL_BACKUP_TABLES)expect(await db.table(name).count()).toBe(0)}
 afterEach(async()=>{vi.restoreAllMocks();for(const db of databases.splice(0))await db.delete()})
 describe('disk-staged backup pipeline',()=>{
-  it.each([old,strength,previous,validateBackup(previous)])('imports format $formatVersion, exports format 4 and restores with identical data',async fixture=>{
+  const { routines: _routines, routineExercises: _routineExercises, ...v4Data } = validateBackup(previous).data
+  const v4 = { ...validateBackup(previous), formatVersion: 4, data: v4Data }
+  it.each([old,strength,previous,v4,validateBackup(previous)])('imports format $formatVersion, exports format 5 and restores with identical data',async fixture=>{
     const db=database();await verifyLocalStorage(db);await saveRecord('Existing record',undefined,db)
     const incoming=await stageImport(file(fixture),db)
     expect(incoming.counts.sessions).toBe('sessions' in fixture.data?fixture.data.sessions.length:0)
@@ -173,7 +175,7 @@ describe('near-100 MB real-record integration',()=>{
     db.close();await db.open()
     const exported=await exportBackupFile(db)
     expect(exported.blob.size).toBeGreaterThan(MAX_BACKUP_BYTES-32*1024);expect(exported.blob.size).toBeLessThanOrEqual(MAX_BACKUP_BYTES)
-    expect(await exported.blob.slice(0,100).text()).toContain('"formatVersion":4')
+    expect(await exported.blob.slice(0,100).text()).toContain('"formatVersion":5')
     await discardStage(exported.snapshot.id,db);await emptyStages(db)
     expect(phases.some(phase=>phase.startsWith('Validating'))).toBe(true)
     for(let i=0;i<4;i++)await db.foundationRecords.add({id:crypto.randomUUID(),text:'x'.repeat(9500),createdAt:'2026-01-01T00:00:00.000Z',updatedAt:'2026-01-01T00:00:00.000Z'})
@@ -243,12 +245,12 @@ describe('snapshot consistency and additive migration',()=>{
     const Dexie=(await import('dexie')).default
     const source=database();await restoreBackup(previous,source)
     const data=(await createBackup(source)).data
-    const schema=Object.fromEntries(source.tables.filter(table=>!(INTERNAL_BACKUP_TABLES as readonly string[]).includes(table.name)).map(table=>[table.name,[table.schema.primKey.src,...table.schema.indexes.map(index=>index.src)].join(',')]))
+    const schema=Object.fromEntries(source.tables.filter(table=>!['routines','routineExercises',...INTERNAL_BACKUP_TABLES].includes(table.name)).map(table=>[table.name,[table.schema.primKey.src,...table.schema.indexes.map(index=>index.src)].join(',')]))
     const name=crypto.randomUUID(),old=new Dexie(name);old.version(4).stores(schema)
-    for(const [table,rows]of Object.entries(data))await old.table(table).bulkAdd(rows)
+    for(const table of Object.keys(schema))await old.table(table).bulkAdd(data[table as keyof typeof data])
     old.close()
     const upgraded=new AthleticDatabase(name);databases.push(upgraded);await upgraded.open()
-    expect(upgraded.verno).toBe(5)
+    expect(upgraded.verno).toBe(6)
     expect((await createBackup(upgraded)).data).toEqual(data)
     await emptyStages(upgraded)
   })

@@ -1,3 +1,4 @@
+import { targetText } from '../../domain/strength/routines'
 import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
 import { SET_TYPES as types, SET_TYPE_SHORT as short } from '../../domain/strength/setTypes'
 import { useState } from 'react'
@@ -19,6 +20,7 @@ export function InlineSetRow({ exercise, set, index, row, previous, disabled, on
   function field(key: keyof SetInput['values'], label: string) {
     return <input aria-label={`${name}, ${label}`} aria-invalid={!!row.error} type="text" inputMode={key === 'reps' || key === 'rir' ? 'numeric' : 'decimal'} enterKeyHint="next" maxLength={128} placeholder="—" value={row.input.values[key]} disabled={disabled} onChange={event => onChange({ ...row.input, values: { ...row.input.values, [key]: event.target.value } })} onBlur={onSave} />
   }
+  const target = set.target && targetText(set.target)
   const previousInput = previous ? convertInputUnit(inputFromSet(previous), row.input.weightUnit) : undefined
   const previousText = previousInput ? `${hasWeight ? `${previousInput.values.weight} × ` : ''}${config.measurement === 'reps' ? previousInput.values.reps : `${previousInput.values.durationSeconds}s`}` : '—'
   return <div className={`inline-set ${set.completed ? 'is-complete' : ''}`}>
@@ -33,7 +35,7 @@ export function InlineSetRow({ exercise, set, index, row, previous, disabled, on
     </div>
     <div className="inline-set__meta"><button className="row-details" aria-expanded={details} onClick={() => setDetails(!details)}>{details ? 'Less' : 'Details'}{!details && (row.input.values.rpe || row.input.values.rir) ? ` · ${row.input.values.rpe ? `RPE ${row.input.values.rpe}` : ''}${row.input.values.rir ? ` RIR ${row.input.values.rir}` : ''}` : ''}</button><span role="status">{hasWeight ? `${row.input.weightUnit} · ` : ''}{row.saving ? 'Saving…' : row.dirty ? 'Not saved yet' : row.pending ? 'Changes pending' : set.completed ? 'Completed' : 'Incomplete'}</span></div>
     {(row.error || unitError) && <p className="inline-error" role="alert">{unitError || row.error} <button className="row-details" onClick={onSave} disabled={disabled}>Retry</button></p>}
-    {set.target && <p className="note set-target">Target: {set.target.reps ? `${set.target.reps.min}–${set.target.reps.max} reps` : set.target.durationSeconds ? `${set.target.durationSeconds.min}–${set.target.durationSeconds.max}s` : 'Prescription saved'}</p>}
+    {target && <p className="note set-target"><span className="sr-only">{name}, </span>Target: {target}</p>}
     {details && <div className="set-details">
       <div className="set-input-grid"><label>RPE (optional){field('rpe', 'RPE')}</label><label>RIR (optional){field('rir', 'RIR')}</label>
         {['bodyweight', 'added', 'assisted'].includes(config.load) && <label>Bodyweight ({row.input.weightUnit}, optional){field('bodyweight', 'Bodyweight')}</label>}

@@ -1,3 +1,6 @@
+import { matchesRoutineTracking } from '../../domain/strength/routines'
+import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
+import { routineExercises } from './routines'
 import type { Table } from 'dexie'
 import { exerciseRest } from './preferences'
 import { validateRestSeconds } from '../../domain/rest'
@@ -53,14 +56,59 @@ async function mutate<T>(id: string, action: (workout: Workout, now: string) => 
     return result
   })
 }
+function newWorkout(title: string, notes: string): Workout {
+  const now = new Date().toISOString()
+  const id = crypto.randomUUID()
+  return {
+    exercises: [],
+    sessions: [{ id, createdAt: now, updatedAt: now, title, status: 'active', startedAt: now, endedAt: null, notes }],
+    sessionActivities: [{ id: crypto.randomUUID(), sessionId: id, activityType: 'strength', position: 0, createdAt: now, updatedAt: now }],
+    sessionExercises: [], strengthSets: [], supersetGroups: [], restTimers: [], editorDrafts: [],
+  }
+}
+
 export async function startWorkout(database = db): Promise<string> {
   return database.transaction('rw', database.sessions, database.sessionActivities, async () => {
-    const active = await database.sessions.where('status').equals('active').first()
+    const active = await activeWorkout(database)
     if (active) return active.id
-    const now = new Date().toISOString(); const id = crypto.randomUUID()
-    await database.sessions.add({ id, createdAt: now, updatedAt: now, title: 'Strength workout', status: 'active', startedAt: now, endedAt: null, notes: '' })
-    await database.sessionActivities.add({ id: crypto.randomUUID(), sessionId: id, activityType: 'strength', position: 0, createdAt: now, updatedAt: now })
-    return id
+    const workout = newWorkout('Strength workout', '')
+    await database.sessions.add(workout.sessions[0])
+    await database.sessionActivities.add(workout.sessionActivities[0])
+    return workout.sessions[0].id
+  })
+}
+
+export function startRoutine(id: string, database = db): Promise<string> {
+  return database.transaction('rw', [...tables(database), database.routines, database.routineExercises], async () => {
+    if (await activeWorkout(database)) throw new Error('Resume or finish your active workout first.')
+    const routine = await database.routines.get(id)
+    const plan = await routineExercises(id, database)
+    if (!routine || !plan.length) throw new Error('Open the routine editor and add exercises before starting.')
+    const workout = newWorkout(routine.title, routine.notes)
+    const now = workout.sessions[0].startedAt
+    const sources = await database.exercises.bulkGet(plan.map(row => row.exerciseId))
+    for (const [position, row] of plan.entries()) {
+      const source = sources[position]
+      if (!source || !matchesRoutineTracking(row, source)) {
+        const name = source ? exerciseDisplayName(source) : `exercise ${position + 1}`
+        throw new Error(`Review ${name} in the routine editor before starting.`)
+      }
+      const exerciseId = crypto.randomUUID()
+      workout.sessionExercises.push({
+        id: exerciseId, sessionActivityId: workout.sessionActivities[0].id, sourceExerciseId: source.id,
+        snapshot: snapshotExercise(source), position, notes: '', restSeconds: await exerciseRest(source.id, database),
+        supersetGroupId: null, createdAt: now, updatedAt: now,
+      })
+      row.sets.forEach((set, index) => workout.strengthSets.push({
+        ...newSet(exerciseId, source.tracking.load, index, now), ...set,
+      }))
+    }
+    validateStrengthData(workout)
+    await database.sessions.add(workout.sessions[0])
+    await database.sessionActivities.add(workout.sessionActivities[0])
+    await database.sessionExercises.bulkAdd(workout.sessionExercises)
+    await database.strengthSets.bulkAdd(workout.strengthSets)
+    return workout.sessions[0].id
   })
 }
 export function saveWorkoutDetails(id: string, title: string, notes: string, database = db) {
