@@ -217,15 +217,10 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 }
 .routine-card h3 { margin-block: 0 .35rem; }
 .routine-set {
-  min-inline-size: 0;
-  margin-block: .75rem;
-  padding: .75rem;
-  border: 1px solid var(--color-border);
-  border-radius: .75rem;
-}
-.routine-fields {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
   gap: .5rem;
   margin-block: .5rem;
 }
+.routine-set label { margin: 0; }

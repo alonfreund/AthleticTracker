@@ -44,7 +44,7 @@ async function setup() {
   return { db, id, exercises, bench, hold }
 }
 
-it('reopens a routine and starts it with ordered, unchecked sets and distinct targets', async () => {
+it('reopens a routine and starts it with ordered, unchecked sets without copying legacy targets', async () => {
   const { db, id, exercises, bench, hold } = await setup()
   await saveGlobalRest(43, db)
   db.close()
@@ -58,7 +58,8 @@ it('reopens a routine and starts it with ordered, unchecked sets and distinct ta
   expect(workout.sessions[0]).toMatchObject({ title: 'Strength A', notes: 'Brace first', status: 'active' })
   expect(workout.sessionExercises.map(row => [row.sourceExerciseId, row.restSeconds])).toEqual([[bench.id, 43], [hold.id, 43]])
   const sets = workout.sessionExercises.flatMap(exercise => workout.strengthSets.filter(set => set.sessionExerciseId === exercise.id).sort((a, b) => a.position - b.position))
-  expect(sets.map(set => [set.setType, set.target])).toEqual(exercises.flatMap(row => row.sets.map(set => [set.setType, set.target])))
+  expect(sets.map(set => set.setType)).toEqual(exercises.flatMap(row => row.sets.map(set => set.setType)))
+  expect(sets.every(set => set.target === null)).toBe(true)
   expect(sets.every(set => !set.completed && set.reps === null && set.durationSeconds === null)).toBe(true)
   expect(sets[1].load).toEqual({ mode: 'external', weight: null })
   expect(workout.restTimers).toEqual([])

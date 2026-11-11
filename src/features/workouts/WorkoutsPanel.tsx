@@ -80,7 +80,7 @@ export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHist
         <h2 id="routines-heading">Routines</h2>
         <Button variant="quiet" disabled={busy || applying} onClick={() => { setError(''); setEditing(null) }}>New routine</Button>
       </div>
-      {!routines.length && <p className="note">Save your exercises and set targets to use them again.</p>}
+      {!routines.length && <p className="note">Save your exercises and sets to use them again.</p>}
       <ul className="exercise-list">{routines.map(routine => <li className="routine-card" key={routine.id}>
         <h3>{routine.title}</h3>
         <p className="note">{routine.exercises.length} {routine.exercises.length === 1 ? 'exercise' : 'exercises'}</p>

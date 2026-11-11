@@ -100,7 +100,7 @@ export function startRoutine(id: string, database = db): Promise<string> {
         supersetGroupId: null, createdAt: now, updatedAt: now,
       })
       row.sets.forEach((set, index) => workout.strengthSets.push({
-        ...newSet(exerciseId, source.tracking.load, index, now), ...set,
+        ...newSet(exerciseId, source.tracking.load, index, now), setType: set.setType,
       }))
     }
     validateStrengthData(workout)
