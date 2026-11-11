@@ -1,7 +1,7 @@
-import { muscleDistribution } from '../../domain/strength/muscleDistribution'
-import { analyticsExerciseKey, isWorkingSet, type AnalyticsExercise, type AnalyticsSession } from '../../domain/strength/analytics'
+import { buildMonthlyReport, monthBounds, type TrainingMonth } from '../../domain/strength/monthlyReport'
+import { collectExerciseHistory, countSessionMuscles, type FinishedSession } from '../../domain/strength/analyticsHistory'
+import { isWorkingSet, type AnalyticsExercise } from '../../domain/strength/analytics'
 import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
-import type { SessionExercise, StrengthSet } from '../../domain/strength/models'
 import { db } from '../db/database'
 
 function groupBy<T, K>(rows: T[], keyOf: (row: T) => K): Map<K, T[]> {
@@ -15,25 +15,21 @@ function groupBy<T, K>(rows: T[], keyOf: (row: T) => K): Map<K, T[]> {
   return groups
 }
 
-type FinishedSession = Omit<AnalyticsSession, 'sets'> & { cards: { snapshot: SessionExercise['snapshot']; sets: StrengthSet[] }[] }
-
-async function readFinishedWorkingSets(database: typeof db, range?: { from: string; before: string }): Promise<FinishedSession[]> {
+async function readFinishedWorkingSets(database: typeof db, range?: { from?: string; before: string }): Promise<FinishedSession[]> {
   const { sessions, sessionActivities, sessionExercises, strengthSets } = database
   return database.transaction('r', [sessions, sessionActivities, sessionExercises, strengthSets], async () => {
     const finished = await sessions.where('status').equals('finished')
-      .filter(row => !range || (row.startedAt >= range.from && row.startedAt < range.before)).toArray()
+      .filter(row => !range || ((!range.from || row.startedAt >= range.from) && row.startedAt < range.before)).toArray()
     if (!finished.length) return []
     finished.sort((a, b) => a.startedAt.localeCompare(b.startedAt) || a.id.localeCompare(b.id))
     const activities = await sessionActivities.where('sessionId').anyOf(finished.map(row => row.id)).toArray()
-    if (!activities.length) return []
-    const cards = await sessionExercises.where('sessionActivityId').anyOf(activities.map(row => row.id)).sortBy('position')
-    if (!cards.length) return []
-    const sets = await strengthSets.where('sessionExerciseId').anyOf(cards.map(row => row.id)).filter(isWorkingSet).sortBy('position')
+    const cards = activities.length ? await sessionExercises.where('sessionActivityId').anyOf(activities.map(row => row.id)).sortBy('position') : []
+    const sets = cards.length ? await strengthSets.where('sessionExerciseId').anyOf(cards.map(row => row.id)).filter(isWorkingSet).sortBy('position') : []
     const setsByCard = groupBy(sets, row => row.sessionExerciseId)
     const sessionByActivity = new Map(activities.map(row => [row.id, row.sessionId]))
     const cardsBySession = groupBy(cards, row => sessionByActivity.get(row.sessionActivityId))
-    return finished.map(({ id, title, startedAt }) => ({
-      id, title, startedAt,
+    return finished.map(({ id, title, startedAt, endedAt }) => ({
+      id, title, startedAt, endedAt,
       cards: (cardsBySession.get(id) ?? []).flatMap(({ id, snapshot }) => {
         const sets = setsByCard.get(id)
         return sets?.length ? [{ snapshot, sets }] : []
@@ -43,35 +39,15 @@ async function readFinishedWorkingSets(database: typeof db, range?: { from: stri
 }
 
 export async function readMuscleDistribution(range?: { from: string; before: string }, database = db) {
-  const sessions = await readFinishedWorkingSets(database, range)
-  return muscleDistribution(sessions.flatMap(session => session.cards.map(({ snapshot, sets }) => ({
-    primary: snapshot.primaryMuscleGroupIds,
-    secondary: snapshot.secondaryMuscleGroupIds,
-    count: sets.length,
-  }))))
+  return countSessionMuscles(await readFinishedWorkingSets(database, range))
 }
 
 export async function readExerciseAnalytics(database = db): Promise<AnalyticsExercise[]> {
-  const finished = await readFinishedWorkingSets(database)
-  const exercises = new Map<string, AnalyticsExercise>()
-  for (const { id, title, startedAt, cards } of finished) {
-    const entries = new Map<string, AnalyticsSession>()
-    for (const { snapshot, sets } of cards) {
-      const key = analyticsExerciseKey(snapshot)
-      let exercise = exercises.get(key)
-      if (!exercise) {
-        exercise = { key, snapshot, sessions: [] }
-        exercises.set(key, exercise)
-      }
-      exercise.snapshot = snapshot
-      let entry = entries.get(key)
-      if (!entry) {
-        entry = { id, title, startedAt, sets: [] }
-        entries.set(key, entry)
-        exercise.sessions.push(entry)
-      }
-      for (const set of sets) entry.sets.push(set)
-    }
-  }
-  return [...exercises.values()].sort((a, b) => exerciseDisplayName(a.snapshot).localeCompare(exerciseDisplayName(b.snapshot)))
+  return collectExerciseHistory(await readFinishedWorkingSets(database))
+    .sort((a, b) => exerciseDisplayName(a.snapshot).localeCompare(exerciseDisplayName(b.snapshot)))
+}
+
+export async function readMonthlyReport(month: TrainingMonth, database = db) {
+  const { before } = monthBounds(month)
+  return buildMonthlyReport(month, await readFinishedWorkingSets(database, { before }))
 }

@@ -24,16 +24,19 @@ export function isWorkingSet(set: StrengthSet): boolean {
   return set.completed && set.setType !== 'warm-up'
 }
 
+export function improvesMetric(metric: Metric, value: number, previous: number): boolean {
+  return metric === 'assistance' ? value < previous : value > previous
+}
+
 export function exerciseProgress({ snapshot, sessions }: AnalyticsExercise): MetricSeries[] {
   const series = new Map<Metric, MetricSeries>()
   const { load, measurement, weightConvention } = snapshot.tracking
   const massMultiplier = weightConvention === 'per-hand' || snapshot.metadata?.repetitionConvention === 'per-side' ? 2 : 1
-  const better = (metric: Metric, a: number, b: number) => metric === 'assistance' ? a < b : a > b
   for (const session of sessions) {
     const best = new Map<Metric, MetricPoint>()
     const count = (metric: Metric, value: number, set?: StrengthSet) => {
       const previous = best.get(metric)
-      if (!previous || better(metric, value, previous.value)) best.set(metric, { session, value, set })
+      if (!previous || improvesMetric(metric, value, previous.value)) best.set(metric, { session, value, set })
     }
     let volume = 0
     let hasVolume = false
@@ -60,7 +63,7 @@ export function exerciseProgress({ snapshot, sessions }: AnalyticsExercise): Met
       if (!entry) series.set(metric, { metric, points: [point], record: point })
       else {
         entry.points.push(point)
-        if (better(metric, point.value, entry.record.value)) entry.record = point
+        if (improvesMetric(metric, point.value, entry.record.value)) entry.record = point
       }
     }
   }

@@ -1,28 +1,21 @@
+import { MonthlyReportPanel } from './MonthlyReportPanel'
+import { metricLabel, metricValueText } from './metricText'
 import { MuscleDistributionPanel } from './MuscleDistributionPanel'
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { liveQuery } from 'dexie'
 import { updateSafety } from '../../app/updateSafety'
 import { Button } from '../../components/ui/Button'
 import { readExerciseAnalytics } from '../../data/repositories/analytics'
-import { exerciseProgress, METRIC_LABELS, type AnalyticsExercise, type Metric } from '../../domain/strength/analytics'
+import { exerciseProgress, type AnalyticsExercise, type Metric } from '../../domain/strength/analytics'
 import { trackingLabel } from '../../domain/strength/catalog'
 import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
 import { performanceText } from '../../domain/strength/logging'
 import type { WeightUnit } from '../../domain/strength/models'
 import { SET_TYPES } from '../../domain/strength/setTypes'
 
-const number = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 })
 const date = new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
 const shortDate = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' })
 const PAGE_SIZE = 10
-
-function valueText(value: number, metric: Metric, unit: WeightUnit, exercise: AnalyticsExercise) {
-  const perHand = exercise.snapshot.tracking.weightConvention === 'per-hand'
-  const perSide = exercise.snapshot.metadata?.repetitionConvention === 'per-side'
-  if (metric === 'reps') return `${number.format(value)} reps${perSide ? ' per side' : ''}`
-  if (metric === 'hold') return `${number.format(value)} s`
-  return `${number.format(unit === 'lb' ? value / 0.45359237 : value)} ${unit}${metric === 'volume' ? ' × reps' : perHand ? ' per hand' : ''}`
-}
 
 function ExerciseProgress({ exercise, onOpenWorkout }: { exercise: AnalyticsExercise; onOpenWorkout: (id: string) => void }) {
   const series = useMemo(() => exerciseProgress(exercise), [exercise])
@@ -34,7 +27,7 @@ function ExerciseProgress({ exercise, onOpenWorkout }: { exercise: AnalyticsExer
   const points = selected?.points.slice(-pointCount) ?? []
   const chartMax = points.reduce((max, point) => Math.max(max, point.value), 0)
   const added = exercise.snapshot.tracking.load === 'added'
-  const label = (key: Metric) => added && key === 'load' ? 'Heaviest added load' : added && key === 'volume' ? 'Added-load session volume' : METRIC_LABELS[key]
+  const label = (key: Metric) => metricLabel(key, exercise.snapshot)
   return <>
     <section className="surface-card analytics-card" aria-labelledby="analytics-progress">
       <h2 id="analytics-progress">Progress</h2>
@@ -51,7 +44,7 @@ function ExerciseProgress({ exercise, onOpenWorkout }: { exercise: AnalyticsExer
           {points.map(point => <li key={point.session.id}>
             <time dateTime={point.session.startedAt} aria-label={date.format(new Date(point.session.startedAt))}>{shortDate.format(new Date(point.session.startedAt))}</time>
             <span className="analytics-bar" aria-hidden="true"><span style={{ width: `${chartMax ? point.value / chartMax * 100 : 0}%` }} /></span>
-            <strong>{valueText(point.value, selected.metric, unit, exercise)}</strong>
+            <strong>{metricValueText(point.value, selected.metric, unit, exercise.snapshot)}</strong>
           </li>)}
         </ol>
       </figure>}
@@ -65,7 +58,7 @@ function ExerciseProgress({ exercise, onOpenWorkout }: { exercise: AnalyticsExer
         {series.map(({ metric, record }) => <li key={metric}>
           <button className="exercise-row" onClick={() => onOpenWorkout(record.session.id)}>
             <span>{label(metric)}</span>
-            <strong>{valueText(record.value, metric, unit, exercise)}</strong>
+            <strong>{metricValueText(record.value, metric, unit, exercise.snapshot)}</strong>
             <span>{record.session.title} · {date.format(new Date(record.session.startedAt))}</span>
             {record.set && <span>{performanceText(record.set)}</span>}
           </button>
@@ -90,7 +83,7 @@ function ExerciseProgress({ exercise, onOpenWorkout }: { exercise: AnalyticsExer
 }
 
 export function AnalyticsPanel({ onOpenWorkout }: { onOpenWorkout: (id: string) => void }) {
-  const [view, setView] = useState<'exercises' | 'muscles'>('exercises')
+  const [view, setView] = useState<'exercises' | 'muscles' | 'monthly'>('exercises')
   useLayoutEffect(() => {
     updateSafety.setSafety({ dirty: false, busy: false, restoring: false, loading: false })
   }, [])
@@ -98,8 +91,11 @@ export function AnalyticsPanel({ onOpenWorkout }: { onOpenWorkout: (id: string) 
     <div className="analytics-view-controls" role="group" aria-label="Analytics views">
       <Button variant={view === 'exercises' ? 'primary' : 'secondary'} aria-pressed={view === 'exercises'} onClick={() => setView('exercises')}>Exercises</Button>
       <Button variant={view === 'muscles' ? 'primary' : 'secondary'} aria-pressed={view === 'muscles'} onClick={() => setView('muscles')}>Muscle distribution</Button>
+      <Button variant={view === 'monthly' ? 'primary' : 'secondary'} aria-pressed={view === 'monthly'} onClick={() => setView('monthly')}>Monthly report</Button>
     </div>
-    {view === 'exercises' ? <ExerciseAnalytics onOpenWorkout={onOpenWorkout} /> : <MuscleDistributionPanel />}
+    {view === 'exercises' && <ExerciseAnalytics onOpenWorkout={onOpenWorkout} />}
+    {view === 'muscles' && <MuscleDistributionPanel />}
+    {view === 'monthly' && <MonthlyReportPanel onOpenWorkout={onOpenWorkout} />}
   </>
 }
 
