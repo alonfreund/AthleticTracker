@@ -37,7 +37,7 @@ describe('strength backup and recovery', () => {
     const original = example()
     await restoreBackup(original, source)
     const exported = await createBackup(source)
-    expect(exported.formatVersion).toBe(5)
+    expect(exported.formatVersion).toBe(6)
     expect(exported.data).toEqual(original.data)
     const target = database()
     await restoreBackup(parseBackup(serializeBackup(exported)), target)

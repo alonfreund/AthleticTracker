@@ -24,6 +24,7 @@ export function workoutBlocks(workout: StrengthData): WorkoutBlock[] {
       block.exercises.push(exercise)
     }
   }
+  for (const block of blocks) if (block.group) block.exercises = supersetSlots(block.exercises).flat()
   return blocks
 }
 
@@ -40,28 +41,52 @@ export function workingSets(workout: StrengthData, exerciseId: string) {
     .sort((a, b) => a.position - b.position)
 }
 
+export function exerciseSlot(exercise: SessionExercise) {
+  return exercise.supersetSlotId ? `slot-${exercise.supersetGroupId}-${exercise.supersetSlotId}` : exercise.id
+}
+
+export function supersetSlots(exercises: SessionExercise[]) {
+  const slots = new Map<string, SessionExercise[]>()
+  for (const exercise of exercises) {
+    const key = exerciseSlot(exercise)
+    const slot = slots.get(key)
+    if (slot) slot.push(exercise)
+    else slots.set(key, [exercise])
+  }
+  return [...slots.values()]
+}
+
+function groupRounds(workout: StrengthData, exercises: SessionExercise[]) {
+  const rounds = new Map<number, { exercise: SessionExercise; set: StrengthSet }[]>()
+  for (const slot of supersetSlots(exercises)) {
+    for (const exercise of slot) {
+      workingSets(workout, exercise.id).forEach((set, ordinal) => {
+        const index = set.supersetRoundIndex ?? ordinal
+        const entries = rounds.get(index) ?? []
+        entries.push({ exercise, set })
+        rounds.set(index, entries)
+      })
+    }
+  }
+  return rounds
+}
+
 export function supersetRound(workout: StrengthData, set: StrengthSet) {
   const exercise = workout.sessionExercises.find(row => row.id === set.sessionExerciseId)
   const group = workout.supersetGroups.find(row => row.id === exercise?.supersetGroupId)
   if (!group || set.setType === 'warm-up') return undefined
-  const index = workingSets(workout, set.sessionExerciseId).findIndex(row => row.id === set.id)
-  if (index < 0) return undefined
-  const members = workout.sessionExercises.filter(row => row.supersetGroupId === group.id)
-    .sort((a, b) => a.position - b.position)
-  const entries = members.flatMap(exercise => {
-    const set = workingSets(workout, exercise.id)[index]
-    return set ? [{ exercise, set }] : []
-  })
-  return { group, index, entries, complete: entries.every(entry => entry.set.completed) }
+  const index = set.supersetRoundIndex ?? workingSets(workout, set.sessionExerciseId).findIndex(row => row.id === set.id)
+  const members = workout.sessionExercises.filter(row => row.supersetGroupId === group.id).sort((a, b) => a.position - b.position)
+  const entries = groupRounds(workout, members).get(index)
+  if (entries) return { group, index, entries, complete: entries.every(entry => entry.set.completed) }
 }
 
 export function groupProgress(workout: StrengthData, exercises: SessionExercise[]) {
-  const sets = exercises.map(exercise => ({ exercise, sets: workingSets(workout, exercise.id) }))
-  const rounds = Math.max(0, ...sets.map(row => row.sets.length))
-  for (let index = 0; index < rounds; index++) {
-    const entries = sets.flatMap(row => row.sets[index] ? [{ exercise: row.exercise, set: row.sets[index] }] : [])
+  const rounds = [...groupRounds(workout, exercises)].sort(([a], [b]) => a - b)
+  const total = rounds.length ? rounds[rounds.length - 1][0] + 1 : 0
+  for (const [index, entries] of rounds) {
     const next = entries.find(row => !row.set.completed)
-    if (next) return { round: index + 1, rounds, next: next.exercise, participants: entries.length }
+    if (next) return { round: index + 1, rounds: total, next: next.exercise, participants: entries.length }
   }
-  return { rounds }
+  return { rounds: total }
 }

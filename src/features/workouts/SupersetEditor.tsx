@@ -1,3 +1,4 @@
+import { supersetSlots } from '../../domain/strength/supersets'
 import { useEffect, useRef, useState } from 'react'
 import type { SessionExercise } from '../../domain/strength/models'
 import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
@@ -12,6 +13,7 @@ export function SupersetEditor({ exercises, initialIds, groupId, disabled, onDir
   onCancel: () => void
 }) {
   const [selected, setSelected] = useState(initialIds)
+  const slots = supersetSlots(exercises)
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => { heading.current?.focus() }, [])
   return <section className="superset-editor" aria-labelledby="superset-editor-title">
@@ -19,20 +21,22 @@ export function SupersetEditor({ exercises, initialIds, groupId, disabled, onDir
     <p>Choose at least two exercises. They will move together in this workout.</p>
     <fieldset disabled={disabled}>
       <legend>Exercises in this workout</legend>
-      {exercises.map(exercise => {
+      {slots.map(slot => {
+        const exercise = slot[0]
+        const ids = slot.map(row => row.id)
         const unavailable = exercise.supersetGroupId !== null && exercise.supersetGroupId !== groupId
         return <label className="superset-choice" key={exercise.id}>
           <input type="checkbox" checked={selected.includes(exercise.id)} disabled={unavailable}
             onChange={event => {
               onDirty()
-              setSelected(event.target.checked ? [...selected, exercise.id] : selected.filter(id => id !== exercise.id))
+              setSelected(event.target.checked ? [...selected, ...ids] : selected.filter(id => !ids.includes(id)))
             }} />
-          <span>{exerciseDisplayName(exercise.snapshot)}{unavailable && <small>Already in another superset</small>}</span>
+          <span>{slot.map(row => exerciseDisplayName(row.snapshot)).join(' → ')}{unavailable && <small>Already in another superset</small>}</span>
         </label>
       })}
     </fieldset>
     <div className="actions">
-      <button disabled={disabled || selected.length < 2} onClick={() => onSave(selected)}>Save superset</button>
+      <button disabled={disabled || slots.filter(slot => selected.includes(slot[0].id)).length < 2} onClick={() => onSave(selected)}>Save superset</button>
       <button className="secondary" disabled={disabled} onClick={onCancel}>Cancel</button>
     </div>
   </section>

@@ -67,6 +67,7 @@ export interface SessionExercise extends Entity {
   notes: string
   restSeconds: number | null
   supersetGroupId: string | null
+  supersetSlotId?: string
 }
 export type StrengthLoad =
   | { mode: 'none' }
@@ -94,6 +95,7 @@ export interface StrengthSet extends Entity {
   rpe: number | null
   rir: number | null
   target: StrengthTarget | null
+  supersetRoundIndex?: number
 }
 export interface SupersetGroup extends Entity {
   sessionActivityId: string

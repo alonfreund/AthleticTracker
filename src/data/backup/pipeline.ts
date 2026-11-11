@@ -106,8 +106,18 @@ async function validateStage(id:string,header:StagedBackup['header'],database:At
         for(const row of rows) {
           const value=JSON.parse(row.json)
           validateBackupRecord(name,value,header.formatVersion)
-          if((STRENGTH_TABLES as readonly string[]).includes(name))validateStrengthRecord(name as typeof STRENGTH_TABLES[number],value,await references(database,id,name,value,read))
-          const keys=extraKeys(row);if(keys.length)await database.backupKeys.bulkAdd(keys)
+          const keys = extraKeys(row)
+          if ((STRENGTH_TABLES as readonly string[]).includes(name)) {
+            const lookup = await references(database, id, name, value, read)
+            validateStrengthRecord(name as typeof STRENGTH_TABLES[number], value, lookup)
+            if (name === 'strengthSets' && value.supersetRoundIndex !== undefined) {
+              const exercise = lookup('sessionExercises', value.sessionExerciseId)
+              keys.push({ jobId: id, scope: 'superset-round', key: JSON.stringify([
+                exercise.supersetGroupId, exercise.supersetSlotId, value.supersetRoundIndex,
+              ]) })
+            }
+          }
+          if (keys.length) await database.backupKeys.bulkAdd(keys)
           if(name==='exercises' && header.formatVersion<4) {
             const preference=rowFor(id,'exercisePreferences',legacyPreference(value as Exercise)),definition=rowFor(id,name,normalizeDefinition(value as Exercise))
             await database.backupRows.add(preference)
@@ -115,7 +125,15 @@ async function validateStage(id:string,header:StagedBackup['header'],database:At
             byteChange+=preference.bytes+definition.bytes-row.bytes
           }
           if(name==='supersetGroups') {
-            const members=await database.backupRows.where('[jobId+table+group]').equals([id,'sessionExercises',row.key]).limit(2).count()
+            const slots = new Set<string>()
+            const members = await database.backupRows.where('[jobId+table+group]').equals([id, 'sessionExercises', row.key])
+              .filter(member => {
+                const exercise = JSON.parse(member.json)
+                const slot = exercise.supersetSlotId ? 'slot-' + exercise.supersetSlotId : member.key
+                if (slots.has(slot)) return false
+                slots.add(slot)
+                return true
+              }).limit(2).count()
             if(members<2)throw new Error('Invalid strength data: supersets require at least two exercises.')
           }
           if(name==='routineExercises' && !await database.backupRows.get([id,'routines',value.routineId]))throw new Error('Routine exercise has no parent routine.')

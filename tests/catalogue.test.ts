@@ -142,7 +142,7 @@ describe('backup versions and metadata validation',()=>{
   it('normalises fixed format-2/3 backups without altering snapshots, sets, raw drafts or timers',async()=>{
     for(const old of [fixture,previous]){
       const db=database();await restoreBackup(old,db);const backup=await createBackup(db)
-      expect(backup.formatVersion).toBe(5)
+      expect(backup.formatVersion).toBe(6)
       for(const key of ['sessionExercises','strengthSets','editorDrafts','restTimers']as const)expect(backup.data[key]).toEqual(old.data[key])
       expect(backup.data.exercises).toEqual(old.data.exercises.map(row=>normalizeDefinition(row as Exercise)))
       const target=database();await restoreBackup(parseBackup(serializeBackup(backup)),target)
@@ -169,7 +169,7 @@ describe('backup versions and metadata validation',()=>{
     ]
     for(const change of changes){const invalid=structuredClone(before);change(invalid);await expect(restoreBackup(invalid,db)).rejects.toThrow()}
     expect((await createBackup(db)).data).toEqual(before.data)
-    const future=structuredClone(before);future.formatVersion=99 as 5;expect(()=>validateBackup(future)).toThrow('Unsupported')
+    const future=structuredClone(before);future.formatVersion=99 as 6;expect(()=>validateBackup(future)).toThrow('Unsupported')
   })
   it('rolls back replacement if the final catalogue table cannot be restored',async()=>{
     const db=database();await restoreBackup(previous,db);const before=await createBackup(db)

@@ -151,11 +151,15 @@ export function validateStrengthRecord(name: typeof STRENGTH_TABLES[number], row
       return item
     }
     case 'sessionExercises': {
-    const item = entity(row, ['sessionActivityId', 'sourceExerciseId', 'snapshot', 'position', 'notes', 'restSeconds', 'supersetGroupId'])
+    const item = entity(row, ['sessionActivityId', 'sourceExerciseId', 'snapshot', 'position', 'notes', 'restSeconds', 'supersetGroupId', ...(Object.hasOwn(object(row), 'supersetSlotId') ? ['supersetSlotId'] : [])])
     lookup('sessionActivities', item.sessionActivityId); nullable(item.sourceExerciseId, id); validateExercise(item.snapshot)
     if (item.sourceExerciseId !== null && item.sourceExerciseId !== item.snapshot.id) fail('source exercise and snapshot identifiers differ.')
     // Library presence is deliberately NOT required: history survives archival/deletion.
     num(item.position, 0, Number.MAX_SAFE_INTEGER, true); text(item.notes); nullable(item.restSeconds, value => num(value))
+    if (Object.hasOwn(item, 'supersetSlotId')) {
+      id(item.supersetSlotId)
+      if (item.supersetGroupId === null) fail('superset slot requires a group.')
+    }
     if (item.supersetGroupId !== null) {
       const group = lookup('supersetGroups', item.supersetGroupId)
       if (group.sessionActivityId !== item.sessionActivityId) fail('superset belongs to a different activity.')
@@ -163,11 +167,15 @@ export function validateStrengthRecord(name: typeof STRENGTH_TABLES[number], row
       return item
     }
     case 'strengthSets': {
-    const item = entity(row, ['sessionExerciseId', 'position', 'setType', 'completed', 'completedAt', 'reps', 'durationSeconds', 'load', 'rpe', 'rir', 'target'])
+    const item = entity(row, ['sessionExerciseId', 'position', 'setType', 'completed', 'completedAt', 'reps', 'durationSeconds', 'load', 'rpe', 'rir', 'target', ...(Object.hasOwn(object(row), 'supersetRoundIndex') ? ['supersetRoundIndex'] : [])])
     const parent = lookup('sessionExercises', item.sessionExerciseId)
     const config = (parent.snapshot as Exercise).tracking
     num(item.position, 0, Number.MAX_SAFE_INTEGER, true)
     choice(item.setType, ['normal', 'warm-up', 'failure', 'drop-set', 'back-off', 'amrap'])
+    if (Object.hasOwn(item, 'supersetRoundIndex')) {
+      num(item.supersetRoundIndex, 0, Number.MAX_SAFE_INTEGER - 1, true)
+      if (!parent.supersetSlotId || item.setType === 'warm-up') fail('explicit round requires a working set in a superset slot.')
+    } else if (parent.supersetSlotId && item.setType !== 'warm-up') fail('working set in a shared slot requires a round.')
     bool(item.completed); nullable(item.completedAt, date)
     if (item.completed ? item.completedAt === null : item.completedAt !== null) fail('completion timestamp does not match set status.')
     const activity = lookup('sessionActivities', parent.sessionActivityId)
@@ -224,10 +232,26 @@ export function validateStrengthData(value: unknown): asserts value is StrengthD
   if(new Set(activities.map(row=>row.sessionId)).size!==activities.length) fail('duplicate strength activities in one session.')
   const exercises=[...indexes.get('sessionExercises')!.values()]
   positions(exercises,'sessionActivityId')
-  const groupCounts=new Map<unknown,number>()
-  exercises.forEach(row=>{if(row.supersetGroupId!==null)groupCounts.set(row.supersetGroupId,(groupCounts.get(row.supersetGroupId)??0)+1)})
-  for(const group of indexes.get('supersetGroups')!.values()) if((groupCounts.get(group.id)??0)<2) fail('supersets require at least two exercises.')
-  positions([...indexes.get('strengthSets')!.values()],'sessionExerciseId')
+  const groupSlots = new Map<unknown, Set<unknown>>()
+  for (const row of exercises) {
+    if (row.supersetGroupId === null) continue
+    const slots = groupSlots.get(row.supersetGroupId) ?? new Set()
+    slots.add(row.supersetSlotId ? 'slot-' + row.supersetSlotId : row.id)
+    groupSlots.set(row.supersetGroupId, slots)
+  }
+  for (const group of indexes.get('supersetGroups')!.values()) {
+    if ((groupSlots.get(group.id)?.size ?? 0) < 2) fail('supersets require at least two exercises.')
+  }
+  const sets = [...indexes.get('strengthSets')!.values()]
+  positions(sets, 'sessionExerciseId')
+  const rounds = new Set<string>()
+  for (const set of sets) {
+    if (set.supersetRoundIndex === undefined) continue
+    const exercise = lookup('sessionExercises', set.sessionExerciseId)
+    const key = JSON.stringify([exercise.supersetGroupId, exercise.supersetSlotId, set.supersetRoundIndex])
+    if (rounds.has(key)) fail('duplicate round in a superset slot.')
+    rounds.add(key)
+  }
   const drafts=[...indexes.get('editorDrafts')!.values()]
   if(new Set(drafts.map(row=>row.setId)).size!==drafts.length) fail('duplicate drafts for the same set.')
 }

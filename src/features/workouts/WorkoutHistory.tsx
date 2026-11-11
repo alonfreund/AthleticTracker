@@ -1,4 +1,4 @@
-import { groupLetter, workoutBlocks } from '../../domain/strength/supersets'
+import { groupLetter, supersetSlots, workoutBlocks } from '../../domain/strength/supersets'
 import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
 import { SET_TYPES } from '../../domain/strength/setTypes'
 import type { SessionExercise } from '../../domain/strength/models'
@@ -20,7 +20,7 @@ export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Train' }:
       <p className="note">{trackingLabel(exercise.snapshot.tracking)}</p>
       {exercise.notes && <p className="multiline">{exercise.notes}</p>}
       <ol>{workout.strengthSets.filter(set => set.sessionExerciseId === exercise.id).sort((a, b) => a.position - b.position).map(set => <li key={set.id}>
-        <strong>{set.completed ? 'Completed' : 'Incomplete — excluded from results'}</strong> · <span className={`set-type-badge set-type-colour set-type--${set.setType}`}>{SET_TYPES[set.setType]}</span><br />{performanceText(set)}
+        {set.supersetRoundIndex !== undefined && <>Round {set.supersetRoundIndex + 1} · </>}<strong>{set.completed ? 'Completed' : 'Incomplete — excluded from results'}</strong> · <span className={`set-type-badge set-type-colour set-type--${set.setType}`}>{SET_TYPES[set.setType]}</span><br />{performanceText(set)}
       </li>)}</ol>
     </article>
   }
@@ -36,7 +36,7 @@ export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Train' }:
       const code = groupLetter(groups.findIndex(row => row.id === block.id))
       return <section className="workout-exercise superset-group" key={block.id} aria-label={`Superset ${code}`}>
         <h3>Superset {code}</h3>
-        {block.exercises.map((exercise, index) => exerciseCard(exercise, code + (index + 1)))}
+        {supersetSlots(block.exercises).map((slot, index) => slot.map(exercise => exerciseCard(exercise, code + (index + 1))))}
       </section>
     })}
 

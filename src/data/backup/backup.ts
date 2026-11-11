@@ -13,8 +13,8 @@ import { validateText, type AppMetadata, type FoundationRecord } from '../../dom
 
 import { assertBackupSize, utf8Bytes } from './limits'
 export { MAX_BACKUP_BYTES } from './limits'
-export const BACKUP_VERSION = 5
-export const SUPPORTED_BACKUP_VERSIONS = [1, 2, 3, 4, BACKUP_VERSION]
+export const BACKUP_VERSION = 6
+export const SUPPORTED_BACKUP_VERSIONS = [1, 2, 3, 4, 5, BACKUP_VERSION]
 
 function backupTables(version: number) {
   if (version >= 5) return [...BACKUP_TABLES]
@@ -91,6 +91,11 @@ export function validateBackup(value: unknown): Backup {
   })
   const strength = root.formatVersion === 1 ? emptyStrengthData() : Object.fromEntries(STRENGTH_TABLES.map(name => [name, data[name]]))
   validateStrengthData(strength)
+  if (version < 6) {
+    for (const name of ['sessionExercises', 'strengthSets'] as const) {
+      for (const row of strength[name]) validateBackupRecord(name, row, version)
+    }
+  }
   const exercisePreferences = version >= 4 ? structuredClone(data.exercisePreferences) : strength.exercises.map(legacyPreference)
   const catalogueState = version >= 4 ? structuredClone(data.catalogueState) : []
   validateExercisePreferences(exercisePreferences); validateCatalogueStates(catalogueState)
@@ -178,6 +183,10 @@ export function validateBackupEnvelope(header: unknown, tables: string[]) {
 }
 export function validateBackupRecord(name: string, value: unknown, version: number): void {
   const item=object(value)
+  if (version < 6 && ((name === 'sessionExercises' && Object.hasOwn(item, 'supersetSlotId')) ||
+    (name === 'strengthSets' && Object.hasOwn(item, 'supersetRoundIndex')))) {
+    throw new Error('Exercise replacement requires backup format 6.')
+  }
   if(name==='metadata') {
     keys(item,['key','value'])
     if(item.key==='createdAt') { date(item.value); return }

@@ -1,4 +1,5 @@
-import { supersetRound, workoutBlocks } from '../../domain/strength/supersets'
+import { replacementPlan } from '../../domain/strength/replacement'
+import { supersetRound, supersetSlots, workingSets, workoutBlocks } from '../../domain/strength/supersets'
 import { matchesRoutineTracking } from '../../domain/strength/routines'
 import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
 import { routineExercises } from './routines'
@@ -133,6 +134,65 @@ export function addWorkoutExercise(id: string, sourceId: string, database = db) 
     return exerciseId
   }, database)
 }
+export function replaceWorkoutExercise(id: string, exerciseId: string, sourceId: string, expectedRevision: string, database = db) {
+  return mutate(id, async (workout, now) => {
+    const plan = replacementPlan(workout, exerciseId)
+    if (!plan || plan.revision !== expectedRevision) throw new Error('This exercise changed. Review the replacement again.')
+    const { exercise, remaining, completed } = plan
+    if (completed && !remaining.length) throw new Error('All sets are complete. Add the substitute as a new exercise.')
+    const source = await database.exercises.get(sourceId)
+    if (!source || source.archived || source.id === exercise.snapshot.id) throw new Error('Choose a different available exercise.')
+
+    stopExerciseTimer(workout, exerciseId, now)
+    stopTimer(workout, workout.strengthSets.filter(set => set.sessionExerciseId === exerciseId).map(set => set.id), now)
+    const replacement = {
+      ...exercise, id: crypto.randomUUID(), sourceExerciseId: source.id, snapshot: snapshotExercise(source),
+      notes: '', restSeconds: await exerciseRest(source.id, database), createdAt: now, updatedAt: now,
+    }
+    if (exercise.supersetGroupId && completed && !exercise.supersetSlotId) {
+      exercise.supersetSlotId = crypto.randomUUID()
+      replacement.supersetSlotId = exercise.supersetSlotId
+      workingSets(workout, exerciseId).forEach((set, index) => { set.supersetRoundIndex = index })
+    }
+
+    const removed = new Set(remaining.map(set => set.id))
+    workout.strengthSets = workout.strengthSets.filter(set => !removed.has(set.id))
+    workout.editorDrafts = workout.editorDrafts.filter(draft => !removed.has(draft.setId))
+    for (const [index, set] of remaining.entries()) {
+      const blank = newSet(replacement.id, source.tracking.load, index, now)
+      blank.setType = set.setType
+      if (set.supersetRoundIndex !== undefined) blank.supersetRoundIndex = set.supersetRoundIndex
+      workout.strengthSets.push(blank)
+    }
+    if (completed) {
+      exercise.updatedAt = now
+      for (const row of workout.sessionExercises) {
+        if (row.position > exercise.position) { row.position++; row.updatedAt = now }
+      }
+      replacement.position++
+      workout.sessionExercises.push(replacement)
+    } else {
+      workout.sessionExercises = workout.sessionExercises.map(row => row.id === exerciseId ? replacement : row)
+    }
+    return replacement.id
+  }, database)
+}
+
+function nextSlotRound(workout: Workout, exercise: Workout['sessionExercises'][number]) {
+  const members = new Set(workout.sessionExercises.filter(row =>
+    row.supersetGroupId === exercise.supersetGroupId && row.supersetSlotId === exercise.supersetSlotId).map(row => row.id))
+  return Math.max(-1, ...workout.strengthSets.filter(set => members.has(set.sessionExerciseId)).map(set => set.supersetRoundIndex ?? -1)) + 1
+}
+
+function clearSupersetMembership(workout: Workout, exercise: Workout['sessionExercises'][number], now: string) {
+  exercise.supersetGroupId = null
+  delete exercise.supersetSlotId
+  exercise.updatedAt = now
+  for (const set of workout.strengthSets) {
+    if (set.sessionExerciseId === exercise.id) delete set.supersetRoundIndex
+  }
+}
+
 export function addSet(id: string, exerciseId: string, database = db) {
   return mutate(id, (workout, now) => {
     const exercise = workout.sessionExercises.find(row => row.id === exerciseId)
@@ -140,6 +200,7 @@ export function addSet(id: string, exerciseId: string, database = db) {
     stopExerciseTimer(workout, exerciseId, now)
     const rows = workout.strengthSets.filter(row => row.sessionExerciseId === exerciseId)
     const set = newSet(exerciseId, exercise.snapshot.tracking.load, rows.length ? Math.max(...rows.map(row => row.position)) + 1 : 0, now)
+    if (exercise.supersetSlotId) set.supersetRoundIndex = nextSlotRound(workout, exercise)
     workout.strengthSets.push(set); return set.id
   }, database)
 }
@@ -170,6 +231,9 @@ export function changeSetType(id: string, setId: string, type: StrengthSet['setT
     if (!set) throw new Error('Set no longer exists.')
     if (set.setType === type) return
     stopExerciseTimer(workout, set.sessionExerciseId, now)
+    const exercise = workout.sessionExercises.find(row => row.id === set.sessionExerciseId)!
+    if (type === 'warm-up') delete set.supersetRoundIndex
+    else if (exercise.supersetSlotId && set.supersetRoundIndex === undefined) set.supersetRoundIndex = nextSlotRound(workout, exercise)
     set.setType = type
     set.updatedAt = now
   }, database)
@@ -203,8 +267,8 @@ export function removeWorkoutExercise(id: string, exerciseId: string, database =
     workout.strengthSets = workout.strengthSets.filter(row => row.sessionExerciseId !== exerciseId)
     workout.editorDrafts = workout.editorDrafts.filter(row => !removed.includes(row.setId))
     workout.sessionExercises = workout.sessionExercises.filter(row => row.id !== exerciseId)
-    for (const group of workout.supersetGroups) if (workout.sessionExercises.filter(row => row.supersetGroupId === group.id).length < 2) {
-      workout.sessionExercises.forEach(row => { if (row.supersetGroupId === group.id) { row.supersetGroupId = null; row.updatedAt = now } })
+    for (const group of workout.supersetGroups) if (supersetSlots(workout.sessionExercises.filter(row => row.supersetGroupId === group.id)).length < 2) {
+      workout.sessionExercises.forEach(row => { if (row.supersetGroupId === group.id) clearSupersetMembership(workout, row, now) })
       workout.supersetGroups = workout.supersetGroups.filter(row => row.id !== group.id)
     }
     stopTimer(workout, removed, now)
@@ -336,6 +400,10 @@ function applyExerciseOrder(workout: Workout, orderedIds: string[], now: string)
   for (const group of workout.supersetGroups) {
     const members = workout.sessionExercises.filter(row => row.supersetGroupId === group.id)
     const order = members.map(row => positions.get(row.id)!)
+    for (const slot of supersetSlots(members)) {
+      const slotPositions = slot.map(row => positions.get(row.id)!)
+      if (Math.max(...slotPositions) - Math.min(...slotPositions) + 1 !== slot.length) throw new Error('Move a replacement and its original exercise together.')
+    }
     const before = [...members].sort((a, b) => a.position - b.position).map(row => row.id)
     const after = [...members].sort((a, b) => positions.get(a.id)! - positions.get(b.id)!).map(row => row.id)
     if (before.some((id, index) => id !== after[index])) stopExerciseTimer(workout, members[0].id, now)
@@ -357,11 +425,16 @@ export function saveSuperset(id: string, exerciseIds: string[], groupId: string 
     const selected = new Set(exerciseIds)
     const members = workout.sessionExercises.filter(row => selected.has(row.id))
     if (selected.size !== exerciseIds.length || selected.size < 2 || members.length !== selected.size) throw new Error('Choose at least two available exercises.')
+    if (supersetSlots(members).length < 2) throw new Error('Choose at least two superset slots.')
     const existing = groupId ? workout.supersetGroups.find(group => group.id === groupId) : undefined
     if (groupId && !existing) throw new Error('Superset no longer exists.')
     if (members.some(row => row.sessionActivityId !== members[0].sessionActivityId ||
       (row.supersetGroupId !== null && row.supersetGroupId !== groupId))) throw new Error('Choose exercises from this workout that are not in another superset.')
     const affected = workout.sessionExercises.filter(row => selected.has(row.id) || (groupId !== null && row.supersetGroupId === groupId))
+    for (const slot of supersetSlots(affected)) {
+      const count = slot.filter(row => selected.has(row.id)).length
+      if (count && count !== slot.length) throw new Error('Keep an exercise and its replacements together.')
+    }
     for (const exercise of affected) {
       stopExerciseTimer(workout, exercise.id, now)
       stopTimer(workout, workout.strengthSets.filter(set => set.sessionExerciseId === exercise.id).map(set => set.id), now)
@@ -373,8 +446,10 @@ export function saveSuperset(id: string, exerciseIds: string[], groupId: string 
     group.updatedAt = now
     if (!existing) workout.supersetGroups.push(group)
     for (const row of affected) {
-      row.supersetGroupId = selected.has(row.id) ? group.id : null
-      row.updatedAt = now
+      if (selected.has(row.id)) {
+        row.supersetGroupId = group.id
+        row.updatedAt = now
+      } else clearSupersetMembership(workout, row, now)
     }
     // Group members retain their relative order and move together at their first position.
     applyExerciseOrder(workout, workoutBlocks(workout).flatMap(block => block.exercises.map(row => row.id)), now)
@@ -386,7 +461,7 @@ export function ungroupSuperset(id: string, groupId: string, database = db) {
   return mutate(id, (workout, now) => {
     const members = workout.sessionExercises.filter(row => row.supersetGroupId === groupId)
     for (const row of members) stopExerciseTimer(workout, row.id, now)
-    for (const row of members) { row.supersetGroupId = null; row.updatedAt = now }
+    for (const row of members) clearSupersetMembership(workout, row, now)
     workout.supersetGroups = workout.supersetGroups.filter(group => group.id !== groupId)
   }, database)
 }
@@ -405,13 +480,14 @@ export function moveSupersetExercise(id: string, groupId: string, exerciseId: st
   return mutate(id, (workout, now) => {
     const blocks = workoutBlocks(workout)
     const block = blocks.find(row => row.group?.id === groupId)
-    const index = block?.exercises.findIndex(row => row.id === exerciseId) ?? -1
+    const slots = supersetSlots(block?.exercises ?? [])
+    const index = slots.findIndex(slot => slot.some(row => row.id === exerciseId))
     if (!block || index < 0) throw new Error('Superset exercise no longer exists.')
     const destination = index + direction
-    if (destination < 0 || destination >= block.exercises.length) return
-    stopExerciseTimer(workout, exerciseId, now)
-    const [exercise] = block.exercises.splice(index, 1)
-    block.exercises.splice(destination, 0, exercise)
+    if (destination < 0 || destination >= slots.length) return
+    const [slot] = slots.splice(index, 1)
+    slots.splice(destination, 0, slot)
+    block.exercises = slots.flat()
     applyExerciseOrder(workout, blocks.flatMap(row => row.exercises.map(row => row.id)), now)
   }, database)
 }

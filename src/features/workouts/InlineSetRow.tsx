@@ -35,6 +35,7 @@ export function InlineSetRow({ exercise, set, index, row, previous, disabled, on
     </div>
     <div className="inline-set__meta"><button className="row-details" aria-expanded={details} onClick={() => setDetails(!details)}>{details ? 'Less' : 'Details'}{!details && (row.input.values.rpe || row.input.values.rir) ? ` · ${row.input.values.rpe ? `RPE ${row.input.values.rpe}` : ''}${row.input.values.rir ? ` RIR ${row.input.values.rir}` : ''}` : ''}</button><span role="status">{hasWeight ? `${row.input.weightUnit} · ` : ''}{row.saving ? 'Saving…' : row.dirty ? 'Not saved yet' : row.pending ? 'Changes pending' : set.completed ? 'Completed' : 'Incomplete'}</span></div>
     {(row.error || unitError) && <p className="inline-error" role="alert">{unitError || row.error} <button className="row-details" onClick={onSave} disabled={disabled}>Retry</button></p>}
+    {set.supersetRoundIndex !== undefined && <p className="note set-target">Round {set.supersetRoundIndex + 1}</p>}
     {target && <p className="note set-target"><span className="sr-only">{name}, </span>Target: {target}</p>}
     {details && <div className="set-details">
       <div className="set-input-grid"><label>RPE (optional){field('rpe', 'RPE')}</label><label>RIR (optional){field('rir', 'RIR')}</label>

@@ -17,7 +17,8 @@ afterEach(async()=>{vi.restoreAllMocks();for(const db of databases.splice(0))awa
 describe('disk-staged backup pipeline',()=>{
   const { routines: _routines, routineExercises: _routineExercises, ...v4Data } = validateBackup(previous).data
   const v4 = { ...validateBackup(previous), formatVersion: 4, data: v4Data }
-  it.each([old,strength,previous,v4,validateBackup(previous)])('imports format $formatVersion, exports format 5 and restores with identical data',async fixture=>{
+  const v5 = { ...validateBackup(previous), formatVersion: 5 }
+  it.each([old,strength,previous,v4,v5,validateBackup(previous)])('imports format $formatVersion, exports format 6 and restores with identical data',async fixture=>{
     const db=database();await verifyLocalStorage(db);await saveRecord('Existing record',undefined,db)
     const incoming=await stageImport(file(fixture),db)
     expect(incoming.counts.sessions).toBe('sessions' in fixture.data?fixture.data.sessions.length:0)
@@ -175,7 +176,7 @@ describe('near-100 MB real-record integration',()=>{
     db.close();await db.open()
     const exported=await exportBackupFile(db)
     expect(exported.blob.size).toBeGreaterThan(MAX_BACKUP_BYTES-32*1024);expect(exported.blob.size).toBeLessThanOrEqual(MAX_BACKUP_BYTES)
-    expect(await exported.blob.slice(0,100).text()).toContain('"formatVersion":5')
+    expect(await exported.blob.slice(0,100).text()).toContain('"formatVersion":6')
     await discardStage(exported.snapshot.id,db);await emptyStages(db)
     expect(phases.some(phase=>phase.startsWith('Validating'))).toBe(true)
     for(let i=0;i<4;i++)await db.foundationRecords.add({id:crypto.randomUUID(),text:'x'.repeat(9500),createdAt:'2026-01-01T00:00:00.000Z',updatedAt:'2026-01-01T00:00:00.000Z'})

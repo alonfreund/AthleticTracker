@@ -247,7 +247,7 @@ it('preserves invalid drafts without completing the round or starting rest', asy
   expect(workout.restTimers[0].status).toBe('skipped')
 })
 
-it('round-trips groups, timers and raw drafts with format 5 and reopens the active workout', async () => {
+it('round-trips groups, timers and raw drafts with the current backup format and reopens the active workout', async () => {
   const { db, id, exercises, sets, complete } = await setup(2)
   const groupId = await saveSuperset(id, exercises, null, db)
   await saveSupersetRest(id, groupId, 'betweenRoundRestSeconds', 83, db)
@@ -260,7 +260,7 @@ it('round-trips groups, timers and raw drafts with format 5 and reopens the acti
   const reopened = database(db.name)
   expect(await loadWorkout(id, reopened)).toEqual(saved)
   const exported = await exportBackupFile(reopened)
-  expect(JSON.parse(await exported.blob.text()).formatVersion).toBe(5)
+  expect(JSON.parse(await exported.blob.text()).formatVersion).toBe(6)
   const target = database(); await verifyLocalStorage(target)
   const incoming = await stageImport(exported.blob, target)
   const safety = await stageSnapshot(target)

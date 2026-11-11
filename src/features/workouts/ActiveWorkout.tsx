@@ -1,11 +1,12 @@
-import { groupLetter, groupProgress, supersetRound, workoutBlocks } from '../../domain/strength/supersets'
+import { groupLetter, groupProgress, supersetSlots, supersetRound, workoutBlocks } from '../../domain/strength/supersets'
+import { replacementPlan } from '../../domain/strength/replacement'
 import { SupersetEditor } from './SupersetEditor'
 import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { updateSafety } from '../../app/updateSafety'
 import type { ExerciseFilters } from '../../data/repositories/exercises'
 import { ExerciseBrowser } from '../exercises/ExerciseBrowser'
-import { saveSuperset, ungroupSuperset, saveSupersetRest, moveSupersetExercise, addSet, addWorkoutExercise, cancelWorkout, changeSetType, controlRest, discardSetDraft, finishWorkout, loadWorkout, moveWorkoutItem, previousPerformance, removeSet, removeWorkoutExercise, saveInlineSet, saveWorkoutDetails, setExerciseRest, saveExerciseRest, reorderExercises, replaceCurrentRest, timerSeconds, type PreviousExercise, type Workout } from '../../data/repositories/workouts'
+import { saveSuperset, ungroupSuperset, saveSupersetRest, moveSupersetExercise, addSet, addWorkoutExercise, cancelWorkout, changeSetType, controlRest, discardSetDraft, finishWorkout, loadWorkout, moveWorkoutItem, previousPerformance, removeSet, removeWorkoutExercise, replaceWorkoutExercise, saveInlineSet, saveWorkoutDetails, setExerciseRest, saveExerciseRest, reorderExercises, replaceCurrentRest, timerSeconds, type PreviousExercise, type Workout } from '../../data/repositories/workouts'
 import { DndContext, DragOverlay, MouseSensor, TouchSensor, KeyboardSensor, closestCorners, pointerWithin, useSensor, useSensors, type DragEndEvent, type CollisionDetection } from '@dnd-kit/core'
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { SortableExercise } from './SortableExercise'
@@ -31,6 +32,7 @@ export function ActiveWorkout({ initial, library, onBack }: { initial: Workout; 
   const [busy, setBusy] = useState(false)
   const lock = useRef(false)
   const [error, setError] = useState('')
+  const [replacement, setReplacement] = useState<{ exerciseId: string; source?: Exercise }>()
   const [picker, setPicker] = useState(false)
   const [filters, setFilters] = useState<ExerciseFilters>({})
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -127,11 +129,11 @@ export function ActiveWorkout({ initial, library, onBack }: { initial: Workout; 
     setGroupSelection(undefined)
   }
   useLayoutEffect(() => {
-    if (!groupSelection && !blocked && returnGroupFocus.current) {
+    if (!groupSelection && !replacement && !blocked && returnGroupFocus.current) {
       document.getElementById('exercise-' + returnGroupFocus.current)?.focus()
       returnGroupFocus.current = undefined
     }
-  }, [groupSelection, blocked])
+  }, [groupSelection, replacement, blocked])
   const completed = workout.strengthSets.filter(set => set.completed).length
   const incomplete = workout.strengthSets.length - completed
   const timer = workout.restTimers[0]
@@ -151,6 +153,10 @@ export function ActiveWorkout({ initial, library, onBack }: { initial: Workout; 
     setTimerEditor(undefined)
   }, [timer?.sourceSetId, showTimer])
 
+  useLayoutEffect(() => {
+    if (replacement?.source) document.getElementById('replace-exercise-heading')?.focus()
+  }, [replacement?.source])
+
   function exerciseCard(exercise: SessionExercise, code?: string, memberIndex = 0, memberCount = 1) {
     const Heading = code ? 'h4' : 'h3'
     const config = exercise.snapshot.tracking
@@ -158,9 +164,15 @@ export function ActiveWorkout({ initial, library, onBack }: { initial: Workout; 
     const prior = previous[exercise.id]
     const rest = exercise.restSeconds ?? exercise.snapshot.defaultRestSeconds
     const units = new Set(sets.map(set => rows.rows[set.id]?.input.weightUnit ?? 'kg'))
-    const weightLabel = config.load === 'added' ? 'Added' : config.load === 'assisted' ? 'Assist' : config.load === 'bodyweight' ? 'BW' : config.load === 'none' ? 'Load' : units.size > 1 ? 'Weight' : [...units][0].toUpperCase()
+    const weightLabel = config.load === 'added' ? 'Added' : config.load === 'assisted' ? 'Assist' : config.load === 'bodyweight' ? 'BW' : config.load === 'none' ? 'Load' : units.size > 1 ? 'Weight' : ([...units][0] ?? 'kg').toUpperCase()
+    const canReplace = !sets.length || sets.some(set => !set.completed)
     return <div className={code ? 'superset-exercise inline-exercise' : undefined} key={exercise.id} role={code ? 'group' : undefined} aria-labelledby={code ? 'exercise-' + exercise.id : undefined}>
-      <div className="exercise-card-heading"><Heading id={'exercise-' + exercise.id} tabIndex={-1}>{code && <span className="superset-member-label">{code} </span>}{exerciseDisplayName(exercise.snapshot)}</Heading><details className="exercise-menu"><summary aria-label={`${exerciseDisplayName(exercise.snapshot)}, exercise options`}>⋯</summary><div className="actions">{!exercise.supersetGroupId && <button className="secondary" disabled={structuralBlocked || workout.sessionExercises.filter(row => !row.supersetGroupId).length < 2} onClick={() => openSuperset(exercise.id)}>Create superset</button>}<button className="secondary" disabled={structuralBlocked} onClick={() => setRemoval({ kind: 'exercise', id: exercise.id })}>Remove exercise</button></div></details></div>
+      <div className="exercise-card-heading"><Heading id={'exercise-' + exercise.id} tabIndex={-1}>{code && <span className="superset-member-label">{code} </span>}{exerciseDisplayName(exercise.snapshot)}</Heading><details className="exercise-menu"><summary aria-label={`${exerciseDisplayName(exercise.snapshot)}, exercise options`}>⋯</summary><div className="actions">{canReplace && <button className="secondary" disabled={structuralBlocked} onClick={() => {
+        invoke(async () => {}, () => {
+          returnGroupFocus.current = exercise.id
+          setReplacement({ exerciseId: exercise.id })
+        })
+      }}>Replace exercise</button>}{!exercise.supersetGroupId && <button className="secondary" disabled={structuralBlocked || workout.sessionExercises.filter(row => !row.supersetGroupId).length < 2} onClick={() => openSuperset(exercise.id)}>Create superset</button>}<button className="secondary" disabled={structuralBlocked} onClick={() => setRemoval({ kind: 'exercise', id: exercise.id })}>Remove exercise</button></div></details></div>
       {exercise.supersetGroupId && <div className="superset-member-actions">
         <button className="secondary" aria-label={`Move ${code} ${exerciseDisplayName(exercise.snapshot)} earlier in superset`} disabled={structuralBlocked || memberIndex === 0} onClick={() => invoke(() => moveSupersetExercise(id, exercise.supersetGroupId!, exercise.id, -1))}>Move earlier</button>
         <button className="secondary" aria-label={`Move ${code} ${exerciseDisplayName(exercise.snapshot)} later in superset`} disabled={structuralBlocked || memberIndex === memberCount - 1} onClick={() => invoke(() => moveSupersetExercise(id, exercise.supersetGroupId!, exercise.id, 1))}>Move later</button>
@@ -182,6 +194,34 @@ export function ActiveWorkout({ initial, library, onBack }: { initial: Workout; 
       })}
       <button className="add-set" disabled={structuralBlocked} onClick={() => invoke(() => addSet(id, exercise.id))}>+ Add set<span className="sr-only"> to {exerciseDisplayName(exercise.snapshot)}</span></button>
     </div>
+  }
+  if (replacement) {
+    const plan = replacementPlan(workout, replacement.exerciseId)
+    const source = replacement.source
+    return <section aria-labelledby="replace-exercise-heading">
+      <h2 id="replace-exercise-heading" tabIndex={-1}>Replace {plan ? exerciseDisplayName(plan.exercise.snapshot) : 'exercise'}</h2>
+      {plan && source && <>
+        <p>{exerciseDisplayName(source)} will get {plan.remaining.length} blank {plan.remaining.length === 1 ? 'set' : 'sets'}.</p>
+        {plan.completed > 0 && <p>{plan.completed} completed {plan.completed === 1 ? 'set stays' : 'sets stay'} with {exerciseDisplayName(plan.exercise.snapshot)}.</p>}
+        {plan.exercise.supersetGroupId && <p>The substitute takes over the remaining sets in the same superset slot.</p>}
+        {plan.entered > 0 && <p role="alert">Replacing discards saved values or drafts in {plan.entered} unfinished {plan.entered === 1 ? 'set' : 'sets'}.</p>}
+        {plan.discardsNotes && <p>The original exercise notes will be discarded.</p>}
+        <div className="actions">
+          <button disabled={blocked || (plan.completed > 0 && !plan.remaining.length)} onClick={() => {
+            invoke(async () => {
+              returnGroupFocus.current = await replaceWorkoutExercise(id, replacement.exerciseId, source.id, plan.revision)
+            }, () => setReplacement(undefined))
+          }}>{plan.entered || plan.discardsNotes ? 'Discard and replace' : 'Confirm replacement'}</button>
+          <button className="secondary" disabled={blocked} onClick={() => setReplacement({ exerciseId: replacement.exerciseId })}>Choose another exercise</button>
+        </div>
+      </>}
+      <button className="secondary" disabled={blocked} onClick={() => { setError(''); setReplacement(undefined) }}>Cancel replacement</button>
+      {plan && !source && <ExerciseBrowser picker exercises={library.filter(row => row.id !== plan.exercise.snapshot.id)}
+        filters={filters} onFiltersChange={setFilters} filtersOpen={filtersOpen} onFiltersOpenChange={setFiltersOpen}
+        disabled={blocked} onSelect={source => setReplacement({ ...replacement, source })} />}
+      {busy && <p role="status">Saving replacement…</p>}
+      {error && <p role="alert" className="error">{error}</p>}
+    </section>
   }
   if (groupSelection) return <>
     <SupersetEditor exercises={workout.sessionExercises} initialIds={groupSelection.ids} groupId={groupSelection.groupId}
@@ -208,7 +248,7 @@ export function ActiveWorkout({ initial, library, onBack }: { initial: Workout; 
     {blocks.map(block => <SortableExercise key={block.id} id={block.id} name={blockName(block.id)}
       disabled={reorderBlocked} className={block.group ? 'superset-group' : ''}>
       {block.group ? <>
-        <div className="superset-heading"><h3>Superset {groupCode(block.group.id)}</h3><span>{block.exercises.length} exercises</span></div>
+        <div className="superset-heading"><h3>Superset {groupCode(block.group.id)}</h3><span>{supersetSlots(block.exercises).length} exercises</span></div>
         <SupersetProgress workout={workout} exercises={block.exercises} />
         <div className="actions superset-actions">
           <button className="secondary" disabled={structuralBlocked} onClick={() => openSuperset(block.exercises[0].id, block.group!.id)}>Edit exercises</button>
@@ -226,7 +266,10 @@ export function ActiveWorkout({ initial, library, onBack }: { initial: Workout; 
             disabled={blocked} onDirty={value => reportRest(block.id + '-rounds', value)}
             onSave={seconds => saveRest(() => saveSupersetRest(id, block.group!.id, 'betweenRoundRestSeconds', seconds))} />
         </details>
-        {block.exercises.map((exercise, index) => exerciseCard(exercise, groupCode(block.group!.id) + (index + 1), index, block.exercises.length))}
+        {
+          supersetSlots(block.exercises).map((slot, index, slots) =>
+            slot.map(exercise => exerciseCard(exercise, groupCode(block.group!.id) + (index + 1), index, slots.length)))
+        }
       </> : exerciseCard(block.exercises[0])}
     </SortableExercise>)}
     </SortableContext><DragOverlay dropAnimation={null}>{dragging && <div className="exercise-drag-overlay"><span aria-hidden="true">⠿</span><strong>{blockName(dragging)}</strong><span>Drop to save order</span></div>}</DragOverlay>
