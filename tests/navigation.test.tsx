@@ -28,16 +28,16 @@ describe('app-shell navigation', () => {
     expect(gate.begin()).toBe(true)
     expect(navigationDecision(gate.getSnapshot())).toBe('wait')
   })
-  it('keeps all four named destinations present, marks the current page and announces updates', () => {
+  it('keeps all five named destinations present, marks the current page and announces updates', () => {
     const html = renderToStaticMarkup(<BottomNavigation current="history" blocked={false} updateAvailable onNavigate={() => {}} />)
-    for (const label of ['Train', 'History', 'Library', 'Settings']) expect(html).toContain(`>${label}</span>`)
+    for (const label of ['Train', 'History', 'Analytics', 'Library', 'Settings']) expect(html).toContain(`>${label}</span>`)
     expect(html).toContain('aria-current="page" aria-label="History"')
     expect(html).toContain('aria-label="Settings, update available"')
-    expect(html.match(/<button/g)).toHaveLength(4)
+    expect(html.match(/<button/g)).toHaveLength(5)
   })
   it('disables navigation during protected operations without hiding destinations', () => {
     const html = renderToStaticMarkup(<BottomNavigation current="train" blocked updateAvailable={false} onNavigate={() => {}} />)
-    expect(html.match(/disabled=""/g)).toHaveLength(4)
+    expect(html.match(/disabled=""/g)).toHaveLength(5)
   })
   it('shared buttons default to non-submitting actions inside forms', () => {
     expect(renderToStaticMarkup(<Button>Action</Button>)).toContain('type="button"')

@@ -1,5 +1,5 @@
 import type { Safety } from './updateSafety'
-export const DESTINATIONS = ['train', 'history', 'library', 'settings'] as const
+export const DESTINATIONS = ['train', 'history', 'analytics', 'library', 'settings'] as const
 export type Destination = typeof DESTINATIONS[number]
 export function destinationFromHash(hash: string): Destination {
   const value = hash.replace(/^#\/?/, '')
