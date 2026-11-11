@@ -224,3 +224,44 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
   margin-block: .5rem;
 }
 .routine-set label { margin: 0; }
+
+.superset-group {
+  background: var(--superset-bg);
+  border: 2px solid var(--superset-border);
+}
+.superset-heading {
+  padding-left: 44px;
+  min-height: 44px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  color: var(--superset-text);
+}
+.superset-heading h3 { margin: 10px 0 6px; }
+.superset-heading > span { font-size: .8125rem; }
+.superset-group > h3, .superset-member-label { color: var(--superset-text); }
+.superset-progress { font-size: .875rem; margin: 8px 4px; }
+.superset-actions { margin: 12px 4px; }
+.superset-exercise {
+  background: var(--color-surface);
+  border: 1px solid var(--superset-border);
+  border-radius: 12px;
+  padding: 12px 6px;
+  margin-top: 12px;
+}
+.superset-exercise .exercise-card-heading { padding-left: 4px; }
+.exercise-card-heading h4 { margin: 10px 0 6px; font-size: 1.125rem; }
+.superset-exercise > h4 { font-size: 1.125rem; margin-block: 0 8px; }
+.superset-member-actions { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px; }
+.superset-member-actions button { font-size: .8125rem; padding-inline: 10px; }
+.superset-rest { margin: 8px 4px; }
+.superset-rest > summary { min-height: 44px; padding-block: 10px; color: var(--superset-text); font-size: .875rem; }
+.superset-rest .duration-editor { margin-top: 12px; }
+.superset-editor fieldset { min-width: 0; border: 0; padding: 0; margin: 16px 0; }
+.superset-choice { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 8px; margin: 0; border-bottom: 1px solid var(--color-border); }
+.superset-choice input { width: 24px; height: 24px; flex-shrink: 0; }
+.superset-choice small { display: block; font-weight: 400; color: var(--color-muted); }
+.rest-timer--superset { border: 2px solid var(--superset-border); }
+.rest-timer--superset .rest-timer__heading { flex-wrap: wrap; gap: 4px 12px; }
+.rest-timer--superset .rest-timer__heading span { white-space: normal; }

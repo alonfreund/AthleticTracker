@@ -68,3 +68,14 @@
   --set-amrap-bg: #153523; --set-amrap-text: #86efac;
   --set-back-off-bg: #352044; --set-back-off-text: #e9d5ff;
 }
+
+:root {
+  --superset-bg: #eef2ff;
+  --superset-border: #6366f1;
+  --superset-text: #3730a3;
+}
+:root[data-theme='dark'] {
+  --superset-bg: #202447;
+  --superset-border: #a5b4fc;
+  --superset-text: #c7d2fe;
+}
