@@ -1,3 +1,4 @@
+import { MuscleDistributionPanel } from './MuscleDistributionPanel'
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { liveQuery } from 'dexie'
 import { updateSafety } from '../../app/updateSafety'
@@ -89,12 +90,23 @@ function ExerciseProgress({ exercise, onOpenWorkout }: { exercise: AnalyticsExer
 }
 
 export function AnalyticsPanel({ onOpenWorkout }: { onOpenWorkout: (id: string) => void }) {
-  const [exercises, setExercises] = useState<AnalyticsExercise[]>()
-  const [error, setError] = useState(false)
-  const [exerciseKey, setExerciseKey] = useState('')
+  const [view, setView] = useState<'exercises' | 'muscles'>('exercises')
   useLayoutEffect(() => {
     updateSafety.setSafety({ dirty: false, busy: false, restoring: false, loading: false })
   }, [])
+  return <>
+    <div className="analytics-view-controls" role="group" aria-label="Analytics views">
+      <Button variant={view === 'exercises' ? 'primary' : 'secondary'} aria-pressed={view === 'exercises'} onClick={() => setView('exercises')}>Exercises</Button>
+      <Button variant={view === 'muscles' ? 'primary' : 'secondary'} aria-pressed={view === 'muscles'} onClick={() => setView('muscles')}>Muscle distribution</Button>
+    </div>
+    {view === 'exercises' ? <ExerciseAnalytics onOpenWorkout={onOpenWorkout} /> : <MuscleDistributionPanel />}
+  </>
+}
+
+function ExerciseAnalytics({ onOpenWorkout }: { onOpenWorkout: (id: string) => void }) {
+  const [exercises, setExercises] = useState<AnalyticsExercise[]>()
+  const [error, setError] = useState(false)
+  const [exerciseKey, setExerciseKey] = useState('')
   useEffect(() => {
     const subscription = liveQuery(() => readExerciseAnalytics()).subscribe({
       next: rows => setExercises(rows),

@@ -315,3 +315,29 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 .analytics-records button { overflow-wrap: anywhere; }
 .analytics-history summary { padding: var(--space-2); min-height: 44px; cursor: pointer; overflow-wrap: anywhere; }
 .analytics-history li button { margin-bottom: var(--space-2); }
+
+.analytics-view-controls, .muscle-side-controls { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.analytics-view-controls { margin-bottom: var(--space-4); }
+.muscle-summary { margin: var(--space-4) 0 var(--space-2); }
+.muscle-views { display: grid; gap: var(--space-4); margin-top: var(--space-4); align-items: start; }
+.muscle-views .analytics-card + .analytics-card { margin-top: 0; }
+@media (min-width: 640px) {
+  .muscle-views { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); }
+}
+.muscle-body { display: block; width: min(100%, 190px); margin: var(--space-4) auto; }
+.muscle-outline { fill: var(--color-surface-soft); stroke: var(--color-input-border); stroke-width: .8; }
+.heat-0 { --heat: var(--color-border); }
+.heat-1 { --heat: #fbd0cb; }
+.heat-2 { --heat: #f69288; }
+.heat-3 { --heat: #d6473e; }
+.heat-4 { --heat: #97271f; }
+.muscle-shape { fill: var(--heat); stroke: var(--color-surface); stroke-width: 1.1; cursor: pointer; }
+.muscle-shape[aria-pressed='true'], .muscle-shape:focus-visible { stroke: var(--color-text); stroke-width: 2; }
+.muscle-legend { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: var(--text-small); }
+.muscle-legend span[aria-hidden] { width: 16px; height: 12px; border-radius: 3px; background: var(--heat); }
+.muscle-selection { margin: var(--space-2) 0 0; text-align: center; }
+.muscle-chart { list-style: none; margin: 0; padding: 0; }
+.muscle-chart-row { display: grid; width: 100%; grid-template-columns: 1fr auto; gap: 4px var(--space-2); text-align: start; padding: var(--space-2); color: var(--color-text); background: transparent; font-size: var(--text-label); }
+.muscle-chart-row:hover:not(:disabled), .muscle-chart-row[aria-pressed='true'] { background: var(--color-surface-soft); border-color: var(--color-input-border); }
+.muscle-chart-track { grid-column: 1 / -1; height: .5rem; background: var(--color-border); border-radius: 1rem; }
+.muscle-chart-track > span { display: block; height: 100%; background: var(--heat); border-radius: inherit; }
