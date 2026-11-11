@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { updateSafety } from '../../app/updateSafety'
-import { initializeExerciseLibrary, listExercises, filterExercises } from '../../data/repositories/exercises'
+import { initializeExerciseLibrary, listExercises } from '../../data/repositories/exercises'
 import { startWorkout, listWorkouts, loadWorkout, type Workout } from '../../data/repositories/workouts'
 import type { Exercise, Session } from '../../domain/strength/models'
 import { trackingLabel } from '../../domain/strength/catalog'

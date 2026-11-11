@@ -1,10 +1,12 @@
 import 'fake-indexeddb/auto'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AthleticDatabase, verifyLocalStorage } from '../src/data/db/database'
-import { createCustomExercise, filterExercises, initializeExerciseLibrary, listExercises, type ExerciseInput } from '../src/data/repositories/exercises'
+import { createCustomExercise, filterExercises, initializeExerciseLibrary, listExercises, loadExerciseBrowseData, type ExerciseInput } from '../src/data/repositories/exercises'
 import { BUILTIN_EXERCISES, STARTER_EXERCISES } from '../src/domain/strength/catalog'
 import { createBackup, parseBackup, restoreBackup, serializeBackup } from '../src/data/backup/backup'
 import type { Tracking } from '../src/domain/strength/models'
+import { setFavourite } from '../src/data/repositories/preferences'
+import { addWorkoutExercise, cancelWorkout, commitSet, finishWorkout, startWorkout } from '../src/data/repositories/workouts'
 import fixture from './fixtures/backup-v2-strength-0.2.0.json'
 
 const databases: AthleticDatabase[] = []
@@ -14,7 +16,7 @@ const input = (): ExerciseInput => ({
   category: 'isometric', instructions: 'Hold a stable position.\nRecord seconds.', notes: 'My personal notes',
   tracking: { measurement: 'duration', load: 'added', weightConvention: 'total' }, defaultRestSeconds: 75,
 })
-afterEach(async () => { vi.restoreAllMocks(); for (const value of databases.splice(0)) await value.delete() })
+afterEach(async () => { vi.useRealTimers(); vi.restoreAllMocks(); for (const value of databases.splice(0)) await value.delete() })
 
 describe('starter library and preservation', () => {
   it('seeds once, preserving imported rows, user changes, archive state and historical snapshots', async () => {
@@ -98,4 +100,58 @@ describe('custom creation and backup', () => {
     await expect(createCustomExercise(input(), value)).rejects.toThrow('Storage full')
     expect(await listExercises(value)).toEqual([existing])
   })
+})
+
+it('combines alias search with muscle, equipment, type, movement pattern and favourite filters', () => {
+  const target = BUILTIN_EXERCISES.find(row => row.name === 'Weighted neutral-grip pull-up')!
+  const browse = { favourites: new Set([target.id]), lastUsed: new Map() }
+  const filters = {
+    query: 'weighted parallel-grip pull-up', muscle: 'back', equipment: 'neutral-pull-up-bar',
+    exerciseType: 'compound', movementPattern: 'vertical-pull', favouritesOnly: true,
+  }
+  expect(filterExercises(BUILTIN_EXERCISES, filters, browse)).toEqual([target])
+  expect(filterExercises(BUILTIN_EXERCISES, { ...filters, movementPattern: 'horizontal-pull' }, browse)).toEqual([])
+  expect(filterExercises(BUILTIN_EXERCISES, { ...filters, origin: 'custom' }, browse)).toEqual([])
+  expect(filterExercises(BUILTIN_EXERCISES, { muscle: 'back', equipment: 'cable' })
+    .some(row => row.name === 'Neutral-grip lat pulldown')).toBe(true)
+})
+
+it('sorts by logged use and saved favourites without counting cancelled workouts or empty sets', async () => {
+  const db = database()
+  await verifyLocalStorage(db)
+  await db.exercises.bulkAdd([...STARTER_EXERCISES])
+  const [bench, squat, deadlift] = STARTER_EXERCISES
+  await setFavourite(deadlift.id, true, db)
+
+  async function log(session: string, exerciseId: string) {
+    const instance = await addWorkoutExercise(session, exerciseId, db)
+    const set = await db.strengthSets.where('sessionExerciseId').equals(instance).first()
+    await commitSet(session, set!.id, {
+      weightUnit: 'kg', values: { weight: '10', reps: '8', bodyweight: '', durationSeconds: '', rpe: '', rir: '' },
+    }, true, db)
+  }
+
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-11-01T01:00:00.000Z'))
+  const finished = await startWorkout(db)
+  await log(finished, squat.id)
+  await finishWorkout(finished, true, db)
+  vi.setSystemTime(new Date('2026-11-03T01:00:00.000Z'))
+  const cancelled = await startWorkout(db)
+  await log(cancelled, deadlift.id)
+  await cancelWorkout(cancelled, db)
+  vi.setSystemTime(new Date('2026-11-02T01:00:00.000Z'))
+  const active = await startWorkout(db)
+  await log(active, bench.id)
+  await addWorkoutExercise(active, deadlift.id, db)
+
+  const before = (await createBackup(db)).data
+  const browse = await loadExerciseBrowseData(db)
+  const rows = [bench, squat, deadlift]
+  expect(browse.lastUsed.has(deadlift.id)).toBe(false)
+  expect(filterExercises(rows, { sort: 'recent' }, browse)).toEqual([bench, squat, deadlift])
+  expect(filterExercises(rows, { sort: 'favourites' }, browse)).toEqual([deadlift, squat, bench])
+  expect(filterExercises(rows, { sort: 'az' }, browse)).toEqual([squat, bench, deadlift])
+  expect(filterExercises(rows, { sort: 'za' }, browse)).toEqual([deadlift, bench, squat])
+  expect((await createBackup(db)).data).toEqual(before)
 })

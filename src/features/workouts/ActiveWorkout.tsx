@@ -1,7 +1,8 @@
 import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { updateSafety } from '../../app/updateSafety'
-import { filterExercises } from '../../data/repositories/exercises'
+import type { ExerciseFilters } from '../../data/repositories/exercises'
+import { ExerciseBrowser } from '../exercises/ExerciseBrowser'
 import { addSet, addWorkoutExercise, cancelWorkout, changeSetType, controlRest, discardSetDraft, finishWorkout, loadWorkout, moveWorkoutItem, previousPerformance, removeSet, removeWorkoutExercise, saveInlineSet, saveWorkoutDetails, setExerciseRest, saveExerciseRest, reorderExercises, replaceCurrentRest, timerSeconds, type PreviousExercise, type Workout } from '../../data/repositories/workouts'
 import { DndContext, DragOverlay, MouseSensor, TouchSensor, KeyboardSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -24,7 +25,14 @@ export function ActiveWorkout({ initial, library, onBack }: { initial: Workout; 
   const lock = useRef(false)
   const [error, setError] = useState('')
   const [picker, setPicker] = useState(false)
-  const [query, setQuery] = useState('')
+  const [filters, setFilters] = useState<ExerciseFilters>({})
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const pickerTrigger = useRef<HTMLButtonElement>(null)
+  const returnPickerFocus = useRef(false)
+  function closePicker() {
+    returnPickerFocus.current = true
+    setPicker(false)
+  }
   const [review, setReview] = useState<'finish' | 'cancel'>()
   const [removal, setRemoval] = useState<{ kind: 'exercise' | 'set'; id: string }>()
   const [dragging, setDragging] = useState<string>()
@@ -68,6 +76,12 @@ export function ActiveWorkout({ initial, library, onBack }: { initial: Workout; 
   }
   const invoke = (action: () => Promise<unknown>, after?: () => void) => { void run(action, after) }
   const blocked = busy || applying || !!dragging
+  useLayoutEffect(() => {
+    if (!picker && !blocked && returnPickerFocus.current) {
+      returnPickerFocus.current = false
+      pickerTrigger.current?.focus()
+    }
+  }, [picker, blocked])
   async function saveRest(action: () => Promise<unknown>) {
     let saved = false
     await run(async () => { await action(); saved = true })
@@ -134,8 +148,13 @@ export function ActiveWorkout({ initial, library, onBack }: { initial: Workout; 
     })}
     </SortableContext><DragOverlay dropAnimation={null}>{dragging && <div className="exercise-drag-overlay"><span aria-hidden="true">⠿</span><strong>{sessionExerciseName(dragging)}</strong><span>Drop to save order</span></div>}</DragOverlay>
     </DndContext>
-    <div className="actions workout-actions"><button disabled={blocked} onClick={() => { setPicker(!picker); setQuery('') }}>{picker ? 'Close exercise picker' : '+ Add exercise'}</button><button disabled={blocked || completed === 0} onClick={() => { setReview('finish'); setPicker(false) }}>Review and finish</button><button className="secondary" disabled={blocked} onClick={() => invoke(async () => {}, onBack)}>Back — workout stays active</button><button className="secondary" disabled={blocked} onClick={() => setReview('cancel')}>Cancel workout</button></div>
-    {picker && <div className="exercise-picker"><h3>Add a library exercise</h3><label htmlFor="workout-exercise-search">Find exercise</label><input id="workout-exercise-search" type="search" value={query} onChange={event => setQuery(event.target.value)} /><ul className="exercise-list">{filterExercises(library, { query }).map(exercise => <li key={exercise.id}><button className="exercise-row" disabled={blocked} onClick={() => invoke(() => addWorkoutExercise(id, exercise.id), () => setPicker(false))}><strong>{exerciseDisplayName(exercise)}</strong></button></li>)}</ul></div>}
+    <div className="actions workout-actions"><button ref={pickerTrigger} type="button" aria-expanded={picker} aria-controls={picker ? 'workout-exercise-picker' : undefined} disabled={blocked} onClick={() => picker ? closePicker() : setPicker(true)}>{picker ? 'Close exercise picker' : '+ Add exercise'}</button><button disabled={blocked || completed === 0} onClick={() => { setReview('finish'); setPicker(false) }}>Review and finish</button><button className="secondary" disabled={blocked} onClick={() => invoke(async () => {}, onBack)}>Back — workout stays active</button><button className="secondary" disabled={blocked} onClick={() => setReview('cancel')}>Cancel workout</button></div>
+    {picker && <section className="exercise-picker" id="workout-exercise-picker" aria-labelledby="workout-exercise-picker-heading">
+      <h3 id="workout-exercise-picker-heading">Add a library exercise</h3>
+      <ExerciseBrowser picker exercises={library} filters={filters} onFiltersChange={setFilters}
+        filtersOpen={filtersOpen} onFiltersOpenChange={setFiltersOpen} disabled={blocked}
+        onSelect={exercise => invoke(() => addWorkoutExercise(id, exercise.id), closePicker)} />
+    </section>}
     {removal && <div className="review-box" role="alert"><p>Remove this {removal.kind} and its saved values and drafts? This cannot be undone here.</p><div className="actions"><button disabled={blocked} onClick={() => invoke(() => removal.kind === 'exercise' ? removeWorkoutExercise(id, removal.id) : removeSet(id, removal.id), () => setRemoval(undefined))}>Confirm removal</button><button className="secondary" disabled={blocked} onClick={() => setRemoval(undefined)}>Keep it</button></div></div>}
     {review && <div className="review-box" role="alert"><h3>{review === 'finish' ? 'Finish this workout?' : 'Cancel this workout?'}</h3><p>{review === 'finish' ? `${completed} completed sets will count. ${incomplete} incomplete sets stay in history. Pending invalid edits must be corrected or reverted first.` : 'Recorded sets stay in cancelled history. Pending drafts will be discarded.'}</p><div className="actions"><button disabled={blocked} onClick={() => invoke(() => review === 'finish' ? finishWorkout(id, true) : cancelWorkout(id), onBack)}>{review === 'finish' ? 'Finish with completed sets' : 'Confirm cancellation'}</button><button className="secondary" disabled={blocked} onClick={() => setReview(undefined)}>Keep logging</button></div></div>}
     {error && <p role="alert" className="error">{error}</p>}
