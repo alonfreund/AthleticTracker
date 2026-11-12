@@ -3,10 +3,10 @@ import type { Safety } from './updateSafety'
 
 export const DESTINATIONS = ['strength', 'performance', 'analytics', 'settings'] as const
 export type Destination = typeof DESTINATIONS[number]
-export type Screen = Destination | 'performance/calisthenics' | 'performance/calisthenics/history' | 'strength/history' | 'strength/library' | 'performance/cardio' | 'performance/cardio/history' | 'performance/cardio/activity' | 'performance/cardio/session' | 'performance/cardio/live'
+export type Screen = Destination | 'performance/calisthenics' | 'performance/calisthenics/history' | 'performance/calisthenics/pushups' | 'strength/history' | 'strength/library' | 'performance/cardio' | 'performance/cardio/history' | 'performance/cardio/activity' | 'performance/cardio/session' | 'performance/cardio/live'
 export type AppRoute = { screen: Screen; workoutId?: string; cardioActivity?: CardioActivity }
 export function routeTab(screen: Screen): Destination {
-  if (screen === 'performance/calisthenics' || screen === 'performance/calisthenics/history' || screen === 'performance/cardio' || screen === 'performance/cardio/history' || screen === 'performance/cardio/activity' || screen === 'performance/cardio/session' || screen === 'performance/cardio/live') return 'performance'
+  if (screen === 'performance/calisthenics/pushups' || screen === 'performance/calisthenics' || screen === 'performance/calisthenics/history' || screen === 'performance/cardio' || screen === 'performance/cardio/history' || screen === 'performance/cardio/activity' || screen === 'performance/cardio/session' || screen === 'performance/cardio/live') return 'performance'
   if (screen === 'strength/history' || screen === 'strength/library') return 'strength'
   return screen
 }
@@ -25,6 +25,7 @@ export function routeFromHash(hash: string): AppRoute {
   }
   const calisthenicsWorkout = /^performance\/calisthenics\/(history|workout)\/([\w-]+)$/.exec(path)
   if (calisthenicsWorkout) return { screen: calisthenicsWorkout[1] === 'history' ? 'performance/calisthenics/history' : 'performance/calisthenics', workoutId: calisthenicsWorkout[2] }
+  if (path === 'performance/calisthenics/pushups') return { screen: 'performance/calisthenics/pushups' }
   if (path === 'performance/calisthenics/history') return { screen: 'performance/calisthenics/history' }
   if (path === 'performance/calisthenics') return { screen: 'performance/calisthenics' }
   if (path === 'performance/cardio') return { screen: 'performance/cardio' }

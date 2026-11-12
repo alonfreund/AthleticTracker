@@ -1,3 +1,5 @@
+import { PushupProgress } from '../features/performance/PushupProgress'
+import { CalisthenicsProgressHome } from '../features/performance/CalisthenicsProgressHome'
 import { liveQuery } from 'dexie'
 import { LiveCardioEntry, LiveCardioScreen } from '../features/performance/LiveCardioScreen'
 import { CardioForm } from '../features/performance/CardioForm'
@@ -88,11 +90,11 @@ export function App() {
     return () => subscription.unsubscribe()
   }, [databaseReady])
   useLayoutEffect(() => {
-    if (databaseReady && routeTab(view) === 'performance' && view !== 'performance/calisthenics' && view !== 'performance/calisthenics/history') updateSafety.setSafety({ dirty: false, busy: false, restoring: false, loading: false })
-  }, [databaseReady, view])
+    if (databaseReady && routeTab(view) === 'performance' && view !== 'performance/calisthenics/history' && view !== 'performance/calisthenics/pushups' && (view !== 'performance/calisthenics' || !route.workoutId)) updateSafety.setSafety({ dirty: false, busy: false, restoring: false, loading: false })
+  }, [databaseReady, view, route.workoutId])
   const blocked = safety.busy || safety.restoring || safety.applying || safety.loading
   const resumeScreen = active?.discipline === 'calisthenics' ? 'performance/calisthenics' : 'strength'
-  const showResume = !!active && view !== resumeScreen
+  const showResume = !!active && (view !== resumeScreen || (active.discipline === 'calisthenics' && !route.workoutId))
   return <>
     <main className={`app-content ${showResume ? 'has-resume' : ''}`}>
       <PageHeader destination={view} cardioActivity={route.cardioActivity} />
@@ -107,10 +109,16 @@ export function App() {
         {databaseReady && view === 'performance' && <PerformanceHome blocked={blocked}
           onOpenCardio={() => navigate({ screen: 'performance/cardio' })}
           onOpenCalisthenics={() => navigate({ screen: 'performance/calisthenics' })} />}
-        {databaseReady && view === 'performance/calisthenics' && <WorkoutsPanel key={routeHash(route)} mode="train" discipline="calisthenics"
+        {databaseReady && view === 'performance/calisthenics' && !route.workoutId && <CalisthenicsProgressHome blocked={blocked}
+          onOpenPushups={() => navigate({ screen: 'performance/calisthenics/pushups' })}
+          hasWorkoutInProgress={active?.discipline === 'calisthenics'}
+          onBack={() => navigate({ screen: 'performance' })}
+          onHistory={() => navigate({ screen: 'performance/calisthenics/history' })} />}
+        {databaseReady && view === 'performance/calisthenics/pushups' && <PushupProgress applying={safety.applying}
+          onBack={() => navigate({ screen: 'performance/calisthenics' })} />}
+        {databaseReady && view === 'performance/calisthenics' && route.workoutId && <WorkoutsPanel key={routeHash(route)} mode="train" discipline="calisthenics"
           initialSessionId={route.workoutId}
           onLeaveResume={route.workoutId ? () => navigate({ screen: 'performance/calisthenics' }) : undefined}
-          onLeaveHome={() => navigate({ screen: 'performance' })}
           onNavigateHistory={workoutId => navigate({ screen: 'performance/calisthenics/history', workoutId })} />}
         {databaseReady && view === 'performance/calisthenics/history' && <WorkoutsPanel key={routeHash(route)} mode="history" discipline="calisthenics"
           initialSessionId={route.workoutId} onLeaveHistory={() => navigate({ screen: 'performance/calisthenics' })}

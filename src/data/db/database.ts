@@ -1,3 +1,4 @@
+import type { PushupAttempt } from '../../domain/calisthenics/pushups'
 import type { CardioTiming, LiveCardio } from '../../domain/cardio/timing'
 import { CARDIO_TABLES, CARDIO_TIMING_TABLES, type CardioDetails, type CardioDraft } from '../../domain/cardio/models'
 import type { Routine, RoutineExercise } from '../../domain/strength/routines'
@@ -8,11 +9,12 @@ import type { Exercise, Session, SessionActivity, SessionExercise, StrengthSet, 
 import { STRENGTH_TABLES } from '../../domain/strength/models'
 import type { AppMetadata, FoundationRecord } from '../../domain/foundation'
 
-export const BACKUP_TABLES = ['metadata', 'foundationRecords', ...STRENGTH_TABLES, 'exercisePreferences', 'catalogueState', 'routines', 'routineExercises', ...CARDIO_TABLES, ...CARDIO_TIMING_TABLES] as const
+export const BACKUP_TABLES = ['metadata', 'foundationRecords', ...STRENGTH_TABLES, 'exercisePreferences', 'catalogueState', 'routines', 'routineExercises', ...CARDIO_TABLES, ...CARDIO_TIMING_TABLES, 'pushupAttempts'] as const
 
 export const INTERNAL_BACKUP_TABLES = ['backupJobs','backupRows','backupKeys'] as const
 
 export class AthleticDatabase extends Dexie {
+  pushupAttempts!: Table<PushupAttempt, string>
   cardioTiming!: Table<CardioTiming, string>
   cardioLive!: Table<LiveCardio, string>
   cardioDetails!: Table<CardioDetails, string>
@@ -60,6 +62,7 @@ export class AthleticDatabase extends Dexie {
     this.version(6).stores({ routines: '&id', routineExercises: '&id, &[routineId+position]' })
     this.version(7).stores({ cardioDetails: '&id', cardioDrafts: '&id', sessionActivities: '&id, sessionId, [sessionId+position], activityType' })
     this.version(8).stores({ cardioTiming: '&id', cardioLive: '&id' })
+    this.version(9).stores({ pushupAttempts: '&id, recordedAt' })
     this.on('versionchange', () => this.close())
   }
 }

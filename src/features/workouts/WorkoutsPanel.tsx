@@ -13,8 +13,8 @@ import { ActiveWorkout } from './ActiveWorkout'
 import { durationText, WorkoutHistory } from './WorkoutHistory'
 import { FinishedWorkoutEditor } from './FinishedWorkoutEditor'
 
-export function WorkoutsPanel({ mode = 'train', discipline = 'strength', initialSessionId, onNavigateHistory, onExerciseAnalytics, onNavigateLibrary, onLeaveHistory, onLeaveResume, onReturnToAnalytics, onLeaveHome }: { mode?: 'train' | 'history'; discipline?: MovementDiscipline; initialSessionId?: string; onNavigateHistory?: (id?: string) => void; onExerciseAnalytics?: (exercise: Exercise) => void
-  onNavigateLibrary?: () => void; onLeaveHistory?: () => void; onLeaveResume?: () => void; onReturnToAnalytics?: () => void; onLeaveHome?: () => void
+export function WorkoutsPanel({ mode = 'train', discipline = 'strength', initialSessionId, onNavigateHistory, onExerciseAnalytics, onNavigateLibrary, onLeaveHistory, onLeaveResume, onReturnToAnalytics }: { mode?: 'train' | 'history'; discipline?: MovementDiscipline; initialSessionId?: string; onNavigateHistory?: (id?: string) => void; onExerciseAnalytics?: (exercise: Exercise) => void
+  onNavigateLibrary?: () => void; onLeaveHistory?: () => void; onLeaveResume?: () => void; onReturnToAnalytics?: () => void
 }) {
   const calisthenics = discipline === 'calisthenics'
   const disciplineName = calisthenics ? 'Calisthenics' : 'Strength'
@@ -118,11 +118,16 @@ export function WorkoutsPanel({ mode = 'train', discipline = 'strength', initial
         })
       }} />
   }
+  if (calisthenics && mode === 'train') return <section className="surface-card" aria-label="Saved calisthenics workout">
+    {loading ? <p role="status">Opening saved workout…</p> : <>
+      <p role={error ? 'alert' : 'status'}>{error || 'No saved workout to resume.'}</p>
+      <Button variant="secondary" onClick={back}>Back to Calisthenics</Button>
+    </>}
+  </section>
   const history = sessions.filter(session => session.status !== 'active')
   const visibleHistory = mode === 'train' ? history.slice(0, 3) : history
   return <section aria-label={mode === 'train' ? 'Training' : 'Workout history'}>
     {historyMessage && <p role="status">{historyMessage}</p>}
-    {mode === 'train' && onLeaveHome && <Button className="section-back" variant="secondary" disabled={busy || applying || loading} onClick={onLeaveHome}>Back to Performance</Button>}
     {mode === 'train' && <div className="training-hero">
       <span className="hero-symbol"><Icon name={calisthenics ? 'calisthenics' : 'train'} /></span>
       {loading ? <p role="status">Opening your workouts…</p> : active ? <>

@@ -1,3 +1,4 @@
+import { validatePushupAttempt, type PushupAttempt } from '../../domain/calisthenics/pushups'
 import { pauseRestoredRecording, validateCardioTiming, validateLiveCardio, type CardioTiming, type LiveCardio } from '../../domain/cardio/timing'
 import { CARDIO_TABLES, CARDIO_TIMING_TABLES, validateCardioDetails, validateCardioDraft, validateCardioParent, type CardioDetails, type CardioDraft } from '../../domain/cardio/models'
 import type { Routine, RoutineExercise } from '../../domain/strength/routines'
@@ -15,18 +16,20 @@ import { validateText, type AppMetadata, type FoundationRecord } from '../../dom
 
 import { assertBackupSize, utf8Bytes } from './limits'
 export { MAX_BACKUP_BYTES } from './limits'
-export const BACKUP_VERSION = 9
-export const SUPPORTED_BACKUP_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, BACKUP_VERSION]
+export const BACKUP_VERSION = 10
+export const SUPPORTED_BACKUP_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, BACKUP_VERSION]
 
 function backupTables(version: number) {
-  if (version >= 8) return [...BACKUP_TABLES]
-  if (version === 7) return BACKUP_TABLES.filter(name => !(CARDIO_TIMING_TABLES as readonly string[]).includes(name))
-  if (version >= 5) return BACKUP_TABLES.filter(name => !([...CARDIO_TABLES, ...CARDIO_TIMING_TABLES] as readonly string[]).includes(name))
+  if (version >= 10) return [...BACKUP_TABLES]
+  const previousTables = BACKUP_TABLES.filter(name => name !== 'pushupAttempts')
+  if (version >= 8) return previousTables
+  if (version === 7) return previousTables.filter(name => !(CARDIO_TIMING_TABLES as readonly string[]).includes(name))
+  if (version >= 5) return previousTables.filter(name => !([...CARDIO_TABLES, ...CARDIO_TIMING_TABLES] as readonly string[]).includes(name))
   return ['metadata', 'foundationRecords', ...(version > 1 ? STRENGTH_TABLES : []),
     ...(version >= 4 ? ['exercisePreferences', 'catalogueState'] : [])]
 }
 
-export interface BackupData extends StrengthData { metadata: AppMetadata[]; foundationRecords: FoundationRecord[]; exercisePreferences: ExercisePreference[]; catalogueState: CatalogueState[]; routines: Routine[]; routineExercises: RoutineExercise[]; cardioDetails: CardioDetails[]; cardioDrafts: CardioDraft[]; cardioTiming: CardioTiming[]; cardioLive: LiveCardio[] }
+export interface BackupData extends StrengthData { metadata: AppMetadata[]; foundationRecords: FoundationRecord[]; exercisePreferences: ExercisePreference[]; catalogueState: CatalogueState[]; routines: Routine[]; routineExercises: RoutineExercise[]; cardioDetails: CardioDetails[]; cardioDrafts: CardioDraft[]; cardioTiming: CardioTiming[]; cardioLive: LiveCardio[]; pushupAttempts: PushupAttempt[] }
 export interface Backup {
   format: 'athletic-tracker-backup'
   formatVersion: typeof BACKUP_VERSION
@@ -108,6 +111,14 @@ export function validateBackup(value: unknown): Backup {
   const cardioActivities = strength.sessionActivities.filter(row => row.activityType === 'cardio')
   if (version < 9 && strength.sessionActivities.some(row => row.activityType === 'calisthenics')) throw new Error('Calisthenics requires backup format 9.')
   if (version < 7 && cardioActivities.length) throw new Error('Cardio requires backup format 7.')
+  const pushupAttempts = version >= 10 ? data.pushupAttempts : []
+  if (!Array.isArray(pushupAttempts)) throw new Error('Invalid push-up attempts table.')
+  const attemptIds = new Set<string>()
+  for (const attempt of pushupAttempts) {
+    validatePushupAttempt(attempt)
+    if (attemptIds.has(attempt.id)) throw new Error('Duplicate push-up attempt.')
+    attemptIds.add(attempt.id)
+  }
   const cardioTiming = version >= 8 ? data.cardioTiming : []
   const cardioLive = version >= 8 ? data.cardioLive : []
   if (!Array.isArray(cardioTiming) || !Array.isArray(cardioLive) || cardioLive.length > 1) throw new Error('Invalid cardio timing tables.')
@@ -160,7 +171,7 @@ export function validateBackup(value: unknown): Backup {
     if (exerciseIds.has(row.id) || positions.has(position)) throw new Error('Duplicate routine exercise or position.')
     exerciseIds.add(row.id); positions.add(position)
   }
-  return { format: 'athletic-tracker-backup', formatVersion: BACKUP_VERSION, exportedAt: date(root.exportedAt), appVersion: string(root.appVersion), data: { metadata, foundationRecords, ...structuredClone(strength), exercisePreferences: exercisePreferences as ExercisePreference[], catalogueState: catalogueState as CatalogueState[], routines: structuredClone(routines), routineExercises: structuredClone(routineExercises), cardioDetails: structuredClone(cardioDetails), cardioDrafts: structuredClone(cardioDrafts), cardioTiming: structuredClone(cardioTiming), cardioLive: structuredClone(cardioLive) } }
+  return { format: 'athletic-tracker-backup', formatVersion: BACKUP_VERSION, exportedAt: date(root.exportedAt), appVersion: string(root.appVersion), data: { metadata, foundationRecords, ...structuredClone(strength), exercisePreferences: exercisePreferences as ExercisePreference[], catalogueState: catalogueState as CatalogueState[], routines: structuredClone(routines), routineExercises: structuredClone(routineExercises), cardioDetails: structuredClone(cardioDetails), cardioDrafts: structuredClone(cardioDrafts), cardioTiming: structuredClone(cardioTiming), cardioLive: structuredClone(cardioLive), pushupAttempts: structuredClone(pushupAttempts) } }
 }
 export function parseBackup(text: string): Backup {
   assertBackupSize(utf8Bytes(text))
@@ -231,6 +242,7 @@ export function validateBackupRecord(name: string, value: unknown, version: numb
   if (version < 7 && name === 'sessionActivities' && item.activityType === 'cardio') throw new Error('Cardio requires backup format 7.')
   if (name === 'cardioDetails') validateCardioDetails(value)
   if (name === 'cardioTiming') validateCardioTiming(value)
+  if (name === 'pushupAttempts') validatePushupAttempt(value)
   if (name === 'cardioLive') validateLiveCardio(value)
   if (name === 'cardioDrafts') validateCardioDraft(value)
   if(name==='metadata') {
