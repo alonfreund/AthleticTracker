@@ -1,3 +1,4 @@
+import { validateCardioDetails, validateCardioParent } from '../../domain/cardio/models'
 import Dexie from 'dexie'
 import { APP_VERSION } from '../../app/version'
 import { STRENGTH_TABLES, type Exercise } from '../../domain/strength/models'
@@ -96,7 +97,7 @@ async function validateStage(id:string,header:StagedBackup['header'],database:At
     while(cache.size>16 || cacheBytes>2*MAX_BACKUP_ROW_BYTES){const first=cache.keys().next().value!;cacheBytes-=cache.get(first)!.bytes;cache.delete(first)}
     return value
   }
-  const order=['metadata','foundationRecords','exercises','sessions','sessionActivities','supersetGroups','sessionExercises','strengthSets','restTimers','editorDrafts','exercisePreferences','catalogueState','routines','routineExercises'] as const
+  const order=['metadata','foundationRecords','exercises','sessions','sessionActivities','supersetGroups','sessionExercises','strengthSets','restTimers','editorDrafts','exercisePreferences','catalogueState','routines','routineExercises','cardioDetails','cardioDrafts'] as const
   for(const name of order) {
     options.onProgress?.(`Validating ${name}…`)
     await eachPage(database,id,name,async rows=>{
@@ -116,6 +117,16 @@ async function validateStage(id:string,header:StagedBackup['header'],database:At
                 exercise.supersetGroupId, exercise.supersetSlotId, value.supersetRoundIndex,
               ]) })
             }
+          }
+          if (name === 'sessionActivities' && value.activityType === 'cardio') {
+            if (!await database.backupRows.get([id, 'cardioDetails', row.key])) throw new Error('Missing cardio details.')
+            if (await database.backupRows.get([id, 'restTimers', value.sessionId])) throw new Error('A cardio session cannot have a strength rest timer.')
+          }
+          if (name === 'cardioDetails') {
+            validateCardioDetails(value)
+            const activity = await read('sessionActivities', value.id)
+            const session = await read('sessions', activity.sessionId)
+            validateCardioParent(value, activity as { activityType: unknown }, session as { status: unknown; startedAt: string; endedAt: string | null })
           }
           if (keys.length) await database.backupKeys.bulkAdd(keys)
           if(name==='exercises' && header.formatVersion<4) {

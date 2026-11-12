@@ -444,3 +444,10 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 .cardio-week div { background: var(--color-surface-soft); border-radius: var(--radius-control); padding: var(--space-2); }
 .cardio-week dt { margin: 0; overflow-wrap: anywhere; }
 .cardio-week dd { font-size: 1.25rem; font-weight: 700; }
+
+.cardio-field-grid, .cardio-duration-inputs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--space-3); }
+.cardio-duration-inputs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.cardio-form input, .cardio-form select { min-width: 0; max-width: 100%; }
+.cardio-form .choices label { margin-top: 0; }
+.cardio-more { margin-top: var(--space-4); }
+.cardio-form .note[role='status'] { margin-top: var(--space-4); }

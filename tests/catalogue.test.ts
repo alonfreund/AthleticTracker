@@ -26,7 +26,7 @@ async function legacyDatabase(){
 function nextDefinition(index=0){const definition=structuredClone(STARTER_EXERCISES[index]);definition.revision++;definition.instructions+=' Updated original guidance.';return definition}
 describe('schema 4 migration and preference separation',()=>{
   it('upgrades an actual v3 database, preserving every workout row and snapshot verbatim',async()=>{
-    const db=await legacyDatabase();await db.open();expect(db.verno).toBe(6)
+    const db=await legacyDatabase();await db.open();expect(db.verno).toBe(7)
     for(const name of ['sessions','sessionActivities','sessionExercises','strengthSets','supersetGroups','restTimers','editorDrafts'] as const)expect(await db[name].toArray()).toEqual(previous.data[name])
     expect(await db.metadata.toArray()).toEqual(previous.data.metadata)
     expect(await db.exercisePreferences.get(previous.data.exercises[0].id)).toMatchObject({restSeconds:83,favourite:false})
@@ -142,7 +142,7 @@ describe('backup versions and metadata validation',()=>{
   it('normalises fixed format-2/3 backups without altering snapshots, sets, raw drafts or timers',async()=>{
     for(const old of [fixture,previous]){
       const db=database();await restoreBackup(old,db);const backup=await createBackup(db)
-      expect(backup.formatVersion).toBe(6)
+      expect(backup.formatVersion).toBe(7)
       for(const key of ['sessionExercises','strengthSets','editorDrafts','restTimers']as const)expect(backup.data[key]).toEqual(old.data[key])
       expect(backup.data.exercises).toEqual(old.data.exercises.map(row=>normalizeDefinition(row as Exercise)))
       const target=database();await restoreBackup(parseBackup(serializeBackup(backup)),target)
@@ -169,7 +169,7 @@ describe('backup versions and metadata validation',()=>{
     ]
     for(const change of changes){const invalid=structuredClone(before);change(invalid);await expect(restoreBackup(invalid,db)).rejects.toThrow()}
     expect((await createBackup(db)).data).toEqual(before.data)
-    const future=structuredClone(before);future.formatVersion=99 as 6;expect(()=>validateBackup(future)).toThrow('Unsupported')
+    const future=structuredClone(before);future.formatVersion=99 as typeof before.formatVersion;expect(()=>validateBackup(future)).toThrow('Unsupported')
   })
   it('rolls back replacement if the final catalogue table cannot be restored',async()=>{
     const db=database();await restoreBackup(previous,db);const before=await createBackup(db)

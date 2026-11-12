@@ -16,6 +16,7 @@ async function readWorkout(id: string, database: AthleticDatabase): Promise<Work
   const session = await database.sessions.get(id)
   if (!session) throw new Error('Workout no longer exists. Return to Workouts and reopen it.')
   const activities = await database.sessionActivities.where('sessionId').equals(id).toArray()
+  if (activities.some(activity => activity.activityType === 'cardio')) throw new Error('Open this cardio session from Performance.')
   const activityIds = activities.map(row => row.id)
   const exercises = activityIds.length ? await database.sessionExercises.where('sessionActivityId').anyOf(activityIds).toArray() : []
   const exerciseIds = exercises.map(row => row.id)
@@ -30,7 +31,13 @@ async function readWorkout(id: string, database: AthleticDatabase): Promise<Work
 }
 export function loadWorkout(id: string, database = db): Promise<Workout> { return database.transaction('r', tables(database), () => readWorkout(id, database)) }
 export function activeWorkout(database = db): Promise<Session | undefined> { return database.sessions.where('status').equals('active').first() }
-export function listWorkouts(database = db): Promise<Session[]> { return database.sessions.orderBy('startedAt').reverse().toArray() }
+export function listWorkouts(database = db): Promise<Session[]> {
+  return database.transaction('r', database.sessions, database.sessionActivities, async () => {
+    const cardio = await database.sessionActivities.where('activityType').equals('cardio').toArray()
+    const excluded = new Set(cardio.map(row => row.sessionId))
+    return database.sessions.orderBy('startedAt').reverse().filter(row => !excluded.has(row.id)).toArray()
+  })
+}
 function clock(workout: Workout): string {
   const session = workout.sessions[0]
   return new Date(Math.max(Date.now(), Date.parse(session.startedAt), Date.parse(session.updatedAt), ...workout.strengthSets.flatMap(set => [Date.parse(set.updatedAt), set.completedAt ? Date.parse(set.completedAt) : 0]))).toISOString()
@@ -469,7 +476,7 @@ export type PreviousExercise = { date: string; sets: StrengthSet[] }
 export async function previousPerformance(id: string, database = db): Promise<Record<string, PreviousExercise>> {
   return database.transaction('r', tables(database), async () => {
     const current = await readWorkout(id, database)
-    const sessions = (await database.sessions.where('status').equals('finished').toArray())
+    const sessions = (await listWorkouts(database)).filter(row => row.status === 'finished')
       .filter(row => row.id !== id && row.startedAt <= current.sessions[0].startedAt).sort((a, b) => b.startedAt.localeCompare(a.startedAt))
     const result: Record<string, PreviousExercise> = {}
     for (const session of sessions) {

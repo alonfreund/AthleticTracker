@@ -56,7 +56,7 @@ export interface Session extends Entity {
 }
 export interface SessionActivity extends Entity {
   sessionId: string
-  activityType: 'strength'
+  activityType: 'strength' | 'cardio'
   position: number
 }
 export interface SessionExercise extends Entity {

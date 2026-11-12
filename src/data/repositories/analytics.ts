@@ -28,13 +28,14 @@ async function readFinishedWorkingSets(database: typeof db, range?: { from?: str
     if (!finished.length) return []
     finished.sort((a, b) => a.startedAt.localeCompare(b.startedAt) || a.id.localeCompare(b.id))
     const activities = await sessionActivities.where('sessionId').anyOf(finished.map(row => row.id)).toArray()
+    const cardioSessions = new Set(activities.filter(row => row.activityType === 'cardio').map(row => row.sessionId))
     const cards = activities.length ? await sessionExercises.where('sessionActivityId').anyOf(activities.map(row => row.id))
       .filter(row => !exerciseKeys || exerciseKeys.has(analyticsExerciseKey(row.snapshot))).sortBy('position') : []
     const sets = cards.length ? await strengthSets.where('sessionExerciseId').anyOf(cards.map(row => row.id)).filter(isWorkingSet).sortBy('position') : []
     const setsByCard = groupBy(sets, row => row.sessionExerciseId)
     const sessionByActivity = new Map(activities.map(row => [row.id, row.sessionId]))
     const cardsBySession = groupBy(cards, row => sessionByActivity.get(row.sessionActivityId))
-    return finished.map(({ id, title, startedAt, endedAt }) => ({
+    return finished.filter(row => !cardioSessions.has(row.id)).map(({ id, title, startedAt, endedAt }) => ({
       id, title, startedAt, endedAt,
       cards: (cardsBySession.get(id) ?? []).flatMap(({ id, snapshot }) => {
         const sets = setsByCard.get(id)

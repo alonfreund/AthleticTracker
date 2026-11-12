@@ -1,6 +1,7 @@
+import { CardioForm } from '../features/performance/CardioForm'
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { verifyLocalStorage } from '../data/db/database'
-import { CardioHome, CardioSubscreen } from '../features/performance/CardioScreens'
+import { CardioHome, CardioHistory, CardioSessionScreen } from '../features/performance/CardioScreens'
 import { PerformanceHome } from '../features/performance/PerformanceScreens'
 import { StorageProtection } from '../components/StorageProtection'
 import { WorkoutsPanel } from '../features/workouts/WorkoutsPanel'
@@ -99,9 +100,18 @@ export function App() {
         {databaseReady && view === 'performance/cardio' && <CardioHome blocked={blocked}
           onBack={() => navigate({ screen: 'performance' })}
           onActivity={cardioActivity => navigate({ screen: 'performance/cardio/activity', cardioActivity })}
-          onHistory={() => navigate({ screen: 'performance/cardio/history' })} />}
-        {databaseReady && (view === 'performance/cardio/activity' || view === 'performance/cardio/history') &&
-          <CardioSubscreen blocked={blocked} activity={route.cardioActivity} onBack={() => navigate({ screen: 'performance/cardio' })} />}
+          onHistory={() => navigate({ screen: 'performance/cardio/history' })}
+          onSession={workoutId => navigate({ screen: 'performance/cardio/session', workoutId })} />}
+        {databaseReady && view === 'performance/cardio/activity' && route.cardioActivity &&
+          <CardioForm key={route.cardioActivity} sport={route.cardioActivity} blocked={safety.applying}
+            onBack={() => navigate({ screen: 'performance/cardio' })}
+            onSaved={workoutId => navigate({ screen: 'performance/cardio/session', workoutId })} />}
+        {databaseReady && view === 'performance/cardio/history' && <CardioHistory blocked={blocked}
+          onBack={() => navigate({ screen: 'performance/cardio' })}
+          onSession={workoutId => navigate({ screen: 'performance/cardio/session', workoutId })} />}
+        {databaseReady && view === 'performance/cardio/session' && route.workoutId &&
+          <CardioSessionScreen key={route.workoutId} id={route.workoutId} blocked={blocked} applying={safety.applying}
+            onBack={() => navigate({ screen: 'performance/cardio/history' })} />}
         {databaseReady && view === 'analytics' && <Suspense fallback={<p role="status">Opening Analytics…</p>}>
           <AnalyticsPanel initialExercise={analyticsExercise} onOpenWorkout={id => openHistory(id, true)} />
         </Suspense>}

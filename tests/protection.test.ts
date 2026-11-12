@@ -83,8 +83,8 @@ describe('fixed historical backup fixtures', () => {
     await saveRecord('Replaced by historical backup', undefined, value)
     await restoreBackup(parseBackup(JSON.stringify(fixture)), value)
     const exported = await createBackup(value)
-    expect(exported.data).toEqual({ ...fixture.data, ...emptyStrengthData(), exercisePreferences: [], catalogueState: [], routines: [], routineExercises: [] })
-    expect(parseBackup(serializeBackup(exported)).data).toEqual({ ...fixture.data, ...emptyStrengthData(), exercisePreferences: [], catalogueState: [], routines: [], routineExercises: [] })
+    expect(exported.data).toEqual({ ...fixture.data, ...emptyStrengthData(), exercisePreferences: [], catalogueState: [], routines: [], routineExercises: [], cardioDetails: [], cardioDrafts: [] })
+    expect(parseBackup(serializeBackup(exported)).data).toEqual({ ...fixture.data, ...emptyStrengthData(), exercisePreferences: [], catalogueState: [], routines: [], routineExercises: [], cardioDetails: [], cardioDrafts: [] })
   })
   it('rejects oversized JSON and validates export before any download', () => {
     expect(() => parseBackup(' '.repeat(MAX_BACKUP_BYTES + 1))).toThrow('100 MB')

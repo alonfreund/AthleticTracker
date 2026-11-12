@@ -112,7 +112,7 @@ it('preserves out-of-order superset rounds through replacement, reopening and fo
   const target = database()
   await verifyLocalStorage(target)
   const incoming = await stageImport(blob, target)
-  expect(incoming.header.formatVersion).toBe(6)
+  expect(incoming.header.formatVersion).toBe(7)
   await restoreStagedBackup(incoming, await stageSnapshot(target), target)
   expect(await loadWorkout(id, target)).toEqual(after)
   expect(await listRoutines(target)).toEqual(await listRoutines(reopened))
@@ -156,7 +156,9 @@ it('rejects duplicate rounds and prevents importing replacement metadata as an o
   backup.data.strengthSets.find(set => set.sessionExerciseId === substitute)!.supersetRoundIndex = 0
   expect(() => validateBackup(backup)).toThrow('duplicate round')
   await expect(stageImport(new Blob([JSON.stringify(backup)]), db)).rejects.toThrow()
-  const legacy = { ...await createBackup(db), formatVersion: 5 }
+  const current = await createBackup(db)
+  const { cardioDetails: _details, cardioDrafts: _drafts, ...legacyData } = current.data
+  const legacy = { ...current, data: legacyData, formatVersion: 5 }
   expect(() => validateBackup(legacy)).toThrow('format 6')
   await expect(stageImport(new Blob([JSON.stringify(legacy)]), db)).rejects.toThrow('format 6')
 })

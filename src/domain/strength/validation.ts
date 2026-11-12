@@ -141,18 +141,21 @@ export function validateStrengthRecord(name: typeof STRENGTH_TABLES[number], row
     }
     case 'sessionActivities': {
     const item = entity(row, ['sessionId', 'activityType', 'position'])
-    lookup('sessions', item.sessionId); choice(item.activityType, ['strength']); num(item.position, 0, Number.MAX_SAFE_INTEGER, true)
+    const session = lookup('sessions', item.sessionId)
+    choice(item.activityType, ['strength', 'cardio'])
+    if (item.activityType === 'cardio' && session.status !== 'finished') fail('cardio activities must be finished.')
+     num(item.position, 0, Number.MAX_SAFE_INTEGER, true)
       return item
     }
     case 'supersetGroups': {
     const item = entity(row, ['sessionActivityId', 'name', 'betweenExerciseRestSeconds', 'betweenRoundRestSeconds'])
-    lookup('sessionActivities', item.sessionActivityId); text(item.name, 200, true)
+    if (lookup('sessionActivities', item.sessionActivityId).activityType !== 'strength') fail('strength data must belong to a strength activity.'); text(item.name, 200, true)
     num(item.betweenExerciseRestSeconds); num(item.betweenRoundRestSeconds)
       return item
     }
     case 'sessionExercises': {
     const item = entity(row, ['sessionActivityId', 'sourceExerciseId', 'snapshot', 'position', 'notes', 'restSeconds', 'supersetGroupId', ...(Object.hasOwn(object(row), 'supersetSlotId') ? ['supersetSlotId'] : [])])
-    lookup('sessionActivities', item.sessionActivityId); nullable(item.sourceExerciseId, id); validateExercise(item.snapshot)
+    if (lookup('sessionActivities', item.sessionActivityId).activityType !== 'strength') fail('strength data must belong to a strength activity.'); nullable(item.sourceExerciseId, id); validateExercise(item.snapshot)
     if (item.sourceExerciseId !== null && item.sourceExerciseId !== item.snapshot.id) fail('source exercise and snapshot identifiers differ.')
     // Library presence is deliberately NOT required: history survives archival/deletion.
     num(item.position, 0, Number.MAX_SAFE_INTEGER, true); text(item.notes); nullable(item.restSeconds, value => num(value))
