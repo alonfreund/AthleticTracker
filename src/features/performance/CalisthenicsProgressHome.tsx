@@ -1,23 +1,18 @@
 import { useEffect, useState } from 'react'
 import { liveQuery } from 'dexie'
-import { listPushupAttempts } from '../../data/repositories/pushups'
+import { listRepAttempts } from '../../data/repositories/repAttempts'
+import { REP_TRACKS, type RepTrack } from '../../domain/calisthenics/repTracks'
 import { pushupProgress, type PushupAttempt } from '../../domain/calisthenics/pushups'
 import { Button } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
 
-export function CalisthenicsProgressHome({ blocked, hasWorkoutInProgress, onBack, onHistory, onOpenPushups }: {
+export function CalisthenicsProgressHome({ blocked, hasWorkoutInProgress, onBack, onHistory, onOpenTrack }: {
   blocked: boolean
   hasWorkoutInProgress: boolean
   onBack: () => void
   onHistory: () => void
-  onOpenPushups: () => void
+  onOpenTrack: (track: RepTrack) => void
 }) {
-  const [attempts, setAttempts] = useState<PushupAttempt[]>()
-  useEffect(() => {
-    const subscription = liveQuery(() => listPushupAttempts()).subscribe({ next: setAttempts, error: () => setAttempts(undefined) })
-    return () => subscription.unsubscribe()
-  }, [])
-  const { best, next } = pushupProgress(attempts ?? [])
   return <>
     <Button className="section-back" variant="secondary" disabled={blocked} onClick={onBack}>Back to Performance</Button>
     <div className="performance-disciplines">
@@ -25,10 +20,8 @@ export function CalisthenicsProgressHome({ blocked, hasWorkoutInProgress, onBack
         <span className="hero-symbol"><Icon name="calisthenics" /></span>
         <h2 id="calisthenics-progress-heading">Skill progressions</h2>
         <p>Choose a skill to see its variations and track what you can do today.</p>
-        <button type="button" className="exercise-row pushup-track" disabled={blocked} onClick={onOpenPushups}>
-          <strong>100 Push-ups <Icon name="arrow" /></strong>
-          <span>{best !== undefined ? `Best: ${best} reps${next ? ` · Next: ${next}` : ' · Goal achieved'}` : '100 clean reps in one go'}</span>
-        </button>
+        <ProgressTrack track="pushups" blocked={blocked} onOpen={onOpenTrack} />
+        <ProgressTrack track="pullups" blocked={blocked} onOpen={onOpenTrack} />
       </section>
       <section className="surface-card" aria-labelledby="calisthenics-previous-heading">
         <h2 id="calisthenics-previous-heading">Previous workouts</h2>
@@ -37,4 +30,18 @@ export function CalisthenicsProgressHome({ blocked, hasWorkoutInProgress, onBack
       </section>
     </div>
   </>
+}
+
+function ProgressTrack({ track, blocked, onOpen }: { track: RepTrack; blocked: boolean; onOpen: (track: RepTrack) => void }) {
+  const [attempts, setAttempts] = useState<PushupAttempt[]>()
+  useEffect(() => {
+    const subscription = liveQuery(() => listRepAttempts(track)).subscribe({ next: setAttempts, error: () => setAttempts(undefined) })
+    return () => subscription.unsubscribe()
+  }, [track])
+  const { title, goal, milestones } = REP_TRACKS[track]
+  const { best, next } = pushupProgress(attempts ?? [], milestones)
+  return <button type="button" className="exercise-row rep-track" disabled={blocked} onClick={() => onOpen(track)}>
+    <strong>{title} <Icon name="arrow" /></strong>
+    <span>{best !== undefined ? `Best: ${best} reps${next ? ` · Next: ${next}` : ' · Goal achieved'}` : `${goal} clean reps in one go`}</span>
+  </button>
 }

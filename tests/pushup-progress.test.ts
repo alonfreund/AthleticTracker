@@ -5,6 +5,8 @@ import { discardStage, exportBackupFile, restoreStagedBackup, stageImport, stage
 import { AthleticDatabase, verifyLocalStorage } from '../src/data/db/database'
 import { deletePushupAttempt, listPushupAttempts, recordPushupAttempt } from '../src/data/repositories/pushups'
 import { pushupProgress } from '../src/domain/calisthenics/pushups'
+import { listRepAttempts, recordRepAttempt } from '../src/data/repositories/repAttempts'
+import { REP_TRACKS } from '../src/domain/calisthenics/repTracks'
 
 it('keeps the latest attempt distinct from the best, advances milestones, and restores saved attempts', async () => {
   const source = new AthleticDatabase(crypto.randomUUID())
@@ -32,5 +34,36 @@ it('keeps the latest attempt distinct from the best, advances milestones, and re
     expect(() => validateBackup(bad)).toThrow('Invalid push-up attempt')
     await expect(stageImport(new Blob([JSON.stringify(bad)]), target)).rejects.toThrow('Invalid push-up attempt')
     expect(await listPushupAttempts(target)).toEqual(attempts)
+  } finally { vi.useRealTimers(); await source.delete(); await target.delete() }
+})
+
+it('keeps pull-up progress independent and restores both tracks', async () => {
+  const source = new AthleticDatabase(crypto.randomUUID())
+  const target = new AthleticDatabase(crypto.randomUUID())
+  try {
+    await verifyLocalStorage(source)
+    await verifyLocalStorage(target)
+    vi.setSystemTime(new Date('2026-01-01T09:00:00Z'))
+    await recordPushupAttempt(26, '', source)
+    await recordRepAttempt('pullups', 9, 'Strict reps', source)
+    vi.setSystemTime(new Date('2026-01-02T09:00:00Z'))
+    await recordRepAttempt('pullups', 6, '', source)
+    const attempts = await listRepAttempts('pullups', source)
+    const progress = pushupProgress(attempts, REP_TRACKS.pullups.milestones)
+    expect(progress).toMatchObject({ latest: 6, best: 9, next: 15 })
+    expect(progress.timeline.map(row => row.best)).toEqual([9, 9])
+    const snapshot = await createBackup(source)
+    const { pullupAttempts: _pullups, ...legacyData } = snapshot.data
+    const legacy = { ...snapshot, formatVersion: 10, data: legacyData }
+    expect(validateBackup(legacy).data).toMatchObject({ pushupAttempts: legacyData.pushupAttempts, pullupAttempts: [] })
+    const exported = await exportBackupFile(source)
+    const incoming = await stageImport(exported.blob, target)
+    await restoreStagedBackup(incoming, await stageSnapshot(target), target)
+    expect(await listRepAttempts('pullups', target)).toEqual(attempts)
+    expect(await listPushupAttempts(target)).toEqual(await listPushupAttempts(source))
+    const bad = await createBackup(target)
+    bad.data.pullupAttempts[0].reps = -1
+    await expect(stageImport(new Blob([JSON.stringify(bad)]), target)).rejects.toThrow('Invalid repetition attempt')
+    expect(await listRepAttempts('pullups', target)).toEqual(attempts)
   } finally { vi.useRealTimers(); await source.delete(); await target.delete() }
 })

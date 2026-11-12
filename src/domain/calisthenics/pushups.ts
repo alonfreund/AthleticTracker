@@ -5,6 +5,10 @@ export const MAX_PUSHUP_REPS = 10000
 export type PushupAttempt = { id: string; recordedAt: string; reps: number; notes: string }
 
 export function validatePushupAttempt(value: unknown): asserts value is PushupAttempt {
+  validateRepAttempt(value, 'Invalid push-up attempt.')
+}
+
+export function validateRepAttempt(value: unknown, message = 'Invalid repetition attempt.'): asserts value is PushupAttempt {
   const row = value as PushupAttempt
   if (!row || typeof row !== 'object' || Array.isArray(row) ||
     Object.keys(row).length !== 4 || !['id', 'recordedAt', 'reps', 'notes'].every(key => Object.hasOwn(row, key)) ||
@@ -12,15 +16,15 @@ export function validatePushupAttempt(value: unknown): asserts value is PushupAt
     typeof row.recordedAt !== 'string' || !Number.isFinite(Date.parse(row.recordedAt)) ||
     new Date(row.recordedAt).toISOString() !== row.recordedAt ||
     !Number.isSafeInteger(row.reps) || row.reps < 0 || row.reps > MAX_PUSHUP_REPS ||
-    typeof row.notes !== 'string' || row.notes.length > 10000) throw new Error('Invalid push-up attempt.')
+    typeof row.notes !== 'string' || row.notes.length > 10000) throw new Error(message)
 }
 
-export function pushupProgress(attempts: PushupAttempt[]) {
+export function pushupProgress(attempts: PushupAttempt[], milestones: readonly number[] = PUSHUP_MILESTONES) {
   let best = 0
   const timeline = attempts.map(attempt => {
     best = Math.max(best, attempt.reps)
     return { ...attempt, best }
   })
   return { timeline, latest: attempts.at(-1)?.reps, best: attempts.length ? best : undefined,
-    next: PUSHUP_MILESTONES.find(milestone => milestone > best) }
+    next: milestones.find(milestone => milestone > best) }
 }

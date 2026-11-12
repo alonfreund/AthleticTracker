@@ -22,6 +22,8 @@ describe('app-shell navigation', () => {
     expect(routeTab('performance/calisthenics')).toBe('performance')
     expect(routeFromHash('#/performance/calisthenics/pushups')).toEqual({ screen: 'performance/calisthenics/pushups' })
     expect(routeTab('performance/calisthenics/pushups')).toBe('performance')
+    expect(routeFromHash('#/performance/calisthenics/pullups')).toEqual({ screen: 'performance/calisthenics/pullups' })
+    expect(routeTab('performance/calisthenics/pullups')).toBe('performance')
     expect(routeFromHash('#/performance/calisthenics/workout/workout-id')).toEqual({ screen: 'performance/calisthenics', workoutId: 'workout-id' })
     expect(routeFromHash(routeHash({ screen: 'performance/calisthenics/history', workoutId: 'workout-id' })))
       .toEqual({ screen: 'performance/calisthenics/history', workoutId: 'workout-id' })
