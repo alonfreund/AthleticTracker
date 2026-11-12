@@ -1,3 +1,6 @@
+import { Icon } from '../../components/ui/Icon'
+import type { SetMetric } from '../../domain/strength/analytics'
+import { metricLabel } from '../analytics/metricText'
 import { targetText } from '../../domain/strength/routines'
 import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
 import { SET_TYPES as types, SET_TYPE_SHORT as short } from '../../domain/strength/setTypes'
@@ -6,8 +9,8 @@ import type { SessionExercise, StrengthSet } from '../../domain/strength/models'
 import { convertInputUnit, inputFromSet, type SetInput } from '../../domain/strength/logging'
 import type { InlineRow } from './InlineSetStore'
 
-export function InlineSetRow({ exercise, set, index, row, previous, disabled, onChange, onSave, onComplete, onType, onRemove, onMove, onRevert, last }: {
-  exercise: SessionExercise; set: StrengthSet; index: number; row: InlineRow; previous?: StrengthSet; disabled: boolean; last: boolean
+export function InlineSetRow({ exercise, set, index, row, previous, records, disabled, onChange, onSave, onComplete, onType, onRemove, onMove, onRevert, last }: {
+  exercise: SessionExercise; set: StrengthSet; index: number; row: InlineRow; previous?: StrengthSet; records?: SetMetric[]; disabled: boolean; last: boolean
   onChange: (input: SetInput) => void; onSave: () => void; onComplete: () => void; onType: (type: StrengthSet['setType']) => void
   onRemove: () => void; onMove: (direction: -1 | 1) => void; onRevert: () => void
 }) {
@@ -20,6 +23,8 @@ export function InlineSetRow({ exercise, set, index, row, previous, disabled, on
   function field(key: keyof SetInput['values'], label: string) {
     return <input aria-label={`${name}, ${label}`} aria-invalid={!!row.error} type="text" inputMode={key === 'reps' || key === 'rir' ? 'numeric' : 'decimal'} enterKeyHint="next" maxLength={128} placeholder="—" value={row.input.values[key]} disabled={disabled} onChange={event => onChange({ ...row.input, values: { ...row.input.values, [key]: event.target.value } })} onBlur={onSave} />
   }
+  const medal = set.completed && !!records?.length
+  const recordLabel = medal ? records!.map(metric => metricLabel(metric, exercise.snapshot)).join(', ') : ''
   const target = set.target && targetText(set.target)
   const previousInput = previous ? convertInputUnit(inputFromSet(previous), row.input.weightUnit) : undefined
   const previousText = previousInput ? `${hasWeight ? `${previousInput.values.weight} × ` : ''}${config.measurement === 'reps' ? previousInput.values.reps : `${previousInput.values.durationSeconds}s`}` : '—'
@@ -31,9 +36,12 @@ export function InlineSetRow({ exercise, set, index, row, previous, disabled, on
       <button className="previous-value" aria-label={`${name}, copy previous ${previousText}`} disabled={disabled || !previousInput} onClick={() => previousInput && onChange({ ...previousInput, values: { ...previousInput.values, rpe: row.input.values.rpe, rir: row.input.values.rir } })}>{previousText}</button>
       {hasWeight ? field('weight', `${weightLabel} (${row.input.weightUnit})`) : <span className="bodyweight-cell">{config.load === 'bodyweight' ? 'BW' : '—'}</span>}
       {config.measurement === 'reps' ? field('reps', 'Reps') : field('durationSeconds', 'Duration (seconds)')}
-      <button className="set-check" role="checkbox" aria-checked={set.completed} aria-label={`${name}, complete`} disabled={disabled} onClick={onComplete}>{set.completed ? '✓' : <span aria-hidden="true">○</span>}</button>
+      <button className={`set-check${medal ? ' set-check--record' : ''}`} role="checkbox" aria-checked={set.completed}
+        aria-label={`${name}, complete${medal ? `, personal record: ${recordLabel}` : ''}`}
+        title={medal ? `Personal record: ${recordLabel}` : undefined} disabled={disabled} onClick={onComplete}>
+        {medal ? <Icon name="medal" /> : set.completed ? '✓' : <span aria-hidden="true">○</span>}</button>
     </div>
-    <div className="inline-set__meta"><button className="row-details" aria-expanded={details} onClick={() => setDetails(!details)}>{details ? 'Less' : 'Details'}{!details && (row.input.values.rpe || row.input.values.rir) ? ` · ${row.input.values.rpe ? `RPE ${row.input.values.rpe}` : ''}${row.input.values.rir ? ` RIR ${row.input.values.rir}` : ''}` : ''}</button><span role="status">{hasWeight ? `${row.input.weightUnit} · ` : ''}{row.saving ? 'Saving…' : row.dirty ? 'Not saved yet' : row.pending ? 'Changes pending' : set.completed ? 'Completed' : 'Incomplete'}</span></div>
+    <div className="inline-set__meta"><button className="row-details" aria-expanded={details} onClick={() => setDetails(!details)}>{details ? 'Less' : 'Details'}{!details && (row.input.values.rpe || row.input.values.rir) ? ` · ${row.input.values.rpe ? `RPE ${row.input.values.rpe}` : ''}${row.input.values.rir ? ` RIR ${row.input.values.rir}` : ''}` : ''}</button><span role="status">{hasWeight ? `${row.input.weightUnit} · ` : ''}{row.saving ? 'Saving…' : row.dirty ? 'Not saved yet' : row.pending ? 'Changes pending' : medal ? <><span className="sr-only">Personal record: {recordLabel}</span>Completed</> : set.completed ? 'Completed' : 'Incomplete'}</span></div>
     {(row.error || unitError) && <p className="inline-error" role="alert">{unitError || row.error} <button className="row-details" onClick={onSave} disabled={disabled}>Retry</button></p>}
     {set.supersetRoundIndex !== undefined && <p className="note set-target">Round {set.supersetRoundIndex + 1}</p>}
     {target && <p className="note set-target"><span className="sr-only">{name}, </span>Target: {target}</p>}

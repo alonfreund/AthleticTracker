@@ -28,9 +28,33 @@ export function improvesMetric(metric: Metric, value: number, previous: number):
   return metric === 'assistance' ? value < previous : value > previous
 }
 
+export type SetMetric = Exclude<Metric, 'volume'>
+export type SetMetrics = Partial<Record<SetMetric, number>>
+
+export function setMetrics(set: StrengthSet, snapshot: Exercise): SetMetrics {
+  const values: SetMetrics = {}
+  if (!isWorkingSet(set)) return values
+  if (set.reps !== null) values.reps = set.reps
+  if (set.durationSeconds !== null) values.hold = set.durationSeconds
+  if (set.load.mode === 'assisted' && set.load.assistance) values.assistance = massInKilograms(set.load.assistance)
+  const mass = set.load.mode === 'external' ? set.load.weight : set.load.mode === 'added' ? set.load.addedWeight : null
+  if (mass) {
+    values.load = massInKilograms(mass)
+    if (snapshot.tracking.load === 'external' && snapshot.tracking.measurement === 'reps'
+      && values.load > 0 && set.reps !== null && set.reps >= 1 && set.reps <= 10) {
+      values.estimatedMax = set.reps === 1 ? values.load : values.load * (1 + set.reps / 30)
+    }
+  }
+  return values
+}
+
+export function setMetricEntries(metrics: SetMetrics) {
+  return Object.entries(metrics) as [SetMetric, number][]
+}
+
 export function exerciseProgress({ snapshot, sessions }: AnalyticsExercise): MetricSeries[] {
   const series = new Map<Metric, MetricSeries>()
-  const { load, measurement, weightConvention } = snapshot.tracking
+  const { measurement, weightConvention } = snapshot.tracking
   const massMultiplier = weightConvention === 'per-hand' || snapshot.metadata?.repetitionConvention === 'per-side' ? 2 : 1
   for (const session of sessions) {
     const best = new Map<Metric, MetricPoint>()
@@ -41,20 +65,11 @@ export function exerciseProgress({ snapshot, sessions }: AnalyticsExercise): Met
     let volume = 0
     let hasVolume = false
     for (const set of session.sets) {
-      if (!isWorkingSet(set)) continue
-      if (set.reps !== null) count('reps', set.reps, set)
-      if (set.durationSeconds !== null) count('hold', set.durationSeconds, set)
-      const mass = set.load.mode === 'external' ? set.load.weight : set.load.mode === 'added' ? set.load.addedWeight : null
-      if (set.load.mode === 'assisted' && set.load.assistance) count('assistance', massInKilograms(set.load.assistance), set)
-      if (!mass) continue
-      const kg = massInKilograms(mass)
-      count('load', kg, set)
-      if (measurement === 'reps' && set.reps !== null) {
-        volume += kg * set.reps * massMultiplier
+      const values = setMetrics(set, snapshot)
+      for (const [metric, value] of setMetricEntries(values)) count(metric, value, set)
+      if (values.load !== undefined && measurement === 'reps' && set.reps !== null) {
+        volume += values.load * set.reps * massMultiplier
         hasVolume = true
-        if (load === 'external' && kg > 0 && set.reps >= 1 && set.reps <= 10) {
-          count('estimatedMax', set.reps === 1 ? kg : kg * (1 + set.reps / 30), set)
-        }
       }
     }
     if (hasVolume) count('volume', volume)

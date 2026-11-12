@@ -1,8 +1,12 @@
+import { liveQuery } from 'dexie'
+import { readSetRecordBaselines } from '../../data/repositories/analytics'
+import { analyticsExerciseKey } from '../../domain/strength/analytics'
+import { completedSetRecords, type SetRecordBaselines } from '../../domain/strength/setRecords'
 import { groupLetter, groupProgress, supersetSlots, supersetRound, workoutBlocks } from '../../domain/strength/supersets'
 import { replacementPlan } from '../../domain/strength/replacement'
 import { SupersetEditor } from './SupersetEditor'
 import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { updateSafety } from '../../app/updateSafety'
 import type { ExerciseFilters } from '../../data/repositories/exercises'
 import { ExerciseBrowser } from '../exercises/ExerciseBrowser'
@@ -80,6 +84,19 @@ export function ActiveWorkout({ initial, library, onBack }: { initial: Workout; 
   useEffect(() => { const interval = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(interval) }, [])
   const exerciseIds = workout.sessionExercises.map(row => row.id).join(',')
   useEffect(() => { let active = true; void previousPerformance(id).then(value => { if (active) setPrevious(value) }).catch(() => { if (active) setError('Previous performance could not be loaded. Current logging is still available.') }); return () => { active = false } }, [id, exerciseIds])
+  const profileKeys = [...new Set(workout.sessionExercises.map(row => analyticsExerciseKey(row.snapshot)))].sort().join('|')
+  const startedAt = workout.sessions[0].startedAt
+  const [recordBaselines, setRecordBaselines] = useState<{ profiles: string; values: SetRecordBaselines }>()
+  useEffect(() => {
+    if (!profileKeys) return
+    const subscription = liveQuery(() => readSetRecordBaselines(new Set(profileKeys.split('|')), startedAt)).subscribe({
+      next: values => setRecordBaselines({ profiles: profileKeys, values }),
+      error: () => setRecordBaselines(undefined),
+    })
+    return () => subscription.unsubscribe()
+  }, [profileKeys, startedAt])
+  const records = useMemo(() => recordBaselines?.profiles === profileKeys && completedSetRecords(workout, recordBaselines.values),
+    [workout, recordBaselines, profileKeys])
   async function run(action: () => Promise<unknown>, after?: () => void) {
     if (lock.current || updateSafety.getSnapshot().applying) return
     lock.current = true; updateSafety.setBusy(true); setBusy(true); setError('')
@@ -189,7 +206,7 @@ export function ActiveWorkout({ initial, library, onBack }: { initial: Workout; 
         if (!row) return null
         const ordinal = sets.slice(0, index).filter(value => value.setType === set.setType).length
         const last = prior?.sets.filter(value => value.setType === set.setType)[ordinal]
-        return <InlineSetRow key={set.id} exercise={exercise} set={set} row={row} index={index} last={index === sets.length - 1} previous={last} disabled={blocked}
+        return <InlineSetRow key={set.id} exercise={exercise} set={set} row={row} index={index} last={index === sets.length - 1} previous={last} records={records ? records.get(set.id) : undefined} disabled={blocked}
           onChange={input => { if (!lock.current && !updateSafety.getSnapshot().applying) store.change(set.id, input) }} onSave={() => { void store.save(set.id).catch(() => {}) }}
           onComplete={() => { if (!lock.current && !completing.current.has(set.id)) { completing.current.add(set.id); void store.save(set.id, !set.completed).catch(() => {}).finally(() => completing.current.delete(set.id)) } }}
           onType={type => { if (!structuralBlocked) invoke(() => changeSetType(id, set.id, type)) }} onMove={direction => { if (!structuralBlocked) invoke(() => moveWorkoutItem(id, 'set', set.id, direction)) }} onRemove={() => { if (!structuralBlocked) setRemoval({ kind: 'set', id: set.id }) }}

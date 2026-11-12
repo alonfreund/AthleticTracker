@@ -358,3 +358,5 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 .trends-chart li { grid-template-columns: minmax(5rem, auto) minmax(0, 1fr) minmax(4rem, auto); }
 .trends-chart small { display: block; font-size: var(--text-small); }
 .trends-range-note { margin: var(--space-2) 0 0; }
+
+.is-complete .set-check.set-check--record { background: #ffdc85; color: #503100; border-color: #9b650c; }

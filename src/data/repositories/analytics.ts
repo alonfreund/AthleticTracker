@@ -1,8 +1,9 @@
 import { buildTrainingTrends, trendCalendar, type TrendWindow } from '../../domain/strength/trainingTrends'
 import { buildMonthlyReport, monthBounds, type TrainingMonth } from '../../domain/strength/monthlyReport'
 import { collectExerciseHistory, countSessionMuscles, type FinishedSession } from '../../domain/strength/analyticsHistory'
-import { isWorkingSet, type AnalyticsExercise } from '../../domain/strength/analytics'
+import { analyticsExerciseKey, improvesMetric, setMetrics, setMetricEntries, isWorkingSet, type AnalyticsExercise } from '../../domain/strength/analytics'
 import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
+import type { SetRecordBaselines } from '../../domain/strength/setRecords'
 import { db } from '../db/database'
 
 function groupBy<T, K>(rows: T[], keyOf: (row: T) => K): Map<K, T[]> {
@@ -16,7 +17,7 @@ function groupBy<T, K>(rows: T[], keyOf: (row: T) => K): Map<K, T[]> {
   return groups
 }
 
-async function readFinishedWorkingSets(database: typeof db, range?: { from?: string; before: string }): Promise<FinishedSession[]> {
+async function readFinishedWorkingSets(database: typeof db, range?: { from?: string; before: string }, exerciseKeys?: ReadonlySet<string>): Promise<FinishedSession[]> {
   const { sessions, sessionActivities, sessionExercises, strengthSets } = database
   return database.transaction('r', [sessions, sessionActivities, sessionExercises, strengthSets], async () => {
     const finished = await sessions.where('status').equals('finished')
@@ -24,7 +25,8 @@ async function readFinishedWorkingSets(database: typeof db, range?: { from?: str
     if (!finished.length) return []
     finished.sort((a, b) => a.startedAt.localeCompare(b.startedAt) || a.id.localeCompare(b.id))
     const activities = await sessionActivities.where('sessionId').anyOf(finished.map(row => row.id)).toArray()
-    const cards = activities.length ? await sessionExercises.where('sessionActivityId').anyOf(activities.map(row => row.id)).sortBy('position') : []
+    const cards = activities.length ? await sessionExercises.where('sessionActivityId').anyOf(activities.map(row => row.id))
+      .filter(row => !exerciseKeys || exerciseKeys.has(analyticsExerciseKey(row.snapshot))).sortBy('position') : []
     const sets = cards.length ? await strengthSets.where('sessionExerciseId').anyOf(cards.map(row => row.id)).filter(isWorkingSet).sortBy('position') : []
     const setsByCard = groupBy(sets, row => row.sessionExerciseId)
     const sessionByActivity = new Map(activities.map(row => [row.id, row.sessionId]))
@@ -56,4 +58,25 @@ export async function readMonthlyReport(month: TrainingMonth, database = db) {
 export async function readTrainingTrends(size: TrendWindow, database = db, now = new Date()) {
   const calendar = trendCalendar(size, now)
   return buildTrainingTrends(calendar, await readFinishedWorkingSets(database, calendar.range))
+}
+
+export async function readSetRecordBaselines(keys: ReadonlySet<string>, startedAt: string, database = db): Promise<SetRecordBaselines> {
+  const baselines: SetRecordBaselines = new Map()
+  if (!keys.size) return baselines
+  // A finished workout can share a millisecond with the start of the next workout.
+  const before = new Date(Date.parse(startedAt) + 1).toISOString()
+  for (const session of await readFinishedWorkingSets(database, { before }, keys)) {
+    for (const { snapshot, sets } of session.cards) {
+      const key = analyticsExerciseKey(snapshot)
+      const best = baselines.get(key) ?? {}
+      for (const set of sets) {
+        for (const [metric, value] of setMetricEntries(setMetrics(set, snapshot))) {
+          const previous = best[metric]
+          if (previous === undefined || improvesMetric(metric, value, previous)) best[metric] = value
+        }
+      }
+      baselines.set(key, best)
+    }
+  }
+  return baselines
 }
