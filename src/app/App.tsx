@@ -4,7 +4,7 @@ import { StorageProtection } from '../components/StorageProtection'
 import { WorkoutsPanel } from '../features/workouts/WorkoutsPanel'
 import { ExerciseLibrary } from '../features/exercises/ExerciseLibrary'
 import { activeWorkout } from '../data/repositories/workouts'
-import type { Session } from '../domain/strength/models'
+import type { Exercise, Session } from '../domain/strength/models'
 import { updateSafety } from './updateSafety'
 import { UpdatePanel } from './UpdatePanel'
 import { destinationFromHash, destinationHash, navigationDecision, type Destination } from './navigation'
@@ -18,6 +18,7 @@ const FoundationPanel = lazy(() => import('../features/foundation/FoundationPane
 export function App() {
   const [view, setView] = useState<Destination>(() => destinationFromHash(window.location.hash))
   const viewRef = useRef(view)
+  const [analyticsExercise, setAnalyticsExercise] = useState<Exercise>()
   const [historyId, setHistoryId] = useState<string>()
   const [resumeId, setResumeId] = useState<string>()
   const [active, setActive] = useState<Session>()
@@ -32,10 +33,13 @@ export function App() {
       if (fromHistory) window.history.pushState(null, '', destinationHash(viewRef.current))
       return false
     }
-    viewRef.current = next; setView(next); setResumeId(undefined); setHistoryId(undefined)
+    viewRef.current = next; setView(next); setResumeId(undefined); setHistoryId(undefined); setAnalyticsExercise(undefined)
     if (!fromHistory) window.history.pushState(null, '', destinationHash(next))
     window.scrollTo(0, 0)
     return true
+  }
+  function openExerciseAnalytics(exercise: Exercise) {
+    if (changeView('analytics')) setAnalyticsExercise(exercise)
   }
   const changeRef = useRef(changeView); changeRef.current = changeView
   useEffect(() => {
@@ -63,12 +67,12 @@ export function App() {
       <PageHeader destination={view} />
       {!databaseReady && <p role={storageError ? 'alert' : 'status'} className={storageError ? 'error' : 'bootstrap-status'}>{storageError || 'Opening your saved training…'}</p>}
       <div className="screen-content">
-        {databaseReady && view === 'train' && <WorkoutsPanel key="train" mode="train" initialSessionId={resumeId} onNavigateHistory={id => { if (changeView('history')) setHistoryId(id) }} />}
-        {databaseReady && view === 'history' && <WorkoutsPanel key="history" mode="history" initialSessionId={historyId} />}
+        {databaseReady && view === 'train' && <WorkoutsPanel key="train" mode="train" onExerciseAnalytics={openExerciseAnalytics} initialSessionId={resumeId} onNavigateHistory={id => { if (changeView('history')) setHistoryId(id) }} />}
+        {databaseReady && view === 'history' && <WorkoutsPanel key="history" mode="history" onExerciseAnalytics={openExerciseAnalytics} initialSessionId={historyId} />}
         {databaseReady && view === 'analytics' && <Suspense fallback={<p role="status">Opening Analytics…</p>}>
-          <AnalyticsPanel onOpenWorkout={id => { if (changeView('history')) setHistoryId(id) }} />
+          <AnalyticsPanel initialExercise={analyticsExercise} onOpenWorkout={id => { if (changeView('history')) setHistoryId(id) }} />
         </Suspense>}
-        {databaseReady && view === 'library' && <ExerciseLibrary />}
+        {databaseReady && view === 'library' && <ExerciseLibrary onExerciseAnalytics={openExerciseAnalytics} />}
         <div className="settings-stack" hidden={view !== 'settings'}>
           {databaseReady && view === 'settings' && <Suspense fallback={<p role="status">Opening data settings…</p>}><FoundationPanel onDataRestored={async () => { setActive(await activeWorkout()) }} /></Suspense>}
           <details><summary>Device storage</summary><StorageProtection /></details>

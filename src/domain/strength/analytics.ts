@@ -17,7 +17,7 @@ type MetricSeries = { metric: Metric; points: MetricPoint[]; record: MetricPoint
 
 export function analyticsExerciseKey(snapshot: Exercise): string {
   const { measurement, load, weightConvention } = snapshot.tracking
-  return [snapshot.id, measurement, load, weightConvention, snapshot.metadata?.repetitionConvention === 'per-side' ? 'per-side' : 'total'].join(':')
+  return [snapshot.id, measurement, load, weightConvention, snapshot.metadata?.repetitionConvention === 'per-side' ? 'per-side' : weightConvention === 'per-hand' && snapshot.metadata?.repetitionConvention !== 'total' ? 'unspecified' : 'total'].join(':')
 }
 
 export function isWorkingSet(set: StrengthSet): boolean {
@@ -41,7 +41,7 @@ export function setMetrics(set: StrengthSet, snapshot: Exercise): SetMetrics {
   if (mass) {
     values.load = massInKilograms(mass)
     if (snapshot.tracking.load === 'external' && snapshot.tracking.measurement === 'reps'
-      && values.load > 0 && set.reps !== null && set.reps >= 1 && set.reps <= 10) {
+      && snapshot.tracking.weightConvention !== 'machine-display' && values.load > 0 && set.reps !== null && set.reps >= 1 && set.reps <= 10) {
       values.estimatedMax = set.reps === 1 ? values.load : values.load * (1 + set.reps / 30)
     }
   }
@@ -55,7 +55,9 @@ export function setMetricEntries(metrics: SetMetrics) {
 export function exerciseProgress({ snapshot, sessions }: AnalyticsExercise): MetricSeries[] {
   const series = new Map<Metric, MetricSeries>()
   const { measurement, weightConvention } = snapshot.tracking
-  const massMultiplier = weightConvention === 'per-hand' || snapshot.metadata?.repetitionConvention === 'per-side' ? 2 : 1
+  const reps = snapshot.metadata?.repetitionConvention
+  const volumeFactor = reps === 'per-side' || weightConvention === 'machine-display' ? 0
+    : weightConvention === 'per-hand' ? (reps === 'total' ? 2 : 0) : 1
   for (const session of sessions) {
     const best = new Map<Metric, MetricPoint>()
     const count = (metric: Metric, value: number, set?: StrengthSet) => {
@@ -67,8 +69,8 @@ export function exerciseProgress({ snapshot, sessions }: AnalyticsExercise): Met
     for (const set of session.sets) {
       const values = setMetrics(set, snapshot)
       for (const [metric, value] of setMetricEntries(values)) count(metric, value, set)
-      if (values.load !== undefined && measurement === 'reps' && set.reps !== null) {
-        volume += values.load * set.reps * massMultiplier
+      if (volumeFactor && values.load !== undefined && measurement === 'reps' && set.reps !== null) {
+        volume += values.load * set.reps * volumeFactor
         hasVolume = true
       }
     }

@@ -12,7 +12,7 @@ import { ActiveWorkout } from './ActiveWorkout'
 import { durationText, WorkoutHistory } from './WorkoutHistory'
 import { FinishedWorkoutEditor } from './FinishedWorkoutEditor'
 
-export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHistory }: { mode?: 'train' | 'history'; initialSessionId?: string; onNavigateHistory?: (id?: string) => void }) {
+export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHistory, onExerciseAnalytics }: { mode?: 'train' | 'history'; initialSessionId?: string; onNavigateHistory?: (id?: string) => void; onExerciseAnalytics?: (exercise: Exercise) => void }) {
   const [sessions, setSessions] = useState<Session[]>([])
   const [library, setLibrary] = useState<Exercise[]>([])
   const [selected, setSelected] = useState<Workout>()
@@ -94,7 +94,7 @@ export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHist
         setSelected(updated); closeHistoryEditor(); setHistoryMessage('Workout changes saved on this device.')
       }, 'Could not save workout changes.')} />
     return <WorkoutHistory workout={selected} onBack={back} backLabel={mode === 'history' ? 'Back to history' : 'Back to Train'}
-      disabled={disabled} message={historyMessage} error={error}
+      disabled={disabled} onExerciseAnalytics={onExerciseAnalytics} message={historyMessage} error={error}
       onEdit={() => { setError(''); setEditingHistory(true) }}
       onDelete={() => {
         if (!window.confirm(`Delete “${session.title}” from ${new Date(session.startedAt).toLocaleString()}? This permanently removes the workout and its sets from this device.`)) return

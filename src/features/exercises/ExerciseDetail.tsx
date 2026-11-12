@@ -8,7 +8,7 @@ import { EXERCISE_TYPES, MOVEMENT_PATTERNS, REPETITION_CONVENTIONS } from '../..
 import type { Exercise } from '../../domain/strength/models'
 import { CATEGORIES, EQUIPMENT, label, MUSCLES, trackingLabel } from '../../domain/strength/catalog'
 
-export function ExerciseDetail({ exercise, onBack }: { exercise: Exercise; onBack: () => void }) {
+export function ExerciseDetail({ exercise, onBack, onAnalytics }: { exercise: Exercise; onBack: () => void; onAnalytics?: () => void }) {
   const metadata = exercise.metadata ?? defaultMetadata(exercise)
   const [rest, setRest] = useState('Loading saved rest…')
   const [favourite, setFavouriteState] = useState<boolean>()
@@ -55,6 +55,7 @@ export function ExerciseDetail({ exercise, onBack }: { exercise: Exercise; onBac
       disabled={favourite === undefined || saving || applying} onClick={() => void toggleFavourite()}>
       Favourite
     </button>
+    {onAnalytics && <button className="secondary exercise-analytics-link" disabled={saving || applying} onClick={onAnalytics}>View analytics</button>}
     {error && <p role="alert">{error}</p>}
     <dl>
       <dt>Primary muscles</dt><dd>{list(exercise.primaryMuscleGroupIds, MUSCLES)}</dd>

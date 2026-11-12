@@ -6,7 +6,7 @@ import { ExerciseBrowser } from './ExerciseBrowser'
 import { CustomExerciseForm } from './CustomExerciseForm'
 import { ExerciseDetail } from './ExerciseDetail'
 
-export function ExerciseLibrary() {
+export function ExerciseLibrary({ onExerciseAnalytics }: { onExerciseAnalytics?: (exercise: Exercise) => void }) {
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
@@ -46,7 +46,7 @@ export function ExerciseLibrary() {
     {creating ? <CustomExerciseForm disabled={busy || applying} onDirty={setDirty} onSave={save} onCancel={() => {
       if (dirty && !window.confirm('Discard the unsaved custom exercise?')) return
       setCreating(false); setDirty(false); setError('')
-    }} /> : selected ? <ExerciseDetail exercise={selected} onBack={() => { setSelected(undefined); setMessage('') }} /> : <>
+    }} /> : selected ? <ExerciseDetail exercise={selected} onAnalytics={onExerciseAnalytics ? () => onExerciseAnalytics(selected) : undefined} onBack={() => { setSelected(undefined); setMessage('') }} /> : <>
       <div className="library-heading"><div><p className="eyebrow">MOVEMENT CATALOGUE</p><h2 id="library-heading">Exercise library</h2></div>
         <button disabled={loading || applying} onClick={() => { setCreating(true); setMessage(''); setError('') }}>Create custom exercise</button>
       </div>

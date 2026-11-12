@@ -18,7 +18,7 @@ function set(id: string, overrides: Partial<StrengthSet> = {}): StrengthSet {
 }
 
 it('combines mixed units, counts both dumbbells once, and applies the 1RM rep cap', () => {
-  const snapshot: Exercise = { ...bench, tracking: { ...bench.tracking, weightConvention: 'per-hand' } }
+  const snapshot: Exercise = { ...bench, metadata: { ...bench.metadata!, repetitionConvention: 'total' }, tracking: { ...bench.tracking, weightConvention: 'per-hand' } }
   const sessions = [
     { id: 'first', title: 'First', startedAt: stamp, sets: [
       set('warmup', { setType: 'warm-up', load: { mode: 'external', weight: { value: 90, unit: 'kg' } } }),
@@ -99,4 +99,19 @@ it('uses saved exercise identity, combines repeated cards, and recalculates afte
     vi.useRealTimers()
     await db.delete()
   }
+})
+
+it('keeps ambiguous per-hand logging separate and omits incompatible volume and machine 1RM', () => {
+  const ambiguous: Exercise = { ...bench, tracking: { ...bench.tracking, weightConvention: 'per-hand' } }
+  const explicit: Exercise = { ...ambiguous, metadata: { ...bench.metadata!, repetitionConvention: 'total' } }
+  const perSide: Exercise = { ...ambiguous, metadata: { ...bench.metadata!, repetitionConvention: 'per-side' } }
+  const machine: Exercise = { ...bench, tracking: { ...bench.tracking, weightConvention: 'machine-display' } }
+  const metrics = (snapshot: Exercise) => exerciseProgress({
+    key: analyticsExerciseKey(snapshot), snapshot, sessions: [{ id: 'test', title: 'Test', startedAt: stamp, sets: [set('set')] }],
+  }).map(series => series.metric)
+  expect(analyticsExerciseKey(ambiguous)).not.toBe(analyticsExerciseKey(explicit))
+  expect(metrics(ambiguous)).toEqual(['load', 'reps', 'estimatedMax'])
+  expect(metrics(explicit)).toContain('volume')
+  expect(metrics(perSide)).not.toContain('volume')
+  expect(metrics(machine)).toEqual(['load', 'reps'])
 })

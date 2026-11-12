@@ -366,3 +366,21 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 .recap-records li { display: flex; gap: var(--space-2); padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border); overflow-wrap: anywhere; }
 .recap-records li > .icon { color: var(--color-warning); }
 .recap-records li div > span { display: block; }
+
+.exercise-analytics-link { margin-inline-start: var(--space-2); }
+.exercise-chart { margin: var(--space-4) 0; }
+.exercise-chart figcaption { font-weight: 700; margin-bottom: var(--space-2); }
+.exercise-chart svg { display: block; width: 100%; color: var(--color-accent); cursor: crosshair; touch-action: manipulation; }
+.exercise-chart-grid { fill: none; stroke: var(--color-border); }
+.exercise-chart-line { fill: none; stroke: currentColor; stroke-width: 2; }
+.exercise-chart circle, .exercise-chart rect { fill: currentColor; }
+.exercise-chart .is-selected { stroke: var(--color-text); stroke-width: 2; }
+.exercise-chart-dates { display: flex; justify-content: space-between; gap: var(--space-2); font-size: var(--text-small); color: var(--color-muted); }
+.exercise-chart-picker { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-2); align-items: end; margin: var(--space-3) 0; }
+.exercise-chart-picker label { margin: 0; min-width: 0; }
+.exercise-chart-picker button { padding-inline: 0; min-width: 44px; }
+.exercise-chart-filter { display: flex; align-items: center; gap: var(--space-2); min-height: 44px; }
+.exercise-chart-filter input { width: 20px; height: 20px; }
+.exercise-chart-point { padding: var(--space-3); background: var(--color-surface-soft); border-radius: var(--radius-control); overflow-wrap: anywhere; }
+.exercise-chart-plot { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: stretch; }
+.exercise-chart-scale { display: flex; flex-direction: column; justify-content: space-between; padding-block: 4px; color: var(--color-muted); font-size: var(--text-small); }

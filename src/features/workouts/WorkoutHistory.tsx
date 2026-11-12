@@ -3,7 +3,7 @@ import { Button } from '../../components/ui/Button'
 import { groupLetter, supersetSlots, workoutBlocks } from '../../domain/strength/supersets'
 import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
 import { SET_TYPES } from '../../domain/strength/setTypes'
-import type { SessionExercise } from '../../domain/strength/models'
+import type { Exercise, SessionExercise } from '../../domain/strength/models'
 import type { Workout } from '../../data/repositories/workouts'
 import { performanceText } from '../../domain/strength/logging'
 import { trackingLabel } from '../../domain/strength/catalog'
@@ -11,8 +11,9 @@ export function durationText(start: string, end: string) {
   const minutes = Math.max(0, Math.floor((Date.parse(end) - Date.parse(start)) / 60000))
   return minutes >= 60 ? `${Math.floor(minutes / 60)} h ${minutes % 60} min` : `${minutes} min`
 }
-export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Train', disabled, message, error, onEdit, onDelete }: {
+export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Train', disabled, message, error, onEdit, onDelete, onExerciseAnalytics }: {
   workout: Workout; onBack: () => void; backLabel?: string; disabled?: boolean; message?: string; error?: string
+  onExerciseAnalytics?: (exercise: Exercise) => void
   onEdit?: () => void; onDelete?: () => void
 }) {
   const session = workout.sessions[0]
@@ -25,6 +26,8 @@ export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Train', d
     return <article className={code ? 'superset-exercise' : 'workout-exercise'} key={exercise.id}>
       <Heading>{code && <span className="superset-member-label">{code} </span>}{exerciseDisplayName(exercise.snapshot)}</Heading>
       <p className="note">{trackingLabel(exercise.snapshot.tracking)}</p>
+      {session.status === 'finished' && onExerciseAnalytics && <Button variant="secondary" disabled={disabled}
+        aria-label={`View analytics for ${exerciseDisplayName(exercise.snapshot)}`} onClick={() => onExerciseAnalytics(exercise.snapshot)}>View analytics</Button>}
       {exercise.notes && <p className="multiline">{exercise.notes}</p>}
       <ol>{workout.strengthSets.filter(set => set.sessionExerciseId === exercise.id).sort((a, b) => a.position - b.position).map(set => <li key={set.id}>
         {set.supersetRoundIndex !== undefined && <>Round {set.supersetRoundIndex + 1} · </>}<strong>{set.completed ? 'Completed' : 'Incomplete — excluded from results'}</strong> · <span className={`set-type-badge set-type-colour set-type--${set.setType}`}>{SET_TYPES[set.setType]}</span><br />{performanceText(set)}
