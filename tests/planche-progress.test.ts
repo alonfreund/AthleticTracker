@@ -40,9 +40,9 @@ it('keeps measurements independent and restores Planche and older progression re
     expect(progress.timeline.map(row => row.best)).toEqual([12.5, 12.5])
 
     const snapshot = await createBackup(source)
-    const { handstandAttempts: _handstand, plancheAttempts: _planche, ...legacyData } = snapshot.data
+    const { frontLeverAttempts: _frontLever, handstandAttempts: _handstand, plancheAttempts: _planche, ...legacyData } = snapshot.data
     expect(validateBackup({ ...snapshot, formatVersion: 12, data: legacyData }).data)
-      .toMatchObject({ plancheAttempts: [], handstandAttempts: [], muscleupAttempts: snapshot.data.muscleupAttempts })
+      .toMatchObject({ plancheAttempts: [], handstandAttempts: [], frontLeverAttempts: [], muscleupAttempts: snapshot.data.muscleupAttempts })
     const exported = await exportBackupFile(source)
     await deletePlancheAttempt(flies[0].id, source)
     expect(await listPlancheAttempts('straight-arm-dumbbell-flies', source)).toEqual([flies[1]])

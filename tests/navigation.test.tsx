@@ -24,6 +24,10 @@ describe('app-shell navigation', () => {
     expect(routeTab('performance/calisthenics/pushups')).toBe('performance')
     expect(routeFromHash('#/performance/calisthenics/pullups')).toEqual({ screen: 'performance/calisthenics/pullups' })
     expect(routeTab('performance/calisthenics/pullups')).toBe('performance')
+    const frontLever = { screen: 'performance/calisthenics/front-lever/movement', frontLeverMovement: 'full-front-lever-hold' } as const
+    expect(routeFromHash(routeHash(frontLever))).toEqual(frontLever)
+    expect(routeTab(frontLever.screen)).toBe('performance')
+    expect(routeFromHash('#/performance/calisthenics/front-lever/unknown')).toEqual({ screen: 'performance/calisthenics/front-lever' })
     const handstand = { screen: 'performance/calisthenics/handstand/movement', handstandMovement: 'wall-walks' } as const
     expect(routeFromHash(routeHash(handstand))).toEqual(handstand)
     expect(routeTab(handstand.screen)).toBe('performance')

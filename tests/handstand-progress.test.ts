@@ -40,9 +40,9 @@ it('round-trips handstand attempts and older progress and rejects invalid wall w
     await recordHandstandAttempt('wall-walks', 9, '', source)
     const walks = await listHandstandAttempts('wall-walks', source)
     const snapshot = await createBackup(source)
-    const { handstandAttempts: _handstand, ...legacyData } = snapshot.data
+    const { frontLeverAttempts: _frontLever, handstandAttempts: _handstand, ...legacyData } = snapshot.data
     expect(validateBackup({ ...snapshot, formatVersion: 13, data: legacyData }).data)
-      .toMatchObject({ handstandAttempts: [], plancheAttempts: snapshot.data.plancheAttempts })
+      .toMatchObject({ handstandAttempts: [], frontLeverAttempts: [], plancheAttempts: snapshot.data.plancheAttempts })
     const exported = await exportBackupFile(source)
     await deleteHandstandAttempt(walks[0].id, source)
     expect(await listHandstandAttempts('wall-walks', source)).toEqual([walks[1]])

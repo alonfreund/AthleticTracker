@@ -67,7 +67,7 @@ it('preserves all movement tracking modes, the unfinished draft, and discipline 
     expect((await readAnalyticsOverview(8, db)).weeks.reduce((sum, week) => sum + week.workouts, 0)).toBe(1)
     const backup = await createBackup(db)
     expect(backup.data.sessions.map(row => row.id)).toContain(cardio)
-    const { handstandAttempts: _handstand, plancheAttempts: _planche, muscleupAttempts: _muscleups, pullupAttempts: _pullups, pushupAttempts: _attempts, ...legacyData } = backup.data
+    const { frontLeverAttempts: _frontLever, handstandAttempts: _handstand, plancheAttempts: _planche, muscleupAttempts: _muscleups, pullupAttempts: _pullups, pushupAttempts: _attempts, ...legacyData } = backup.data
     const legacy = { ...backup, data: legacyData, formatVersion: 8 }
     expect(() => validateBackup(legacy)).toThrow('Calisthenics requires backup format 9')
     await expect(stageImport(new Blob([JSON.stringify(legacy)]), restored)).rejects.toThrow('Calisthenics requires backup format 9')

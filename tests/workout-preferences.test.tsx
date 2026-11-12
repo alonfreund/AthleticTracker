@@ -36,7 +36,7 @@ describe('exact rest preferences and compatibility', () => {
     const { db } = await setup(); await saveGlobalRest(77, db)
     db.close(); const reopened = database(db.name); expect(await globalRest(reopened)).toBe(77)
     const backup = parseBackup(serializeBackup(await createBackup(reopened)))
-    expect(backup.formatVersion).toBe(14)
+    expect(backup.formatVersion).toBe(15)
     const target = database(); await restoreBackup(backup, target); expect(await globalRest(target)).toBe(77)
     await restoreBackup(oldBackup, target); expect(await globalRest(target)).toBe(90)
     expect((await createBackup(target)).data.sessionExercises).toEqual(oldBackup.data.sessionExercises)

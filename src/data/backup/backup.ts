@@ -1,3 +1,4 @@
+import { validateFrontLeverAttempt, type FrontLeverAttempt } from '../../domain/calisthenics/frontLever'
 import { validateHandstandAttempt, type HandstandAttempt } from '../../domain/calisthenics/handstand'
 import { validatePlancheAttempt, type PlancheAttempt } from '../../domain/calisthenics/planche'
 import { validateMuscleupAttempt, type MuscleupAttempt } from '../../domain/calisthenics/muscleups'
@@ -19,12 +20,12 @@ import { validateText, type AppMetadata, type FoundationRecord } from '../../dom
 
 import { assertBackupSize, utf8Bytes } from './limits'
 export { MAX_BACKUP_BYTES } from './limits'
-export const BACKUP_VERSION = 14
-export const SUPPORTED_BACKUP_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, BACKUP_VERSION]
+export const BACKUP_VERSION = 15
+export const SUPPORTED_BACKUP_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, BACKUP_VERSION]
 
 function backupTables(version: number) {
-  if (version >= 14) return [...BACKUP_TABLES]
-  const previousTables = BACKUP_TABLES.filter(name => name !== 'handstandAttempts' && (version >= 13 || name !== 'plancheAttempts') && (version >= 12 || name !== 'muscleupAttempts') && (version >= 11 || name !== 'pullupAttempts') && (version >= 10 || name !== 'pushupAttempts'))
+  if (version >= 15) return [...BACKUP_TABLES]
+  const previousTables = BACKUP_TABLES.filter(name => name !== 'frontLeverAttempts' && (version >= 14 || name !== 'handstandAttempts') && (version >= 13 || name !== 'plancheAttempts') && (version >= 12 || name !== 'muscleupAttempts') && (version >= 11 || name !== 'pullupAttempts') && (version >= 10 || name !== 'pushupAttempts'))
   if (version >= 8) return previousTables
   if (version === 7) return previousTables.filter(name => !(CARDIO_TIMING_TABLES as readonly string[]).includes(name))
   if (version >= 5) return previousTables.filter(name => !([...CARDIO_TABLES, ...CARDIO_TIMING_TABLES] as readonly string[]).includes(name))
@@ -32,7 +33,7 @@ function backupTables(version: number) {
     ...(version >= 4 ? ['exercisePreferences', 'catalogueState'] : [])]
 }
 
-export interface BackupData extends StrengthData { metadata: AppMetadata[]; foundationRecords: FoundationRecord[]; exercisePreferences: ExercisePreference[]; catalogueState: CatalogueState[]; routines: Routine[]; routineExercises: RoutineExercise[]; cardioDetails: CardioDetails[]; cardioDrafts: CardioDraft[]; cardioTiming: CardioTiming[]; cardioLive: LiveCardio[]; pushupAttempts: PushupAttempt[]; pullupAttempts: PushupAttempt[]; muscleupAttempts: MuscleupAttempt[]; plancheAttempts: PlancheAttempt[]; handstandAttempts: HandstandAttempt[] }
+export interface BackupData extends StrengthData { metadata: AppMetadata[]; foundationRecords: FoundationRecord[]; exercisePreferences: ExercisePreference[]; catalogueState: CatalogueState[]; routines: Routine[]; routineExercises: RoutineExercise[]; cardioDetails: CardioDetails[]; cardioDrafts: CardioDraft[]; cardioTiming: CardioTiming[]; cardioLive: LiveCardio[]; pushupAttempts: PushupAttempt[]; pullupAttempts: PushupAttempt[]; muscleupAttempts: MuscleupAttempt[]; plancheAttempts: PlancheAttempt[]; handstandAttempts: HandstandAttempt[]; frontLeverAttempts: FrontLeverAttempt[] }
 export interface Backup {
   format: 'athletic-tracker-backup'
   formatVersion: typeof BACKUP_VERSION
@@ -154,6 +155,14 @@ export function validateBackup(value: unknown): Backup {
     if (attemptIds.has(attempt.id)) throw new Error('Duplicate handstand attempt.')
     attemptIds.add(attempt.id)
   }
+  const frontLeverAttempts = version >= 15 ? data.frontLeverAttempts : []
+  if (!Array.isArray(frontLeverAttempts)) throw new Error('Invalid front lever attempts table.')
+  attemptIds.clear()
+  for (const attempt of frontLeverAttempts) {
+    validateFrontLeverAttempt(attempt)
+    if (attemptIds.has(attempt.id)) throw new Error('Duplicate front lever attempt.')
+    attemptIds.add(attempt.id)
+  }
   const cardioTiming = version >= 8 ? data.cardioTiming : []
   const cardioLive = version >= 8 ? data.cardioLive : []
   if (!Array.isArray(cardioTiming) || !Array.isArray(cardioLive) || cardioLive.length > 1) throw new Error('Invalid cardio timing tables.')
@@ -206,7 +215,7 @@ export function validateBackup(value: unknown): Backup {
     if (exerciseIds.has(row.id) || positions.has(position)) throw new Error('Duplicate routine exercise or position.')
     exerciseIds.add(row.id); positions.add(position)
   }
-  return { format: 'athletic-tracker-backup', formatVersion: BACKUP_VERSION, exportedAt: date(root.exportedAt), appVersion: string(root.appVersion), data: { metadata, foundationRecords, ...structuredClone(strength), exercisePreferences: exercisePreferences as ExercisePreference[], catalogueState: catalogueState as CatalogueState[], routines: structuredClone(routines), routineExercises: structuredClone(routineExercises), cardioDetails: structuredClone(cardioDetails), cardioDrafts: structuredClone(cardioDrafts), cardioTiming: structuredClone(cardioTiming), cardioLive: structuredClone(cardioLive), pushupAttempts: structuredClone(pushupAttempts), pullupAttempts: structuredClone(pullupAttempts), muscleupAttempts: structuredClone(muscleupAttempts), plancheAttempts: structuredClone(plancheAttempts), handstandAttempts: structuredClone(handstandAttempts) } }
+  return { format: 'athletic-tracker-backup', formatVersion: BACKUP_VERSION, exportedAt: date(root.exportedAt), appVersion: string(root.appVersion), data: { metadata, foundationRecords, ...structuredClone(strength), exercisePreferences: exercisePreferences as ExercisePreference[], catalogueState: catalogueState as CatalogueState[], routines: structuredClone(routines), routineExercises: structuredClone(routineExercises), cardioDetails: structuredClone(cardioDetails), cardioDrafts: structuredClone(cardioDrafts), cardioTiming: structuredClone(cardioTiming), cardioLive: structuredClone(cardioLive), pushupAttempts: structuredClone(pushupAttempts), pullupAttempts: structuredClone(pullupAttempts), muscleupAttempts: structuredClone(muscleupAttempts), plancheAttempts: structuredClone(plancheAttempts), handstandAttempts: structuredClone(handstandAttempts), frontLeverAttempts: structuredClone(frontLeverAttempts) } }
 }
 export function parseBackup(text: string): Backup {
   assertBackupSize(utf8Bytes(text))
@@ -277,6 +286,7 @@ export function validateBackupRecord(name: string, value: unknown, version: numb
   if (version < 7 && name === 'sessionActivities' && item.activityType === 'cardio') throw new Error('Cardio requires backup format 7.')
   if (name === 'cardioDetails') validateCardioDetails(value)
   if (name === 'cardioTiming') validateCardioTiming(value)
+  if (name === 'frontLeverAttempts') validateFrontLeverAttempt(value)
   if (name === 'handstandAttempts') validateHandstandAttempt(value)
   if (name === 'plancheAttempts') validatePlancheAttempt(value)
   if (name === 'muscleupAttempts') validateMuscleupAttempt(value)

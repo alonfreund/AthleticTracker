@@ -1,3 +1,5 @@
+import { FRONT_LEVER_MOVEMENTS, isFrontLeverMovement, type FrontLeverMovement } from '../../domain/calisthenics/frontLever'
+import { deleteFrontLeverAttempt, listFrontLeverAttempts, recordFrontLeverAttempt } from '../../data/repositories/frontLever'
 import { formatMeasurement, parseMeasurement, type MeasurementUnit } from '../../domain/calisthenics/measurement'
 import { HANDSTAND_MOVEMENTS, isHandstandMovement, type HandstandMovement } from '../../domain/calisthenics/handstand'
 import { deleteHandstandAttempt, listHandstandAttempts, recordHandstandAttempt } from '../../data/repositories/handstand'
@@ -21,7 +23,7 @@ type Attempt = Omit<PushupAttempt, 'reps'> & { value: number }
 type Config = { heading: string; goal?: number; technique?: string; unit?: MeasurementUnit; lowerIsBetter?: boolean; milestones?: readonly number[] }
 
 export function RepProgress({ track, onBack, applying, config, backLabel = 'Back to Calisthenics' }: {
-  track: RepTrack | MuscleupMovement | PlancheMovement | HandstandMovement
+  track: RepTrack | MuscleupMovement | PlancheMovement | HandstandMovement | FrontLeverMovement
   onBack?: () => void
   applying: boolean
   config?: Config
@@ -30,7 +32,8 @@ export function RepProgress({ track, onBack, applying, config, backLabel = 'Back
   const repTrack = track === 'pushups' || track === 'pullups' ? track : undefined
   const planche = isPlancheMovement(track) ? PLANCHE_MOVEMENTS[track] : undefined
   const handstand = isHandstandMovement(track) ? HANDSTAND_MOVEMENTS[track] : undefined
-  const settings: Config | undefined = config ?? planche ?? handstand ?? (repTrack ? REP_TRACKS[repTrack] : undefined)
+  const frontLever = isFrontLeverMovement(track) ? FRONT_LEVER_MOVEMENTS[track] : undefined
+  const settings: Config | undefined = config ?? planche ?? handstand ?? frontLever ?? (repTrack ? REP_TRACKS[repTrack] : undefined)
   if (!settings) throw new Error('Missing progression settings.')
   const unit = settings.unit ?? 'reps'
   const seconds = unit === 'seconds'
@@ -59,6 +62,7 @@ export function RepProgress({ track, onBack, applying, config, backLabel = 'Back
       if (track === 'pushups' || track === 'pullups') {
         return (await listRepAttempts(track)).map(({ reps, ...attempt }) => ({ ...attempt, value: reps }))
       }
+      if (isFrontLeverMovement(track)) return listFrontLeverAttempts(track)
       if (isHandstandMovement(track)) return listHandstandAttempts(track)
       return isPlancheMovement(track) ? listPlancheAttempts(track) : listMuscleupAttempts(track)
     }).subscribe({ next: setAttempts, error: () => setReadError(true) })
@@ -103,12 +107,13 @@ export function RepProgress({ track, onBack, applying, config, backLabel = 'Back
         {showForm && <form onSubmit={event => {
           event.preventDefault()
           const value = parseMeasurement(reps, unit)
-          if (value === undefined || (!planche && !handstand && value > MAX_PUSHUP_REPS)) {
+          if (value === undefined || (!planche && !handstand && !frontLever && value > MAX_PUSHUP_REPS)) {
             setError(steps ? 'Enter at least one whole hand step.' : weight ? 'Enter a weight in kg.' : seconds ? 'Enter a whole number of seconds.' : 'Enter a whole number of clean reps.')
             return
           }
           void run(async () => {
             if (track === 'pushups' || track === 'pullups') await recordRepAttempt(track, value, notes)
+            else if (isFrontLeverMovement(track)) await recordFrontLeverAttempt(track, value, notes)
             else if (isHandstandMovement(track)) await recordHandstandAttempt(track, value, notes)
             else if (isPlancheMovement(track)) await recordPlancheAttempt(track, value, notes)
             else await recordMuscleupAttempt(track, value, notes)
@@ -116,7 +121,7 @@ export function RepProgress({ track, onBack, applying, config, backLabel = 'Back
           })
         }}>
           <fieldset className="form-fields" disabled={disabled}>
-            <label>{steps ? 'Hand steps' : weight ? 'Weight (kg)' : seconds ? 'Hold duration (seconds)' : 'Clean reps'}<input required inputMode={weight ? 'decimal' : 'numeric'} maxLength={planche || handstand ? 24 : 5} value={reps} onChange={event => setReps(event.target.value)} /></label>
+            <label>{steps ? 'Hand steps' : weight ? 'Weight (kg)' : seconds ? 'Hold duration (seconds)' : 'Clean reps'}<input required inputMode={weight ? 'decimal' : 'numeric'} maxLength={planche || handstand || frontLever ? 24 : 5} value={reps} onChange={event => setReps(event.target.value)} /></label>
             <label>Notes (optional)<textarea maxLength={10000} value={notes} onChange={event => setNotes(event.target.value)} /></label>
             <div className="actions">
               <Button type="submit">{busy ? 'Saving…' : 'Save attempt'}</Button>
@@ -133,7 +138,7 @@ export function RepProgress({ track, onBack, applying, config, backLabel = 'Back
             <strong>{format(reps)}{settings.lowerIsBetter && ' or fewer'}</strong><span>{milestoneReached(progress.best, reps, settings.lowerIsBetter) ? 'Achieved' : progress.next === reps ? 'Next' : 'Ahead'}</span>
           </li>)}
         </ol>
-        {progress.next === undefined && <p role="status">{planche || (handstand && settings.goal === undefined) ? 'All milestones reached. Keep logging to track further progress.' : 'Goal achieved.'}</p>}
+        {progress.next === undefined && <p role="status">{planche || ((handstand || frontLever) && settings.goal === undefined) ? 'All milestones reached. Keep logging to track further progress.' : 'Goal achieved.'}</p>}
       </section>}
       <section className="surface-card" aria-labelledby="rep-graph">
         <h2 id="rep-graph">{steps ? 'Hand steps over time' : weight ? 'Weight over time' : seconds ? 'Hold duration over time' : 'Reps over time'}</h2>
@@ -148,7 +153,7 @@ export function RepProgress({ track, onBack, applying, config, backLabel = 'Back
                 <p role="status">{format(point.measurement)} · {point.label} · {point.source}</p>
                 {point.notes && <p className="multiline">{point.notes}</p>}
                 <Button variant="secondary" disabled={disabled} onClick={() => {
-                  if (window.confirm(track === 'pullups' ? 'Delete this attempt from both pull-up and muscle-up progress?' : 'Delete this attempt?')) void run(() => track === 'pushups' || track === 'pullups' ? deleteRepAttempt(track, point.id) : isHandstandMovement(track) ? deleteHandstandAttempt(point.id) : isPlancheMovement(track) ? deletePlancheAttempt(point.id) : deleteMuscleupAttempt(point.id))
+                  if (window.confirm(track === 'pullups' ? 'Delete this attempt from both pull-up and muscle-up progress?' : 'Delete this attempt?')) void run(() => track === 'pushups' || track === 'pullups' ? deleteRepAttempt(track, point.id) : isFrontLeverMovement(track) ? deleteFrontLeverAttempt(point.id) : isHandstandMovement(track) ? deleteHandstandAttempt(point.id) : isPlancheMovement(track) ? deletePlancheAttempt(point.id) : deleteMuscleupAttempt(point.id))
                 }}>Delete attempt</Button>
               </>} />
           </>}

@@ -98,7 +98,7 @@ async function validateStage(id:string,header:StagedBackup['header'],database:At
     while(cache.size>16 || cacheBytes>2*MAX_BACKUP_ROW_BYTES){const first=cache.keys().next().value!;cacheBytes-=cache.get(first)!.bytes;cache.delete(first)}
     return value
   }
-  const order=['metadata','foundationRecords','exercises','sessions','sessionActivities','supersetGroups','sessionExercises','strengthSets','restTimers','editorDrafts','exercisePreferences','catalogueState','routines','routineExercises','cardioDetails','cardioDrafts','cardioTiming','cardioLive','pushupAttempts','pullupAttempts','muscleupAttempts','plancheAttempts','handstandAttempts'] as const
+  const order=['metadata','foundationRecords','exercises','sessions','sessionActivities','supersetGroups','sessionExercises','strengthSets','restTimers','editorDrafts','exercisePreferences','catalogueState','routines','routineExercises','cardioDetails','cardioDrafts','cardioTiming','cardioLive','pushupAttempts','pullupAttempts','muscleupAttempts','plancheAttempts','handstandAttempts','frontLeverAttempts'] as const
   for(const name of order) {
     options.onProgress?.(`Validating ${name}…`)
     await eachPage(database,id,name,async rows=>{

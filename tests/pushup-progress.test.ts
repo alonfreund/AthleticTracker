@@ -53,9 +53,9 @@ it('keeps pull-up progress independent and restores both tracks', async () => {
     expect(progress).toMatchObject({ latest: 6, best: 9, next: 15 })
     expect(progress.timeline.map(row => row.best)).toEqual([9, 9])
     const snapshot = await createBackup(source)
-    const { handstandAttempts: _handstand, plancheAttempts: _planche, muscleupAttempts: _muscleups, pullupAttempts: _pullups, ...legacyData } = snapshot.data
+    const { frontLeverAttempts: _frontLever, handstandAttempts: _handstand, plancheAttempts: _planche, muscleupAttempts: _muscleups, pullupAttempts: _pullups, ...legacyData } = snapshot.data
     const legacy = { ...snapshot, formatVersion: 10, data: legacyData }
-    expect(validateBackup(legacy).data).toMatchObject({ pushupAttempts: legacyData.pushupAttempts, pullupAttempts: [], muscleupAttempts: [], plancheAttempts: [], handstandAttempts: [] })
+    expect(validateBackup(legacy).data).toMatchObject({ pushupAttempts: legacyData.pushupAttempts, pullupAttempts: [], muscleupAttempts: [], plancheAttempts: [], handstandAttempts: [], frontLeverAttempts: [] })
     const exported = await exportBackupFile(source)
     const incoming = await stageImport(exported.blob, target)
     await restoreStagedBackup(incoming, await stageSnapshot(target), target)
