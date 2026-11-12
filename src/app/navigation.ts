@@ -3,10 +3,10 @@ import type { Safety } from './updateSafety'
 
 export const DESTINATIONS = ['strength', 'performance', 'analytics', 'settings'] as const
 export type Destination = typeof DESTINATIONS[number]
-export type Screen = Destination | 'strength/history' | 'strength/library' | 'performance/cardio' | 'performance/cardio/history' | 'performance/cardio/activity' | 'performance/cardio/session'
+export type Screen = Destination | 'strength/history' | 'strength/library' | 'performance/cardio' | 'performance/cardio/history' | 'performance/cardio/activity' | 'performance/cardio/session' | 'performance/cardio/live'
 export type AppRoute = { screen: Screen; workoutId?: string; cardioActivity?: CardioActivity }
 export function routeTab(screen: Screen): Destination {
-  if (screen === 'performance/cardio' || screen === 'performance/cardio/history' || screen === 'performance/cardio/activity' || screen === 'performance/cardio/session') return 'performance'
+  if (screen === 'performance/cardio' || screen === 'performance/cardio/history' || screen === 'performance/cardio/activity' || screen === 'performance/cardio/session' || screen === 'performance/cardio/live') return 'performance'
   if (screen === 'strength/history' || screen === 'strength/library') return 'strength'
   return screen
 }
@@ -17,6 +17,7 @@ export function routeFromHash(hash: string): AppRoute {
   if (path === 'library' || path === 'strength/library') return { screen: 'strength/library' }
   const cardioSession = /^performance\/cardio\/history\/([\w-]+)$/.exec(path)
   if (cardioSession) return { screen: 'performance/cardio/session', workoutId: cardioSession[1] }
+  if (path === 'performance/cardio/live') return { screen: 'performance/cardio/live' }
   if (path === 'performance/cardio/history') return { screen: 'performance/cardio/history' }
   if (path.startsWith('performance/cardio/')) {
     const activity = path.slice('performance/cardio/'.length)

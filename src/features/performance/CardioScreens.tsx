@@ -1,3 +1,4 @@
+import { TimingBreakdown } from './LiveCardioScreen'
 import { useEffect, useState } from 'react'
 import { liveQuery } from 'dexie'
 import { updateSafety } from '../../app/updateSafety'
@@ -136,7 +137,8 @@ export function CardioSessionScreen({ id, onBack, blocked, applying }: {
         <p>{new Date(record.session.startedAt).toLocaleString()}</p>
         <dl>{[
           ['Activity', CARDIO_ACTIVITIES[record.details.sport]], ['Setting', record.details.setting || undefined],
-          ['Duration', durationText(record.details.durationSeconds)], ['Distance', distanceText(record.details)],
+          [record.timing ? 'Active time' : 'Duration', durationText(record.details.durationSeconds)],
+          ['Elapsed time', record.timing ? durationText(Math.floor((Date.parse(record.session.endedAt!) - Date.parse(record.session.startedAt)) / 1000)) : undefined], ['Distance', distanceText(record.details)],
           [record.details.sport === 'cycling' ? 'Average speed' : 'Average pace', paceText(record.details)],
           ['Average heart rate', record.details.averageHeartRate === null ? undefined : `${record.details.averageHeartRate} bpm`],
           ['Max heart rate', record.details.maxHeartRate === null ? undefined : `${record.details.maxHeartRate} bpm`],
@@ -145,6 +147,7 @@ export function CardioSessionScreen({ id, onBack, blocked, applying }: {
           ['Calories', record.details.calories === null ? undefined : `${record.details.calories} kcal`],
           ['Pool', record.details.poolLength === null ? undefined : `${record.details.poolLengths} lengths × ${record.details.poolLength} ${record.details.distanceUnit}`],
         ].flatMap(([label, value]) => value === undefined ? [] : [<div key={label}><dt>{label}</dt><dd>{value}</dd></div>])}</dl>
+        {record.timing && <TimingBreakdown timing={record.timing} />}
         {record.session.notes && <p className="multiline">{record.session.notes}</p>}
         {error && <p role="alert" className="error">{error}</p>}
         <div className="actions">

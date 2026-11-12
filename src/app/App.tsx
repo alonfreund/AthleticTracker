@@ -1,3 +1,4 @@
+import { LiveCardioEntry, LiveCardioScreen } from '../features/performance/LiveCardioScreen'
 import { CardioForm } from '../features/performance/CardioForm'
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { verifyLocalStorage } from '../data/db/database'
@@ -97,15 +98,22 @@ export function App() {
           onReturnToAnalytics={returnToAnalytics ? () => navigate({ screen: 'analytics' }) : undefined} />}
         {databaseReady && view === 'performance' && <PerformanceHome blocked={blocked}
           onOpenCardio={() => navigate({ screen: 'performance/cardio' })} />}
+        {databaseReady && view === 'performance/cardio' && <LiveCardioEntry onOpen={() => navigate({ screen: 'performance/cardio/live' })} />}
         {databaseReady && view === 'performance/cardio' && <CardioHome blocked={blocked}
           onBack={() => navigate({ screen: 'performance' })}
           onActivity={cardioActivity => navigate({ screen: 'performance/cardio/activity', cardioActivity })}
           onHistory={() => navigate({ screen: 'performance/cardio/history' })}
           onSession={workoutId => navigate({ screen: 'performance/cardio/session', workoutId })} />}
         {databaseReady && view === 'performance/cardio/activity' && route.cardioActivity &&
+          <>
+          <LiveCardioEntry key={`timer:${route.cardioActivity}`} sport={route.cardioActivity} onOpen={() => navigate({ screen: 'performance/cardio/live' })} />
           <CardioForm key={route.cardioActivity} sport={route.cardioActivity} blocked={safety.applying}
             onBack={() => navigate({ screen: 'performance/cardio' })}
-            onSaved={workoutId => navigate({ screen: 'performance/cardio/session', workoutId })} />}
+            onSaved={workoutId => navigate({ screen: 'performance/cardio/session', workoutId })} />
+          </>}
+        {databaseReady && view === 'performance/cardio/live' && <LiveCardioScreen blocked={blocked}
+          onBack={() => navigate({ screen: 'performance/cardio' })}
+          onSaved={workoutId => navigate({ screen: 'performance/cardio/session', workoutId })} />}
         {databaseReady && view === 'performance/cardio/history' && <CardioHistory blocked={blocked}
           onBack={() => navigate({ screen: 'performance/cardio' })}
           onSession={workoutId => navigate({ screen: 'performance/cardio/session', workoutId })} />}

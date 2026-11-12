@@ -1,3 +1,6 @@
+import { changeLiveCardio, saveLiveReview } from '../../data/repositories/cardioLive'
+import { db } from '../../data/db/database'
+import type { LiveCardio } from '../../domain/cardio/timing'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { updateSafety } from '../../app/updateSafety'
 import { Button } from '../../components/ui/Button'
@@ -7,28 +10,30 @@ import { CARDIO_SETTINGS, distanceUnits, type CardioInput } from '../../domain/c
 import { paceText } from './cardioDisplay'
 import { useAutosave } from '../workouts/useAutosave'
 
-export function CardioForm({ sport, previous, onBack, onSaved, blocked }: {
-  sport: CardioActivity; previous?: CardioSession; onBack: () => void; onSaved: (id: string) => void; blocked: boolean
+export function CardioForm({ sport, previous, live, onBack, onSaved, blocked }: {
+  sport: CardioActivity; previous?: CardioSession; live?: LiveCardio; onBack: () => void; onSaved: (id: string) => void; blocked: boolean
 }) {
   const [initial, setInitial] = useState<CardioInput>()
   const [failed, setFailed] = useState(false)
   useEffect(() => {
+    if (live) return
     if (previous) { setInitial(inputFromCardio(previous)); return }
     let current = true
     void loadCardioDraft(sport).then(draft => { if (current) setInitial(draft?.input ?? blankCardioInput(sport)) })
       .catch(() => { if (current) setFailed(true) })
     return () => { current = false }
-  }, [sport, previous])
+  }, [sport, previous, live])
   if (failed) return <><Button variant="secondary" onClick={onBack} disabled={blocked}>Back to Cardio</Button><p role="alert">Could not load the cardio draft.</p></>
-  if (!initial) return <p role="status">Opening session form…</p>
-  return <CardioFields {...{ sport, previous, initial, onBack, onSaved, blocked }} />
+  const fields = live?.review ?? initial
+  if (!fields) return <p role="status">Opening session form…</p>
+  return <CardioFields {...{ sport, previous, live, initial: fields, onBack, onSaved, blocked }} />
 }
 
-function CardioFields({ sport, previous, initial, onBack, onSaved, blocked }: {
-  sport: CardioActivity; previous?: CardioSession; initial: CardioInput; onBack: () => void; onSaved: (id: string) => void; blocked: boolean
+function CardioFields({ sport, previous, live, initial, onBack, onSaved, blocked }: {
+  sport: CardioActivity; previous?: CardioSession; live?: LiveCardio; initial: CardioInput; onBack: () => void; onSaved: (id: string) => void; blocked: boolean
 }) {
   const [edited, setEdited] = useState(initial)
-  const draft = useAutosave(initial, value => saveCardioDraft(sport, value))
+  const draft = useAutosave(initial, value => live ? saveLiveReview(live.token, value) : saveCardioDraft(sport, value))
   const input = previous ? edited : draft.value
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -79,18 +84,18 @@ function CardioFields({ sport, previous, initial, onBack, onSaved, blocked }: {
     </Button>
     <form className="surface-card cardio-form" onSubmit={event => {
       event.preventDefault()
-      void run(() => saveCardioSession(sport, input, previous), id => onSaved(String(id)))
+      void run(() => saveCardioSession(sport, input, previous, db, live), id => onSaved(String(id)))
     }}>
-      <h2>{previous ? 'Edit session' : 'Log session'}</h2>
+      <h2>{previous ? 'Edit session' : live ? 'Review session' : 'Log session'}</h2>
       <fieldset className="form-fields" disabled={disabled}>
         <label>Session name<input placeholder={CARDIO_ACTIVITIES[sport]} maxLength={200} value={input.title} onChange={event => change('title', event.target.value)} /></label>
-        <div className="cardio-field-grid">
+        {!live && !previous?.timing && <><div className="cardio-field-grid">
           <label>Date<input required type="date" value={input.date} onChange={event => change('date', event.target.value)} /></label>
           <label>Start time<input required type="time" value={input.time} onChange={event => change('time', event.target.value)} /></label>
         </div>
         <fieldset className="choices"><legend>Duration</legend><div className="cardio-duration-inputs">
           {numeric('hours', 'Hours', true)}{numeric('minutes', 'Minutes', true)}{numeric('seconds', 'Seconds', true)}
-        </div></fieldset>
+        </div></fieldset></>}
         <label>Setting<select value={input.setting} onChange={event => change('setting', event.target.value)}>
           <option value="">Unspecified</option>{CARDIO_SETTINGS[sport].map(setting => <option key={setting}>{setting}</option>)}
         </select></label>
@@ -121,8 +126,8 @@ function CardioFields({ sport, previous, initial, onBack, onSaved, blocked }: {
         <div className="actions">
           <Button type="submit">{previous ? 'Save changes' : 'Save session'}</Button>
           {!previous && <Button variant="secondary" onClick={() => {
-            if (window.confirm('Discard this cardio draft?')) void run(() => discardCardioDraft(sport), onBack)
-          }}>Discard draft</Button>}
+            if (window.confirm(live ? 'Discard this cardio recording?' : 'Discard this cardio draft?')) void run(() => live ? changeLiveCardio(live.token, 'discard') : discardCardioDraft(sport), onBack)
+          }}>{live ? 'Discard recording' : 'Discard draft'}</Button>}
         </div>
       </fieldset>
     </form>

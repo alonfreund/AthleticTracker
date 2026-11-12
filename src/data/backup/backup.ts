@@ -1,4 +1,5 @@
-import { CARDIO_TABLES, validateCardioDetails, validateCardioDraft, validateCardioParent, type CardioDetails, type CardioDraft } from '../../domain/cardio/models'
+import { pauseRestoredRecording, validateCardioTiming, validateLiveCardio, type CardioTiming, type LiveCardio } from '../../domain/cardio/timing'
+import { CARDIO_TABLES, CARDIO_TIMING_TABLES, validateCardioDetails, validateCardioDraft, validateCardioParent, type CardioDetails, type CardioDraft } from '../../domain/cardio/models'
 import type { Routine, RoutineExercise } from '../../domain/strength/routines'
 // In-memory helpers support small fixtures and compatibility checks. Production file operations use pipeline.ts.
 import type { Table } from 'dexie'
@@ -14,17 +15,18 @@ import { validateText, type AppMetadata, type FoundationRecord } from '../../dom
 
 import { assertBackupSize, utf8Bytes } from './limits'
 export { MAX_BACKUP_BYTES } from './limits'
-export const BACKUP_VERSION = 7
-export const SUPPORTED_BACKUP_VERSIONS = [1, 2, 3, 4, 5, 6, BACKUP_VERSION]
+export const BACKUP_VERSION = 8
+export const SUPPORTED_BACKUP_VERSIONS = [1, 2, 3, 4, 5, 6, 7, BACKUP_VERSION]
 
 function backupTables(version: number) {
-  if (version >= 7) return [...BACKUP_TABLES]
-  if (version >= 5) return BACKUP_TABLES.filter(name => !(CARDIO_TABLES as readonly string[]).includes(name))
+  if (version >= 8) return [...BACKUP_TABLES]
+  if (version === 7) return BACKUP_TABLES.filter(name => !(CARDIO_TIMING_TABLES as readonly string[]).includes(name))
+  if (version >= 5) return BACKUP_TABLES.filter(name => !([...CARDIO_TABLES, ...CARDIO_TIMING_TABLES] as readonly string[]).includes(name))
   return ['metadata', 'foundationRecords', ...(version > 1 ? STRENGTH_TABLES : []),
     ...(version >= 4 ? ['exercisePreferences', 'catalogueState'] : [])]
 }
 
-export interface BackupData extends StrengthData { metadata: AppMetadata[]; foundationRecords: FoundationRecord[]; exercisePreferences: ExercisePreference[]; catalogueState: CatalogueState[]; routines: Routine[]; routineExercises: RoutineExercise[]; cardioDetails: CardioDetails[]; cardioDrafts: CardioDraft[] }
+export interface BackupData extends StrengthData { metadata: AppMetadata[]; foundationRecords: FoundationRecord[]; exercisePreferences: ExercisePreference[]; catalogueState: CatalogueState[]; routines: Routine[]; routineExercises: RoutineExercise[]; cardioDetails: CardioDetails[]; cardioDrafts: CardioDraft[]; cardioTiming: CardioTiming[]; cardioLive: LiveCardio[] }
 export interface Backup {
   format: 'athletic-tracker-backup'
   formatVersion: typeof BACKUP_VERSION
@@ -105,14 +107,25 @@ export function validateBackup(value: unknown): Backup {
   const sessions = new Map(strength.sessions.map(row => [row.id, row]))
   const cardioActivities = strength.sessionActivities.filter(row => row.activityType === 'cardio')
   if (version < 7 && cardioActivities.length) throw new Error('Cardio requires backup format 7.')
+  const cardioTiming = version >= 8 ? data.cardioTiming : []
+  const cardioLive = version >= 8 ? data.cardioLive : []
+  if (!Array.isArray(cardioTiming) || !Array.isArray(cardioLive) || cardioLive.length > 1) throw new Error('Invalid cardio timing tables.')
+  cardioLive.forEach(validateLiveCardio)
+  const timings = new Map<string, CardioTiming>()
+  for (const row of cardioTiming) {
+    validateCardioTiming(row)
+    if (timings.has(row.id)) throw new Error('Duplicate cardio timing.')
+    timings.set(row.id, row)
+  }
   const cardioIds = new Set<string>()
   for (const row of cardioDetails) {
     validateCardioDetails(row)
     const activity = activities.get(row.id)
-    validateCardioParent(row, activity, activity && sessions.get(activity.sessionId))
+    validateCardioParent(row, activity, activity && sessions.get(activity.sessionId), timings.get(row.id))
     if (cardioIds.has(row.id)) throw new Error('Duplicate cardio details.')
     cardioIds.add(row.id)
   }
+  if (cardioTiming.some(row => !cardioIds.has(row.id))) throw new Error('Missing cardio details for saved timing.')
   if (cardioActivities.some(row => !cardioIds.has(row.id))) throw new Error('Missing cardio details.')
   const cardioSessionIds = new Set(cardioActivities.map(row => row.sessionId))
   if (strength.restTimers.some(row => cardioSessionIds.has(row.sessionId))) throw new Error('A cardio session cannot have a strength rest timer.')
@@ -146,7 +159,7 @@ export function validateBackup(value: unknown): Backup {
     if (exerciseIds.has(row.id) || positions.has(position)) throw new Error('Duplicate routine exercise or position.')
     exerciseIds.add(row.id); positions.add(position)
   }
-  return { format: 'athletic-tracker-backup', formatVersion: BACKUP_VERSION, exportedAt: date(root.exportedAt), appVersion: string(root.appVersion), data: { metadata, foundationRecords, ...structuredClone(strength), exercisePreferences: exercisePreferences as ExercisePreference[], catalogueState: catalogueState as CatalogueState[], routines: structuredClone(routines), routineExercises: structuredClone(routineExercises), cardioDetails: structuredClone(cardioDetails), cardioDrafts: structuredClone(cardioDrafts) } }
+  return { format: 'athletic-tracker-backup', formatVersion: BACKUP_VERSION, exportedAt: date(root.exportedAt), appVersion: string(root.appVersion), data: { metadata, foundationRecords, ...structuredClone(strength), exercisePreferences: exercisePreferences as ExercisePreference[], catalogueState: catalogueState as CatalogueState[], routines: structuredClone(routines), routineExercises: structuredClone(routineExercises), cardioDetails: structuredClone(cardioDetails), cardioDrafts: structuredClone(cardioDrafts), cardioTiming: structuredClone(cardioTiming), cardioLive: structuredClone(cardioLive) } }
 }
 export function parseBackup(text: string): Backup {
   assertBackupSize(utf8Bytes(text))
@@ -171,7 +184,7 @@ export async function restoreBackup(value: unknown, database: AthleticDatabase =
       throw new Error('Local data changed after the safety backup. Cancel restore and start again to protect the newer changes.')
     }
     for (const [, table] of tables) await table.clear()
-    for (const [name, table] of tables) await table.bulkAdd(backup.data[name])
+    for (const [name, table] of tables) await table.bulkAdd(name === 'cardioLive' ? backup.data.cardioLive.map(row => pauseRestoredRecording(row, backup.exportedAt)) : backup.data[name])
   })
 }
 export function serializeBackup(backup: Backup): string {
@@ -215,6 +228,8 @@ export function validateBackupRecord(name: string, value: unknown, version: numb
   }
   if (version < 7 && name === 'sessionActivities' && item.activityType === 'cardio') throw new Error('Cardio requires backup format 7.')
   if (name === 'cardioDetails') validateCardioDetails(value)
+  if (name === 'cardioTiming') validateCardioTiming(value)
+  if (name === 'cardioLive') validateLiveCardio(value)
   if (name === 'cardioDrafts') validateCardioDraft(value)
   if(name==='metadata') {
     keys(item,['key','value'])

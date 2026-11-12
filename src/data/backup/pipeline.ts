@@ -1,3 +1,4 @@
+import { pauseRestoredRecording, validateCardioTiming } from '../../domain/cardio/timing'
 import { validateCardioDetails, validateCardioParent } from '../../domain/cardio/models'
 import Dexie from 'dexie'
 import { APP_VERSION } from '../../app/version'
@@ -97,7 +98,7 @@ async function validateStage(id:string,header:StagedBackup['header'],database:At
     while(cache.size>16 || cacheBytes>2*MAX_BACKUP_ROW_BYTES){const first=cache.keys().next().value!;cacheBytes-=cache.get(first)!.bytes;cache.delete(first)}
     return value
   }
-  const order=['metadata','foundationRecords','exercises','sessions','sessionActivities','supersetGroups','sessionExercises','strengthSets','restTimers','editorDrafts','exercisePreferences','catalogueState','routines','routineExercises','cardioDetails','cardioDrafts'] as const
+  const order=['metadata','foundationRecords','exercises','sessions','sessionActivities','supersetGroups','sessionExercises','strengthSets','restTimers','editorDrafts','exercisePreferences','catalogueState','routines','routineExercises','cardioDetails','cardioDrafts','cardioTiming','cardioLive'] as const
   for(const name of order) {
     options.onProgress?.(`Validating ${name}…`)
     await eachPage(database,id,name,async rows=>{
@@ -126,7 +127,13 @@ async function validateStage(id:string,header:StagedBackup['header'],database:At
             validateCardioDetails(value)
             const activity = await read('sessionActivities', value.id)
             const session = await read('sessions', activity.sessionId)
-            validateCardioParent(value, activity as { activityType: unknown }, session as { status: unknown; startedAt: string; endedAt: string | null })
+            const timingRow = await database.backupRows.get([id, 'cardioTiming', row.key])
+            const timing: unknown = timingRow ? JSON.parse(timingRow.json) : undefined
+            if (timing !== undefined) validateCardioTiming(timing)
+            validateCardioParent(value, activity as { activityType: unknown }, session as { status: unknown; startedAt: string; endedAt: string | null }, timing)
+          }
+          if (name === 'cardioTiming' && !await database.backupRows.get([id, 'cardioDetails', row.key])) {
+            throw new Error('Missing cardio details for saved timing.')
           }
           if (keys.length) await database.backupKeys.bulkAdd(keys)
           if(name==='exercises' && header.formatVersion<4) {
@@ -260,11 +267,14 @@ async function unchanged(snapshot:StagedBackup,database:AthleticDatabase,options
 export async function restoreStagedBackup(incoming:StagedBackup,safety:StagedBackup,database:AthleticDatabase=db,options:PipelineOptions={}):Promise<void> {
   if(incoming.id===safety.id)throw new Error('Select a separate incoming backup and safety backup.')
   await database.transaction('rw',[...tables(database),...internals(database)],async()=>{
-    abort(options);await job(incoming,database);await unchanged(safety,database,options)
+    abort(options);const incomingJob = await job(incoming,database);await unchanged(safety,database,options)
     for(const name of BACKUP_TABLES) {
       abort(options);options.onProgress?.(`Restoring ${name}…`)
       await database[name].clear()
-      await eachPage(database,incoming.id,name,async rows=>{abort(options);await database.table(name).bulkAdd(rows.map(row=>JSON.parse(row.json)))})
+      await eachPage(database,incoming.id,name,async rows=>{abort(options);await database.table(name).bulkAdd(rows.map(row => {
+        const value = JSON.parse(row.json)
+        return name === 'cardioLive' ? pauseRestoredRecording(value, incomingJob.header!.exportedAt) : value
+      }))})
     }
     abort(options)
     // Commit live replacement and stage cleanup together. A failure rolls back both.

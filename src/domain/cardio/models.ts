@@ -1,3 +1,4 @@
+import type { CardioTiming } from './timing'
 import { isCardioActivity, type CardioActivity } from './activities'
 
 export const CARDIO_SETTINGS: Record<CardioActivity, readonly string[]> = {
@@ -27,6 +28,7 @@ export const CARDIO_INPUT_FIELDS = ['title', 'date', 'time', 'hours', 'minutes',
 export type CardioInput = Record<typeof CARDIO_INPUT_FIELDS[number], string>
 export type CardioDraft = { id: CardioActivity; input: CardioInput }
 export const CARDIO_TABLES = ['cardioDetails', 'cardioDrafts'] as const
+export const CARDIO_TIMING_TABLES = ['cardioTiming', 'cardioLive'] as const
 
 function fields(value: unknown, expected: readonly string[]): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value) ||
@@ -79,9 +81,13 @@ export function distanceUnits(sport: CardioActivity): DistanceUnit[] {
 }
 
 export function validateCardioParent(row: CardioDetails, activity: { activityType: unknown } | undefined,
-  session: { status: unknown; startedAt: string; endedAt: string | null } | undefined) {
-  if (activity?.activityType !== 'cardio' || session?.status !== 'finished' ||
-    Date.parse(session.endedAt ?? '') - Date.parse(session.startedAt) !== row.durationSeconds * 1000) {
+  session: { status: unknown; startedAt: string; endedAt: string | null } | undefined, timing?: CardioTiming) {
+  if (activity?.activityType !== 'cardio' || session?.status !== 'finished') {
+    throw new Error('Cardio details must belong to a finished cardio session with matching duration.')
+  }
+  const elapsed = Date.parse(session.endedAt ?? '') - Date.parse(session.startedAt)
+  if (timing ? (timing.id !== row.id || elapsed < timing.activeMs || Math.floor(timing.activeMs / 1000) !== row.durationSeconds)
+    : elapsed !== row.durationSeconds * 1000) {
     throw new Error('Cardio details must belong to a finished cardio session with matching duration.')
   }
 }
