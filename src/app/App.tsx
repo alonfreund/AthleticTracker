@@ -1,5 +1,7 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { verifyLocalStorage } from '../data/db/database'
+import { CardioHome, CardioSubscreen } from '../features/performance/CardioScreens'
+import { PerformanceHome } from '../features/performance/PerformanceScreens'
 import { StorageProtection } from '../components/StorageProtection'
 import { WorkoutsPanel } from '../features/workouts/WorkoutsPanel'
 import { ExerciseLibrary } from '../features/exercises/ExerciseLibrary'
@@ -77,13 +79,13 @@ export function App() {
     return () => { mounted = false }
   }, [view, databaseReady])
   useLayoutEffect(() => {
-    if (databaseReady && view === 'performance') updateSafety.setSafety({ dirty: false, busy: false, restoring: false, loading: false })
+    if (databaseReady && routeTab(view) === 'performance') updateSafety.setSafety({ dirty: false, busy: false, restoring: false, loading: false })
   }, [databaseReady, view])
   const blocked = safety.busy || safety.restoring || safety.applying || safety.loading
   const showResume = !!active && view !== 'strength'
   return <>
     <main className={`app-content ${showResume ? 'has-resume' : ''}`}>
-      <PageHeader destination={view} />
+      <PageHeader destination={view} cardioActivity={route.cardioActivity} />
       {!databaseReady && <p role={storageError ? 'alert' : 'status'} className={storageError ? 'error' : 'bootstrap-status'}>{storageError || 'Opening your saved training…'}</p>}
       <div className="screen-content">
         {databaseReady && view === 'strength' && <WorkoutsPanel key="strength" mode="train" onExerciseAnalytics={openExerciseAnalytics}
@@ -92,10 +94,14 @@ export function App() {
           initialSessionId={route.workoutId} onNavigateHistory={id => openHistory(id, returnToAnalytics)}
           onLeaveHistory={() => navigate({ screen: 'strength' })}
           onReturnToAnalytics={returnToAnalytics ? () => navigate({ screen: 'analytics' }) : undefined} />}
-        {databaseReady && view === 'performance' && <section className="surface-card" aria-labelledby="performance-heading">
-          <h2 id="performance-heading">Cardio is the first planned discipline</h2>
-          <p>Performance will be the place to log activities and track your benchmarks and skills.</p>
-        </section>}
+        {databaseReady && view === 'performance' && <PerformanceHome blocked={blocked}
+          onOpenCardio={() => navigate({ screen: 'performance/cardio' })} />}
+        {databaseReady && view === 'performance/cardio' && <CardioHome blocked={blocked}
+          onBack={() => navigate({ screen: 'performance' })}
+          onActivity={cardioActivity => navigate({ screen: 'performance/cardio/activity', cardioActivity })}
+          onHistory={() => navigate({ screen: 'performance/cardio/history' })} />}
+        {databaseReady && (view === 'performance/cardio/activity' || view === 'performance/cardio/history') &&
+          <CardioSubscreen blocked={blocked} activity={route.cardioActivity} onBack={() => navigate({ screen: 'performance/cardio' })} />}
         {databaseReady && view === 'analytics' && <Suspense fallback={<p role="status">Opening Analytics…</p>}>
           <AnalyticsPanel initialExercise={analyticsExercise} onOpenWorkout={id => openHistory(id, true)} />
         </Suspense>}
