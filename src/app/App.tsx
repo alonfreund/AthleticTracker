@@ -1,14 +1,15 @@
+import { liveQuery } from 'dexie'
 import { LiveCardioEntry, LiveCardioScreen } from '../features/performance/LiveCardioScreen'
 import { CardioForm } from '../features/performance/CardioForm'
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { verifyLocalStorage } from '../data/db/database'
 import { CardioHome, CardioHistory, CardioSessionScreen } from '../features/performance/CardioScreens'
-import { CalisthenicsHome, PerformanceHome } from '../features/performance/PerformanceScreens'
+import { PerformanceHome } from '../features/performance/PerformanceScreens'
 import { StorageProtection } from '../components/StorageProtection'
 import { WorkoutsPanel } from '../features/workouts/WorkoutsPanel'
 import { ExerciseLibrary } from '../features/exercises/ExerciseLibrary'
-import { activeWorkout } from '../data/repositories/workouts'
-import type { Exercise, Session } from '../domain/strength/models'
+import { activeMovementWorkout } from '../data/repositories/workouts'
+import type { Exercise } from '../domain/strength/models'
 import { updateSafety } from './updateSafety'
 import { UpdatePanel } from './UpdatePanel'
 import { routeFromHash, routeHash, routeTab, navigationDecision, type AppRoute } from './navigation'
@@ -27,7 +28,7 @@ export function App() {
   const returnRef = useRef(returnToAnalytics)
   const [analyticsCardio, setAnalyticsCardio] = useState(false)
   const [analyticsExercise, setAnalyticsExercise] = useState<Exercise>()
-  const [active, setActive] = useState<Session>()
+  const [active, setActive] = useState<Awaited<ReturnType<typeof activeMovementWorkout>>>()
   const [updateAvailable, setUpdateAvailable] = useState(false)
   const safety = useSyncExternalStore(updateSafety.subscribe, updateSafety.getSnapshot)
   const [databaseReady, setDatabaseReady] = useState(false)
@@ -80,15 +81,18 @@ export function App() {
   }, [])
   useEffect(() => {
     if (!databaseReady) return
-    let mounted = true
-    void activeWorkout().then(row => { if (mounted) setActive(row) }).catch(() => { if (mounted) setActive(undefined) })
-    return () => { mounted = false }
-  }, [view, databaseReady])
+    const subscription = liveQuery(() => activeMovementWorkout()).subscribe({
+      next: setActive,
+      error: () => setActive(undefined),
+    })
+    return () => subscription.unsubscribe()
+  }, [databaseReady])
   useLayoutEffect(() => {
-    if (databaseReady && routeTab(view) === 'performance') updateSafety.setSafety({ dirty: false, busy: false, restoring: false, loading: false })
+    if (databaseReady && routeTab(view) === 'performance' && view !== 'performance/calisthenics' && view !== 'performance/calisthenics/history') updateSafety.setSafety({ dirty: false, busy: false, restoring: false, loading: false })
   }, [databaseReady, view])
   const blocked = safety.busy || safety.restoring || safety.applying || safety.loading
-  const showResume = !!active && view !== 'strength'
+  const resumeScreen = active?.discipline === 'calisthenics' ? 'performance/calisthenics' : 'strength'
+  const showResume = !!active && view !== resumeScreen
   return <>
     <main className={`app-content ${showResume ? 'has-resume' : ''}`}>
       <PageHeader destination={view} cardioActivity={route.cardioActivity} />
@@ -103,8 +107,14 @@ export function App() {
         {databaseReady && view === 'performance' && <PerformanceHome blocked={blocked}
           onOpenCardio={() => navigate({ screen: 'performance/cardio' })}
           onOpenCalisthenics={() => navigate({ screen: 'performance/calisthenics' })} />}
-        {databaseReady && view === 'performance/calisthenics' && <CalisthenicsHome blocked={blocked}
-          onBack={() => navigate({ screen: 'performance' })} />}
+        {databaseReady && view === 'performance/calisthenics' && <WorkoutsPanel key={routeHash(route)} mode="train" discipline="calisthenics"
+          initialSessionId={route.workoutId}
+          onLeaveResume={route.workoutId ? () => navigate({ screen: 'performance/calisthenics' }) : undefined}
+          onLeaveHome={() => navigate({ screen: 'performance' })}
+          onNavigateHistory={workoutId => navigate({ screen: 'performance/calisthenics/history', workoutId })} />}
+        {databaseReady && view === 'performance/calisthenics/history' && <WorkoutsPanel key={routeHash(route)} mode="history" discipline="calisthenics"
+          initialSessionId={route.workoutId} onLeaveHistory={() => navigate({ screen: 'performance/calisthenics' })}
+          onNavigateHistory={workoutId => navigate({ screen: 'performance/calisthenics/history', workoutId })} />}
         {databaseReady && view === 'performance/cardio' && <LiveCardioEntry onOpen={() => navigate({ screen: 'performance/cardio/live' })} />}
         {databaseReady && view === 'performance/cardio' && <CardioHome blocked={blocked}
           onBack={() => navigate({ screen: 'performance' })}
@@ -136,13 +146,13 @@ export function App() {
         </Suspense>}
         {databaseReady && view === 'strength/library' && <ExerciseLibrary onExerciseAnalytics={openExerciseAnalytics} onBackToStrength={() => navigate({ screen: 'strength' })} />}
         <div className="settings-stack" hidden={view !== 'settings'}>
-          {databaseReady && view === 'settings' && <Suspense fallback={<p role="status">Opening data settings…</p>}><FoundationPanel onDataRestored={async () => { setActive(await activeWorkout()) }} /></Suspense>}
+          {databaseReady && view === 'settings' && <Suspense fallback={<p role="status">Opening data settings…</p>}><FoundationPanel onDataRestored={async () => { setActive(await activeMovementWorkout()) }} /></Suspense>}
           <details><summary>Device storage</summary><StorageProtection /></details>
           <UpdatePanel onAvailabilityChange={setUpdateAvailable} />
         </div>
       </div>
     </main>
-    {showResume && <aside className="resume-strip" aria-label="Workout in progress"><button disabled={blocked} onClick={() => { navigate({ screen: 'strength', workoutId: active.id }) }}><span className="resume-strip__text"><strong>{active.title}</strong><span>Workout in progress · Resume</span></span><Icon name="arrow" /></button></aside>}
+    {showResume && <aside className="resume-strip" aria-label="Workout in progress"><button disabled={blocked} onClick={() => { navigate({ screen: resumeScreen, workoutId: active.id }) }}><span className="resume-strip__text"><strong>{active.title}</strong><span>Workout in progress · Resume</span></span><Icon name="arrow" /></button></aside>}
     <BottomNavigation current={routeTab(view)} blocked={blocked} updateAvailable={updateAvailable} onNavigate={screen => {
       if (navigate({ screen }) && screen === 'analytics') { setAnalyticsExercise(undefined); setAnalyticsCardio(false) }
     }} />

@@ -1,9 +1,10 @@
+import { db } from '../../data/db/database'
 import { WorkoutRecap } from './WorkoutRecap'
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { updateSafety } from '../../app/updateSafety'
 import { initializeExerciseLibrary, listExercises } from '../../data/repositories/exercises'
 import { deleteFinishedWorkout, editFinishedWorkout, startWorkout, startRoutine, listWorkouts, loadWorkout, type Workout } from '../../data/repositories/workouts'
-import type { Exercise, Session } from '../../domain/strength/models'
+import { supportsCalisthenics, type Exercise, type MovementDiscipline, type Session } from '../../domain/strength/models'
 import { deleteRoutine, listRoutines, saveRoutine } from '../../data/repositories/routines'
 import { RoutineEditor, type SavedRoutine } from './RoutineEditor'
 import { Button } from '../../components/ui/Button'
@@ -12,9 +13,11 @@ import { ActiveWorkout } from './ActiveWorkout'
 import { durationText, WorkoutHistory } from './WorkoutHistory'
 import { FinishedWorkoutEditor } from './FinishedWorkoutEditor'
 
-export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHistory, onExerciseAnalytics, onNavigateLibrary, onLeaveHistory, onLeaveResume, onReturnToAnalytics }: { mode?: 'train' | 'history'; initialSessionId?: string; onNavigateHistory?: (id?: string) => void; onExerciseAnalytics?: (exercise: Exercise) => void
-  onNavigateLibrary?: () => void; onLeaveHistory?: () => void; onLeaveResume?: () => void; onReturnToAnalytics?: () => void
+export function WorkoutsPanel({ mode = 'train', discipline = 'strength', initialSessionId, onNavigateHistory, onExerciseAnalytics, onNavigateLibrary, onLeaveHistory, onLeaveResume, onReturnToAnalytics, onLeaveHome }: { mode?: 'train' | 'history'; discipline?: MovementDiscipline; initialSessionId?: string; onNavigateHistory?: (id?: string) => void; onExerciseAnalytics?: (exercise: Exercise) => void
+  onNavigateLibrary?: () => void; onLeaveHistory?: () => void; onLeaveResume?: () => void; onReturnToAnalytics?: () => void; onLeaveHome?: () => void
 }) {
+  const calisthenics = discipline === 'calisthenics'
+  const disciplineName = calisthenics ? 'Calisthenics' : 'Strength'
   const [sessions, setSessions] = useState<Session[]>([])
   const [library, setLibrary] = useState<Exercise[]>([])
   const [selected, setSelected] = useState<Workout>()
@@ -37,17 +40,19 @@ export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHist
     window.addEventListener('beforeunload', guard)
     return () => window.removeEventListener('beforeunload', guard)
   }, [historyDirty, selected])
-  async function refresh() { setSessions(await listWorkouts()) }
+  async function refresh() { setSessions(await listWorkouts(db, discipline)) }
   useEffect(() => {
     let active = true
     void initializeExerciseLibrary().then(async () => {
-      const [sessions, library, savedRoutines] = await Promise.all([listWorkouts(), listExercises(), mode === 'train' ? listRoutines() : []])
-      const requested = initialSessionId ? await loadWorkout(initialSessionId).catch(() => undefined) : undefined
+      const calisthenics = discipline === 'calisthenics'
+  const disciplineName = calisthenics ? 'Calisthenics' : 'Strength'
+  const [sessions, library, savedRoutines] = await Promise.all([listWorkouts(db, discipline), listExercises(), mode === 'train' && !calisthenics ? listRoutines() : []])
+      const requested = initialSessionId && sessions.some(row => row.id === initialSessionId) ? await loadWorkout(initialSessionId).catch(() => undefined) : undefined
       if (active && initialSessionId && !requested) setError('This workout could not be opened.')
-      if (active) { setSessions(sessions); setLibrary(library); setRoutines(savedRoutines); setSelected(requested); setLoading(false) }
+      if (active) { setSessions(sessions); setLibrary(calisthenics ? library.filter(exercise => supportsCalisthenics(exercise.tracking)) : library); setRoutines(savedRoutines); setSelected(requested); setLoading(false) }
     }).catch(() => { if (active) { setError('Could not load workouts. Reopen the app to retry.'); setLoading(false) } })
     return () => { active = false }
-  }, [initialSessionId, mode])
+  }, [initialSessionId, mode, discipline, calisthenics])
   async function perform(action: () => Promise<void>, fallback: string) {
     if (lock.current || updateSafety.getSnapshot().applying) return
     lock.current = true; setBusy(true); updateSafety.setBusy(true); setError('')
@@ -57,7 +62,7 @@ export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHist
   }
   function open(id?: string, routineId?: string) {
     return perform(async () => {
-      const sessionId = id ?? (routineId ? await startRoutine(routineId) : await startWorkout())
+      const sessionId = id ?? (routineId ? await startRoutine(routineId) : await startWorkout(db, discipline))
       setHistoryMessage(''); setSelected(await loadWorkout(sessionId))
     }, 'Could not open workout.')
   }
@@ -99,7 +104,7 @@ export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHist
         const updated = await editFinishedWorkout(selected, edit)
         setSelected(updated); closeHistoryEditor(); setHistoryMessage('Workout changes saved on this device.')
       }, 'Could not save workout changes.')} />
-    return <WorkoutHistory workout={selected} onBack={onReturnToAnalytics ?? back} backLabel={onReturnToAnalytics ? 'Back to Analytics' : mode === 'history' ? 'Back to history' : 'Back to Strength'}
+    return <WorkoutHistory workout={selected} onBack={onReturnToAnalytics ?? back} backLabel={onReturnToAnalytics ? 'Back to Analytics' : mode === 'history' ? 'Back to history' : `Back to ${disciplineName}`}
       disabled={disabled} onExerciseAnalytics={onExerciseAnalytics} message={historyMessage} error={error}
       onEdit={() => { setError(''); setEditingHistory(true) }}
       onDelete={() => {
@@ -117,18 +122,19 @@ export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHist
   const visibleHistory = mode === 'train' ? history.slice(0, 3) : history
   return <section aria-label={mode === 'train' ? 'Training' : 'Workout history'}>
     {historyMessage && <p role="status">{historyMessage}</p>}
+    {mode === 'train' && onLeaveHome && <Button className="section-back" variant="secondary" disabled={busy || applying || loading} onClick={onLeaveHome}>Back to Performance</Button>}
     {mode === 'train' && <div className="training-hero">
-      <span className="hero-symbol"><Icon name="train" /></span>
+      <span className="hero-symbol"><Icon name={calisthenics ? 'calisthenics' : 'train'} /></span>
       {loading ? <p role="status">Opening your workouts…</p> : active ? <>
         <h2>Pick up where you left off</h2><div className="resume-card"><h3>{active.title}</h3><p>Started {new Date(active.startedAt).toLocaleString()}</p><Button disabled={busy || applying} onClick={() => void open(active.id)}>Resume workout <Icon name="arrow" /></Button></div>
-      </> : <><h2>Strength workout</h2><Button disabled={busy || applying} onClick={() => void open()}>Start workout <Icon name="arrow" /></Button></>}
+      </> : <><h2>{disciplineName} workout</h2><Button disabled={busy || applying} onClick={() => void open()}>Start workout <Icon name="arrow" /></Button></>}
     </div>}
-    {mode === 'train' && <div className="strength-shortcuts" aria-label="Strength shortcuts">
+    {mode === 'train' && <div className="strength-shortcuts" aria-label={`${disciplineName} shortcuts`}>
       <Button variant="secondary" disabled={busy || applying || loading} onClick={() => onNavigateHistory?.()}><Icon name="history" /> Workout history</Button>
-      <Button variant="secondary" disabled={busy || applying || loading} onClick={onNavigateLibrary}><Icon name="library" /> Exercise library</Button>
+      {onNavigateLibrary && <Button variant="secondary" disabled={busy || applying || loading} onClick={onNavigateLibrary}><Icon name="library" /> Exercise library</Button>}
     </div>}
-    {mode === 'history' && onLeaveHistory && <Button className="section-back" variant="secondary" disabled={busy || applying || loading} onClick={onLeaveHistory}>Back to Strength</Button>}
-    {mode === 'train' && !loading && <section aria-labelledby="routines-heading">
+    {mode === 'history' && onLeaveHistory && <Button className="section-back" variant="secondary" disabled={busy || applying || loading} onClick={onLeaveHistory}>Back to {disciplineName}</Button>}
+    {mode === 'train' && !calisthenics && !loading && <section aria-labelledby="routines-heading">
       <div className="section-heading">
         <h2 id="routines-heading">Routines</h2>
         <Button variant="quiet" disabled={busy || applying} onClick={() => { setError(''); setEditing(null) }}>New routine</Button>

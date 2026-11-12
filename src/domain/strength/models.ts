@@ -54,9 +54,16 @@ export interface Session extends Entity {
   endedAt: string | null
   notes: string
 }
+export type MovementDiscipline = 'strength' | 'calisthenics'
+
+export function supportsCalisthenics(tracking: Tracking): boolean {
+  return tracking.load === 'bodyweight' || tracking.load === 'added' || tracking.load === 'assisted'
+    || (tracking.load === 'none' && tracking.measurement === 'duration')
+}
+
 export interface SessionActivity extends Entity {
   sessionId: string
-  activityType: 'strength' | 'cardio'
+  activityType: MovementDiscipline | 'cardio'
   position: number
 }
 export interface SessionExercise extends Entity {

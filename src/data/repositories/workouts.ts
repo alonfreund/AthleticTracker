@@ -7,7 +7,7 @@ import type { Table } from 'dexie'
 import { globalRest, exerciseRest } from './preferences'
 import { validateRestSeconds } from '../../domain/rest'
 import { db, type AthleticDatabase } from '../db/database'
-import { STRENGTH_TABLES, emptyStrengthData, snapshotExercise, type Session, type StrengthData, type StrengthSet } from '../../domain/strength/models'
+import { STRENGTH_TABLES, emptyStrengthData, snapshotExercise, supportsCalisthenics, type MovementDiscipline, type Session, type StrengthData, type StrengthSet } from '../../domain/strength/models'
 import { validateStrengthData } from '../../domain/strength/validation'
 import { emptyLoad, inputFromSet, measurements, type SetInput } from '../../domain/strength/logging'
 export type Workout = StrengthData
@@ -31,11 +31,20 @@ async function readWorkout(id: string, database: AthleticDatabase): Promise<Work
 }
 export function loadWorkout(id: string, database = db): Promise<Workout> { return database.transaction('r', tables(database), () => readWorkout(id, database)) }
 export function activeWorkout(database = db): Promise<Session | undefined> { return database.sessions.where('status').equals('active').first() }
-export function listWorkouts(database = db): Promise<Session[]> {
+export function activeMovementWorkout(database = db) {
   return database.transaction('r', database.sessions, database.sessionActivities, async () => {
-    const cardio = await database.sessionActivities.where('activityType').equals('cardio').toArray()
-    const excluded = new Set(cardio.map(row => row.sessionId))
-    return database.sessions.orderBy('startedAt').reverse().filter(row => !excluded.has(row.id)).toArray()
+    const session = await activeWorkout(database)
+    if (!session) return undefined
+    const activity = await database.sessionActivities.where('sessionId').equals(session.id).first()
+    const discipline: MovementDiscipline = activity?.activityType === 'calisthenics' ? 'calisthenics' : 'strength'
+    return { ...session, discipline }
+  })
+}
+export function listWorkouts(database = db, discipline: MovementDiscipline = 'strength'): Promise<Session[]> {
+  return database.transaction('r', database.sessions, database.sessionActivities, async () => {
+    const activities = await database.sessionActivities.where('activityType').anyOf(['cardio', 'calisthenics']).toArray()
+    const types = new Map(activities.map(row => [row.sessionId, row.activityType]))
+    return database.sessions.orderBy('startedAt').reverse().filter(row => (types.get(row.id) ?? 'strength') === discipline).toArray()
   })
 }
 function clock(workout: Workout): string {
@@ -65,22 +74,25 @@ async function mutate<T>(id: string, action: (workout: Workout, now: string) => 
     return result
   })
 }
-function newWorkout(title: string, notes: string): Workout {
+function newWorkout(title: string, notes: string, discipline: MovementDiscipline = 'strength'): Workout {
   const now = new Date().toISOString()
   const id = crypto.randomUUID()
   return {
     exercises: [],
     sessions: [{ id, createdAt: now, updatedAt: now, title, status: 'active', startedAt: now, endedAt: null, notes }],
-    sessionActivities: [{ id: crypto.randomUUID(), sessionId: id, activityType: 'strength', position: 0, createdAt: now, updatedAt: now }],
+    sessionActivities: [{ id: crypto.randomUUID(), sessionId: id, activityType: discipline, position: 0, createdAt: now, updatedAt: now }],
     sessionExercises: [], strengthSets: [], supersetGroups: [], restTimers: [], editorDrafts: [],
   }
 }
 
-export async function startWorkout(database = db): Promise<string> {
+export async function startWorkout(database = db, discipline: MovementDiscipline = 'strength'): Promise<string> {
   return database.transaction('rw', database.sessions, database.sessionActivities, async () => {
-    const active = await activeWorkout(database)
-    if (active) return active.id
-    const workout = newWorkout('Strength workout', '')
+    const active = await activeMovementWorkout(database)
+    if (active) {
+      if (active.discipline !== discipline) throw new Error('Resume or finish your active workout first.')
+      return active.id
+    }
+    const workout = newWorkout(discipline === 'calisthenics' ? 'Calisthenics workout' : 'Strength workout', '', discipline)
     await database.sessions.add(workout.sessions[0])
     await database.sessionActivities.add(workout.sessionActivities[0])
     return workout.sessions[0].id
@@ -133,6 +145,9 @@ export function addWorkoutExercise(id: string, sourceId: string, database = db) 
   return mutate(id, async (workout, now) => {
     const source = await database.exercises.get(sourceId)
     if (!source || source.archived) throw new Error('Choose an available library exercise.')
+    if (workout.sessionActivities[0]?.activityType === 'calisthenics' && !supportsCalisthenics(source.tracking)) {
+      throw new Error('Choose a bodyweight, weighted, assisted or timed calisthenics exercise.')
+    }
     const activity = workout.sessionActivities[0]
     if (!activity) throw new Error('This workout has no strength activity.')
     const exerciseId = crypto.randomUUID()
@@ -149,6 +164,9 @@ export function replaceWorkoutExercise(id: string, exerciseId: string, sourceId:
     if (completed && !remaining.length) throw new Error('All sets are complete. Add the substitute as a new exercise.')
     const source = await database.exercises.get(sourceId)
     if (!source || source.archived || source.id === exercise.snapshot.id) throw new Error('Choose a different available exercise.')
+    if (workout.sessionActivities[0]?.activityType === 'calisthenics' && !supportsCalisthenics(source.tracking)) {
+      throw new Error('Choose a bodyweight, weighted, assisted or timed calisthenics exercise.')
+    }
 
     stopExerciseTimer(workout, exerciseId, now)
     stopTimer(workout, workout.strengthSets.filter(set => set.sessionExerciseId === exerciseId).map(set => set.id), now)
@@ -476,7 +494,7 @@ export type PreviousExercise = { date: string; sets: StrengthSet[] }
 export async function previousPerformance(id: string, database = db): Promise<Record<string, PreviousExercise>> {
   return database.transaction('r', tables(database), async () => {
     const current = await readWorkout(id, database)
-    const sessions = (await listWorkouts(database)).filter(row => row.status === 'finished')
+    const sessions = (await listWorkouts(database, current.sessionActivities[0]?.activityType === 'calisthenics' ? 'calisthenics' : 'strength')).filter(row => row.status === 'finished')
       .filter(row => row.id !== id && row.startedAt <= current.sessions[0].startedAt).sort((a, b) => b.startedAt.localeCompare(a.startedAt))
     const result: Record<string, PreviousExercise> = {}
     for (const session of sessions) {
@@ -494,14 +512,14 @@ export async function previousPerformance(id: string, database = db): Promise<Re
 
 export type ExerciseHistorySession = Pick<Session, 'id' | 'title' | 'startedAt'> & { sets: StrengthSet[] }
 
-export async function recentExerciseHistory(exerciseId: string, database = db): Promise<ExerciseHistorySession[]> {
+export async function recentExerciseHistory(exerciseId: string, database = db, discipline: MovementDiscipline = 'strength'): Promise<ExerciseHistorySession[]> {
   const { sessions, sessionActivities, sessionExercises, strengthSets } = database
   return database.transaction('r', [sessions, sessionActivities, sessionExercises, strengthSets], async () => {
     // Match the saved identity even when a historical card no longer has a library link.
     const exercises = await sessionExercises.filter(row => row.snapshot.id === exerciseId).toArray()
     if (!exercises.length) return []
     const activities = await sessionActivities.bulkGet([...new Set(exercises.map(row => row.sessionActivityId))])
-    const sessionByActivity = new Map(activities.flatMap(row => row ? [[row.id, row.sessionId] as const] : []))
+    const sessionByActivity = new Map(activities.flatMap(row => row?.activityType === discipline ? [[row.id, row.sessionId] as const] : []))
     const exercisesBySession = new Map<string, typeof exercises>()
     for (const exercise of exercises) {
       const sessionId = sessionByActivity.get(exercise.sessionActivityId)

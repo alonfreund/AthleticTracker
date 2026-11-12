@@ -112,7 +112,7 @@ it('preserves out-of-order superset rounds through replacement, reopening and fo
   const target = database()
   await verifyLocalStorage(target)
   const incoming = await stageImport(blob, target)
-  expect(incoming.header.formatVersion).toBe(8)
+  expect(incoming.header.formatVersion).toBe(9)
   await restoreStagedBackup(incoming, await stageSnapshot(target), target)
   expect(await loadWorkout(id, target)).toEqual(after)
   expect(await listRoutines(target)).toEqual(await listRoutines(reopened))

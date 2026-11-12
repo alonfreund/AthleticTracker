@@ -112,7 +112,7 @@ it('restores routines together with an active session and raw set draft', async 
   expect((await saveInlineSet(sessionId, set.id, input, undefined, db)).applied).toBe(false)
   const { blob } = await exportBackupFile(db)
   const backup = JSON.parse(await blob.text())
-  expect(backup.formatVersion).toBe(8)
+  expect(backup.formatVersion).toBe(9)
   const restored = database()
   await verifyLocalStorage(restored)
   const incoming = await stageImport(blob, restored)

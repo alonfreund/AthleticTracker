@@ -1,3 +1,4 @@
+import { db } from '../../data/db/database'
 import { liveQuery } from 'dexie'
 import { readSetRecordBaselines } from '../../data/repositories/analytics'
 import { analyticsExerciseKey } from '../../domain/strength/analytics'
@@ -32,6 +33,7 @@ const workoutCollision: CollisionDetection = args => {
 function time(seconds: number) { return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` }
 export function ActiveWorkout({ initial, library, onBack, onFinished }: { initial: Workout; library: Exercise[]; onBack: () => void; onFinished: (workout: Workout) => void }) {
   const id = initial.sessions[0].id
+  const discipline = initial.sessionActivities[0]?.activityType === 'calisthenics' ? 'calisthenics' : 'strength'
   const [workout, setWorkout] = useState(initial)
   const [previous, setPrevious] = useState<Record<string, PreviousExercise>>({})
   const [busy, setBusy] = useState(false)
@@ -89,12 +91,12 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
   const [recordBaselines, setRecordBaselines] = useState<{ profiles: string; values: SetRecordBaselines }>()
   useEffect(() => {
     if (!profileKeys) return
-    const subscription = liveQuery(() => readSetRecordBaselines(new Set(profileKeys.split('|')), startedAt)).subscribe({
+    const subscription = liveQuery(() => readSetRecordBaselines(new Set(profileKeys.split('|')), startedAt, db, discipline)).subscribe({
       next: values => setRecordBaselines({ profiles: profileKeys, values }),
       error: () => setRecordBaselines(undefined),
     })
     return () => subscription.unsubscribe()
-  }, [profileKeys, startedAt])
+  }, [profileKeys, startedAt, discipline])
   const records = useMemo(() => recordBaselines?.profiles === profileKeys && completedSetRecords(workout, recordBaselines.values),
     [workout, recordBaselines, profileKeys])
   async function run(action: () => Promise<unknown>, after?: () => void, refresh = true) {
@@ -186,7 +188,7 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
     const weightLabel = config.load === 'added' ? 'Added' : config.load === 'assisted' ? 'Assist' : config.load === 'bodyweight' ? 'BW' : config.load === 'none' ? 'Load' : units.size > 1 ? 'Weight' : ([...units][0] ?? 'kg').toUpperCase()
     const canReplace = !sets.length || sets.some(set => !set.completed)
     return <div className={code ? 'superset-exercise inline-exercise' : undefined} key={exercise.id} role={code ? 'group' : undefined} aria-labelledby={code ? 'exercise-' + exercise.id : undefined}>
-      <ExerciseHistory exerciseId={exercise.snapshot.id} name={exerciseDisplayName(exercise.snapshot)} disabled={blocked}
+      <ExerciseHistory discipline={discipline} exerciseId={exercise.snapshot.id} name={exerciseDisplayName(exercise.snapshot)} disabled={blocked}
         heading={<Heading id={'exercise-' + exercise.id} tabIndex={-1}>{code && <span className="superset-member-label">{code} </span>}{exerciseDisplayName(exercise.snapshot)}</Heading>}
         menu={<details className="exercise-menu"><summary aria-label={`${exerciseDisplayName(exercise.snapshot)}, exercise options`}>⋯</summary><div className="actions"><button className="secondary" disabled={structuralBlocked || !canReplace} onClick={() => {
         invoke(async () => {}, () => {

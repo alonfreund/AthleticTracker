@@ -15,8 +15,8 @@ import { validateText, type AppMetadata, type FoundationRecord } from '../../dom
 
 import { assertBackupSize, utf8Bytes } from './limits'
 export { MAX_BACKUP_BYTES } from './limits'
-export const BACKUP_VERSION = 8
-export const SUPPORTED_BACKUP_VERSIONS = [1, 2, 3, 4, 5, 6, 7, BACKUP_VERSION]
+export const BACKUP_VERSION = 9
+export const SUPPORTED_BACKUP_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, BACKUP_VERSION]
 
 function backupTables(version: number) {
   if (version >= 8) return [...BACKUP_TABLES]
@@ -106,6 +106,7 @@ export function validateBackup(value: unknown): Backup {
   const activities = new Map(strength.sessionActivities.map(row => [row.id, row]))
   const sessions = new Map(strength.sessions.map(row => [row.id, row]))
   const cardioActivities = strength.sessionActivities.filter(row => row.activityType === 'cardio')
+  if (version < 9 && strength.sessionActivities.some(row => row.activityType === 'calisthenics')) throw new Error('Calisthenics requires backup format 9.')
   if (version < 7 && cardioActivities.length) throw new Error('Cardio requires backup format 7.')
   const cardioTiming = version >= 8 ? data.cardioTiming : []
   const cardioLive = version >= 8 ? data.cardioLive : []
@@ -226,6 +227,7 @@ export function validateBackupRecord(name: string, value: unknown, version: numb
     (name === 'strengthSets' && Object.hasOwn(item, 'supersetRoundIndex')))) {
     throw new Error('Exercise replacement requires backup format 6.')
   }
+  if (version < 9 && name === 'sessionActivities' && item.activityType === 'calisthenics') throw new Error('Calisthenics requires backup format 9.')
   if (version < 7 && name === 'sessionActivities' && item.activityType === 'cardio') throw new Error('Cardio requires backup format 7.')
   if (name === 'cardioDetails') validateCardioDetails(value)
   if (name === 'cardioTiming') validateCardioTiming(value)

@@ -142,7 +142,7 @@ describe('backup versions and metadata validation',()=>{
   it('normalises fixed format-2/3 backups without altering snapshots, sets, raw drafts or timers',async()=>{
     for(const old of [fixture,previous]){
       const db=database();await restoreBackup(old,db);const backup=await createBackup(db)
-      expect(backup.formatVersion).toBe(8)
+      expect(backup.formatVersion).toBe(9)
       for(const key of ['sessionExercises','strengthSets','editorDrafts','restTimers']as const)expect(backup.data[key]).toEqual(old.data[key])
       expect(backup.data.exercises).toEqual(old.data.exercises.map(row=>normalizeDefinition(row as Exercise)))
       const target=database();await restoreBackup(parseBackup(serializeBackup(backup)),target)

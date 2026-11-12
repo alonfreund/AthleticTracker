@@ -21,13 +21,3 @@ export function PerformanceHome({ onOpenCardio, onOpenCalisthenics, blocked }: {
     </section>
   </div>
 }
-
-export function CalisthenicsHome({ onBack, blocked }: { onBack: () => void; blocked: boolean }) {
-  return <>
-    <Button className="section-back" variant="secondary" onClick={onBack} disabled={blocked}>Back to Performance</Button>
-    <section className="surface-card" aria-labelledby="calisthenics-tracking">
-      <h2 id="calisthenics-tracking">Calisthenics tracking is coming</h2>
-      <p>Movement benchmarks, holds, and skill practice will live here.</p>
-    </section>
-  </>
-}

@@ -1,15 +1,18 @@
+import { db } from '../../data/db/database'
+import type { MovementDiscipline } from '../../domain/strength/models'
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { recentExerciseHistory, type ExerciseHistorySession } from '../../data/repositories/workouts'
 import { performanceText } from '../../domain/strength/logging'
 import { Icon } from '../../components/ui/Icon'
 import { SET_TYPES } from '../../domain/strength/setTypes'
 
-export function ExerciseHistory({ exerciseId, name, heading, menu, disabled }: {
+export function ExerciseHistory({ exerciseId, name, heading, menu, disabled, discipline = 'strength' }: {
   exerciseId: string
   name: string
   heading: ReactNode
   menu: ReactNode
   disabled: boolean
+  discipline?: MovementDiscipline
 }) {
   const panelId = useId()
   const trigger = useRef<HTMLButtonElement>(null)
@@ -27,7 +30,7 @@ export function ExerciseHistory({ exerciseId, name, heading, menu, disabled }: {
       </div>
     </div>
     <div id={panelId} hidden={!open}>
-      {open && <ExerciseHistoryPanel key={exerciseId} exerciseId={exerciseId} name={name} onClose={() => {
+      {open && <ExerciseHistoryPanel key={exerciseId} discipline={discipline} exerciseId={exerciseId} name={name} onClose={() => {
         setOpen(false)
         trigger.current?.focus()
       }} />}
@@ -35,7 +38,8 @@ export function ExerciseHistory({ exerciseId, name, heading, menu, disabled }: {
   </>
 }
 
-function ExerciseHistoryPanel({ exerciseId, name, onClose }: {
+function ExerciseHistoryPanel({ exerciseId, name, onClose, discipline }: {
+  discipline: MovementDiscipline
   exerciseId: string
   name: string
   onClose: () => void
@@ -44,12 +48,12 @@ function ExerciseHistoryPanel({ exerciseId, name, onClose }: {
   const [failed, setFailed] = useState(false)
   useEffect(() => {
     let mounted = true
-    void recentExerciseHistory(exerciseId).then(
+    void recentExerciseHistory(exerciseId, db, discipline).then(
       history => { if (mounted) setSessions(history) },
       () => { if (mounted) setFailed(true) },
     )
     return () => { mounted = false }
-  }, [exerciseId])
+  }, [exerciseId, discipline])
 
   return <section className="exercise-history-panel" aria-label={`Recent sessions for ${name}`}>
     {failed && <p role="alert">Could not load exercise history. Close it and try again.</p>}
