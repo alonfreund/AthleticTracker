@@ -260,7 +260,7 @@ it('round-trips groups, timers and raw drafts with the current backup format and
   const reopened = database(db.name)
   expect(await loadWorkout(id, reopened)).toEqual(saved)
   const exported = await exportBackupFile(reopened)
-  expect(JSON.parse(await exported.blob.text()).formatVersion).toBe(12)
+  expect(JSON.parse(await exported.blob.text()).formatVersion).toBe(13)
   const target = database(); await verifyLocalStorage(target)
   const incoming = await stageImport(exported.blob, target)
   const safety = await stageSnapshot(target)

@@ -24,6 +24,10 @@ describe('app-shell navigation', () => {
     expect(routeTab('performance/calisthenics/pushups')).toBe('performance')
     expect(routeFromHash('#/performance/calisthenics/pullups')).toEqual({ screen: 'performance/calisthenics/pullups' })
     expect(routeTab('performance/calisthenics/pullups')).toBe('performance')
+    const planche = { screen: 'performance/calisthenics/planche/movement', plancheMovement: 'tuck-planche-hold' } as const
+    expect(routeFromHash(routeHash(planche))).toEqual(planche)
+    expect(routeTab(planche.screen)).toBe('performance')
+    expect(routeFromHash('#/performance/calisthenics/planche/unknown')).toEqual({ screen: 'performance/calisthenics/planche' })
     const requirement = { screen: 'performance/calisthenics/muscleups/requirement', requirement: 'hanging-l-sit' } as const
     expect(routeFromHash(routeHash(requirement))).toEqual(requirement)
     expect(routeTab(requirement.screen)).toBe('performance')

@@ -1,3 +1,4 @@
+import { PlancheProgress } from '../features/performance/PlancheProgress'
 import { MuscleupPractice, MuscleupRequirementProgress, MuscleupRequirements } from '../features/performance/MuscleupProgress'
 import { RepProgress } from '../features/performance/RepProgress'
 import { CalisthenicsProgressHome } from '../features/performance/CalisthenicsProgressHome'
@@ -91,7 +92,7 @@ export function App() {
     return () => subscription.unsubscribe()
   }, [databaseReady])
   useLayoutEffect(() => {
-    if (databaseReady && routeTab(view) === 'performance' && view !== 'performance/calisthenics/history' && view !== 'performance/calisthenics/pushups' && view !== 'performance/calisthenics/pullups' && view !== 'performance/calisthenics/muscleups/requirement' && view !== 'performance/calisthenics/muscleups/practice' && (view !== 'performance/calisthenics' || !route.workoutId)) updateSafety.setSafety({ dirty: false, busy: false, restoring: false, loading: false })
+    if (databaseReady && routeTab(view) === 'performance' && view !== 'performance/calisthenics/history' && view !== 'performance/calisthenics/pushups' && view !== 'performance/calisthenics/pullups' && view !== 'performance/calisthenics/planche' && view !== 'performance/calisthenics/planche/movement' && view !== 'performance/calisthenics/muscleups/requirement' && view !== 'performance/calisthenics/muscleups/practice' && (view !== 'performance/calisthenics' || !route.workoutId)) updateSafety.setSafety({ dirty: false, busy: false, restoring: false, loading: false })
   }, [databaseReady, view, route.workoutId])
   const blocked = safety.busy || safety.restoring || safety.applying || safety.loading
   const resumeScreen = active?.discipline === 'calisthenics' ? 'performance/calisthenics' : 'strength'
@@ -112,12 +113,19 @@ export function App() {
           onOpenCalisthenics={() => navigate({ screen: 'performance/calisthenics' })} />}
         {databaseReady && view === 'performance/calisthenics' && !route.workoutId && <CalisthenicsProgressHome blocked={blocked}
           onOpenTrack={track => navigate({ screen: `performance/calisthenics/${track}` })}
+          onOpenPlanche={() => navigate({ screen: 'performance/calisthenics/planche' })}
           onOpenMuscleups={() => navigate({ screen: 'performance/calisthenics/muscleups' })}
           hasWorkoutInProgress={active?.discipline === 'calisthenics'}
           onBack={() => navigate({ screen: 'performance' })}
           onHistory={() => navigate({ screen: 'performance/calisthenics/history' })} />}
         {databaseReady && (view === 'performance/calisthenics/pushups' || view === 'performance/calisthenics/pullups') && <RepProgress key={view} track={view.endsWith('/pullups') ? 'pullups' : 'pushups'} applying={safety.applying}
           onBack={() => navigate({ screen: 'performance/calisthenics' })} />}
+        {databaseReady && view === 'performance/calisthenics/planche' && <PlancheProgress blocked={blocked}
+          onBack={() => navigate({ screen: 'performance/calisthenics' })}
+          onMovement={plancheMovement => navigate({ screen: 'performance/calisthenics/planche/movement', plancheMovement })} />}
+        {databaseReady && view === 'performance/calisthenics/planche/movement' && route.plancheMovement &&
+          <RepProgress key={route.plancheMovement} track={route.plancheMovement} applying={safety.applying}
+            onBack={() => navigate({ screen: 'performance/calisthenics/planche' })} backLabel="Back to Planche" />}
         {databaseReady && view === 'performance/calisthenics/muscleups' && <MuscleupRequirements blocked={blocked}
           onBack={() => navigate({ screen: 'performance/calisthenics' })}
           onRequirement={requirement => navigate({ screen: 'performance/calisthenics/muscleups/requirement', requirement })}

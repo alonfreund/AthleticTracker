@@ -1,3 +1,5 @@
+import { deletePlancheAttempt, listPlancheAttempts, recordPlancheAttempt } from '../../data/repositories/planche'
+import { formatPlancheValue, isPlancheMovement, parsePlancheValue, PLANCHE_MOVEMENTS, type PlancheMovement, type PlancheUnit } from '../../domain/calisthenics/planche'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { liveQuery } from 'dexie'
 import { updateSafety } from '../../app/updateSafety'
@@ -13,21 +15,25 @@ const date = new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short
 const time = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' })
 
 type Attempt = Omit<PushupAttempt, 'reps'> & { value: number }
-type Config = { heading: string; goal: number; technique?: string; unit?: 'seconds'; milestones?: readonly number[] }
+type Config = { heading: string; goal?: number; technique?: string; unit?: PlancheUnit; milestones?: readonly number[] }
 
 export function RepProgress({ track, onBack, applying, config, backLabel = 'Back to Calisthenics' }: {
-  track: RepTrack | MuscleupMovement
+  track: RepTrack | MuscleupMovement | PlancheMovement
   onBack?: () => void
   applying: boolean
   config?: Config
   backLabel?: string
 }) {
   const repTrack = track === 'pushups' || track === 'pullups' ? track : undefined
-  const settings: Config | undefined = config ?? (repTrack ? REP_TRACKS[repTrack] : undefined)
+  const planche = isPlancheMovement(track) ? PLANCHE_MOVEMENTS[track] : undefined
+  const settings: Config | undefined = config ?? planche ?? (repTrack ? REP_TRACKS[repTrack] : undefined)
   if (!settings) throw new Error('Missing progression settings.')
-  const seconds = settings.unit === 'seconds'
-  const milestones = settings.milestones ?? [settings.goal]
-  const format = (value: number) => seconds ? `${value} sec` : `${value} ${value === 1 ? 'rep' : 'reps'}`
+  const unit = settings.unit ?? 'reps'
+  const seconds = unit === 'seconds'
+  const weight = unit === 'kg'
+  const milestones = settings.milestones ?? (settings.goal === undefined ? [] : [settings.goal])
+  const format = (value: number) => formatPlancheValue(value, unit)
+  const summaryValue = (value: number | undefined) => value === undefined ? '—' : unit === 'reps' ? value : format(value)
   const [attempts, setAttempts] = useState<Attempt[]>()
   const [showForm, setShowForm] = useState(false)
   const [reps, setReps] = useState('')
@@ -47,7 +53,7 @@ export function RepProgress({ track, onBack, applying, config, backLabel = 'Back
       if (track === 'pushups' || track === 'pullups') {
         return (await listRepAttempts(track)).map(({ reps, ...attempt }) => ({ ...attempt, value: reps }))
       }
-      return listMuscleupAttempts(track)
+      return isPlancheMovement(track) ? listPlancheAttempts(track) : listMuscleupAttempts(track)
     }).subscribe({ next: setAttempts, error: () => setReadError(true) })
     return () => subscription.unsubscribe()
   }, [track])
@@ -81,21 +87,28 @@ export function RepProgress({ track, onBack, applying, config, backLabel = 'Back
       <section className="surface-card" aria-labelledby="rep-goal">
         <h2 id="rep-goal">{settings.heading}</h2>
         <dl className="cardio-week">
-          <div><dt>Goal</dt><dd>{seconds ? format(settings.goal) : settings.goal}</dd></div>
-          <div><dt>Latest</dt><dd>{progress.latest === undefined ? '—' : seconds ? format(progress.latest) : progress.latest}</dd></div>
-          <div><dt>Best</dt><dd>{progress.best === undefined ? '—' : seconds ? format(progress.best) : progress.best}</dd></div>
+          {settings.goal !== undefined && <div><dt>Goal</dt><dd>{summaryValue(settings.goal)}</dd></div>}
+          <div><dt>Latest</dt><dd>{summaryValue(progress.latest)}</dd></div>
+          <div><dt>Best</dt><dd>{summaryValue(progress.best)}</dd></div>
         </dl>
         {settings.technique && <p className="note">{settings.technique}</p>}
         {!showForm && <Button disabled={disabled} onClick={() => { setError(''); setShowForm(true) }}>{track === 'muscleups' ? 'Log muscle-up attempt' : 'Record attempt'}</Button>}
         {showForm && <form onSubmit={event => {
           event.preventDefault()
-          if (!/^\d+$/.test(reps) || Number(reps) > MAX_PUSHUP_REPS) { setError(seconds ? 'Enter a whole number of seconds.' : 'Enter a whole number of clean reps.'); return }
-          void run(async () => { if (track === 'pushups' || track === 'pullups') await recordRepAttempt(track, Number(reps), notes)
-            else await recordMuscleupAttempt(track, Number(reps), notes)
-            closeForm() })
+          const value = parsePlancheValue(reps, unit)
+          if (value === undefined || (!planche && value > MAX_PUSHUP_REPS)) {
+            setError(weight ? 'Enter a weight in kg.' : seconds ? 'Enter a whole number of seconds.' : 'Enter a whole number of clean reps.')
+            return
+          }
+          void run(async () => {
+            if (track === 'pushups' || track === 'pullups') await recordRepAttempt(track, value, notes)
+            else if (isPlancheMovement(track)) await recordPlancheAttempt(track, value, notes)
+            else await recordMuscleupAttempt(track, value, notes)
+            closeForm()
+          })
         }}>
           <fieldset className="form-fields" disabled={disabled}>
-            <label>{seconds ? 'Hold duration (seconds)' : 'Clean reps'}<input required inputMode="numeric" maxLength={5} value={reps} onChange={event => setReps(event.target.value)} /></label>
+            <label>{weight ? 'Weight (kg)' : seconds ? 'Hold duration (seconds)' : 'Clean reps'}<input required inputMode={weight ? 'decimal' : 'numeric'} maxLength={planche ? 24 : 5} value={reps} onChange={event => setReps(event.target.value)} /></label>
             <label>Notes (optional)<textarea maxLength={10000} value={notes} onChange={event => setNotes(event.target.value)} /></label>
             <div className="actions">
               <Button type="submit">{busy ? 'Saving…' : 'Save attempt'}</Button>
@@ -105,29 +118,29 @@ export function RepProgress({ track, onBack, applying, config, backLabel = 'Back
         </form>}
         {error && <p role="alert" className="error">{error}</p>}
       </section>
-      <section className="surface-card" aria-labelledby="rep-milestones">
+      {milestones.length > 0 && <section className="surface-card" aria-labelledby="rep-milestones">
         <h2 id="rep-milestones">Milestones</h2>
         <ol className="rep-milestones">
           {milestones.map(reps => <li key={reps} data-achieved={(progress.best ?? 0) >= reps}>
             <strong>{format(reps)}</strong><span>{(progress.best ?? 0) >= reps ? 'Achieved' : progress.next === reps ? 'Next' : 'Ahead'}</span>
           </li>)}
         </ol>
-        {progress.next === undefined && <p role="status">Goal achieved.</p>}
-      </section>
+        {progress.next === undefined && <p role="status">{planche ? 'All milestones reached. Keep logging to track further progress.' : 'Goal achieved.'}</p>}
+      </section>}
       <section className="surface-card" aria-labelledby="rep-graph">
-        <h2 id="rep-graph">{seconds ? 'Hold duration over time' : 'Reps over time'}</h2>
+        <h2 id="rep-graph">{weight ? 'Weight over time' : seconds ? 'Hold duration over time' : 'Reps over time'}</h2>
         {readError ? <p role="alert">Could not load attempts.</p> : !attempts ? <p role="status">Loading attempts…</p>
           : !attempts.length ? <p className="note">Your graph will appear after your first attempt.</p> : <>
             <label>Show<select value={chart} onChange={event => setChart(event.target.value as typeof chart)}>
               <option value="attempts">Each attempt</option><option value="best">Best so far</option>
             </select></label>
-            <ExerciseChart key={chart} points={points} title={chart === 'best' ? 'Best so far' : seconds ? 'Hold duration per attempt' : 'Clean reps per attempt'} bars={false}
+            <ExerciseChart key={chart} points={points} title={chart === 'best' ? 'Best so far' : weight ? 'Weight per attempt' : seconds ? 'Hold duration per attempt' : 'Clean reps per attempt'} bars={false}
               format={format}
               details={point => <>
                 <p role="status">{format(point.measurement)} · {point.label} · {point.source}</p>
                 {point.notes && <p className="multiline">{point.notes}</p>}
                 <Button variant="secondary" disabled={disabled} onClick={() => {
-                  if (window.confirm(track === 'pullups' ? 'Delete this attempt from both pull-up and muscle-up progress?' : 'Delete this attempt?')) void run(() => track === 'pushups' || track === 'pullups' ? deleteRepAttempt(track, point.id) : deleteMuscleupAttempt(point.id))
+                  if (window.confirm(track === 'pullups' ? 'Delete this attempt from both pull-up and muscle-up progress?' : 'Delete this attempt?')) void run(() => track === 'pushups' || track === 'pullups' ? deleteRepAttempt(track, point.id) : isPlancheMovement(track) ? deletePlancheAttempt(point.id) : deleteMuscleupAttempt(point.id))
                 }}>Delete attempt</Button>
               </>} />
           </>}

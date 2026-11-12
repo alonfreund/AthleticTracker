@@ -479,3 +479,14 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 .muscleup-requirement-list li { display: grid; gap: var(--space-2); padding: var(--space-3); background: var(--color-surface-soft); border-radius: var(--radius-control); }
 .muscleup-requirement-list progress { width: 100%; }
 .muscleup-requirement-list button { justify-self: start; }
+
+.planche-movements { display: grid; gap: var(--space-3); list-style: none; padding: 0; }
+.planche-movements > li { display: grid; gap: var(--space-2); padding: var(--space-3); background: var(--color-surface-soft); border-radius: var(--radius-control); }
+.planche-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-2); }
+.planche-movement { display: block; text-align: left; background: transparent; border: 0; padding-inline: 0; color: var(--color-text); }
+.planche-movement:hover:not(:disabled) { background: var(--color-border); }
+.planche-movement small { display: block; }
+.planche-milestones { display: flex; flex-wrap: wrap; gap: var(--space-2); list-style: none; padding: 0; }
+.planche-milestones li { padding: var(--space-1) var(--space-2); border-radius: var(--radius-control); font-size: var(--text-small); }
+.planche-milestones li[data-achieved='true'] { background: var(--color-accent-soft); }
+.planche-form { display: grid; gap: var(--space-2); }
