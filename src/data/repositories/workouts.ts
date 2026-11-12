@@ -303,6 +303,7 @@ export function finishWorkout(id: string, allowIncomplete = false, database = db
     if (!allowIncomplete && workout.strengthSets.some(row => !row.completed)) throw new Error('Review unfinished sets before finishing.')
     Object.assign(workout.sessions[0], { status: 'finished', endedAt: now })
     for (const timer of workout.restTimers) Object.assign(timer, { status: 'finished', deadline: null, remainingSeconds: 0, updatedAt: now })
+    return workout
   }, database)
 }
 export type FinishedSetEdit = { id?: string; exerciseId: string; input: SetInput; setType: StrengthSet['setType']; completed: boolean }

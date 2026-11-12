@@ -30,7 +30,7 @@ const workoutCollision: CollisionDetection = args => {
 }
 
 function time(seconds: number) { return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` }
-export function ActiveWorkout({ initial, library, onBack }: { initial: Workout; library: Exercise[]; onBack: () => void }) {
+export function ActiveWorkout({ initial, library, onBack, onFinished }: { initial: Workout; library: Exercise[]; onBack: () => void; onFinished: (workout: Workout) => void }) {
   const id = initial.sessions[0].id
   const [workout, setWorkout] = useState(initial)
   const [previous, setPrevious] = useState<Record<string, PreviousExercise>>({})
@@ -97,10 +97,10 @@ export function ActiveWorkout({ initial, library, onBack }: { initial: Workout; 
   }, [profileKeys, startedAt])
   const records = useMemo(() => recordBaselines?.profiles === profileKeys && completedSetRecords(workout, recordBaselines.values),
     [workout, recordBaselines, profileKeys])
-  async function run(action: () => Promise<unknown>, after?: () => void) {
+  async function run(action: () => Promise<unknown>, after?: () => void, refresh = true) {
     if (lock.current || updateSafety.getSnapshot().applying) return
     lock.current = true; updateSafety.setBusy(true); setBusy(true); setError('')
-    try { await store.flush(); await details.flush(); await action(); await refreshRef.current(); after?.() }
+    try { await store.flush(); await details.flush(); await action(); if (refresh) await refreshRef.current(); after?.() }
     catch (error) { setError(error instanceof Error ? error.message : 'Could not save workout.'); await refreshRef.current().catch(() => {}) }
     finally { lock.current = false; updateSafety.setBusy(false); setBusy(false) }
   }
@@ -302,7 +302,10 @@ export function ActiveWorkout({ initial, library, onBack }: { initial: Workout; 
         onSelect={exercise => invoke(() => addWorkoutExercise(id, exercise.id), closePicker)} />
     </section>}
     {removal && <div className="review-box" role="alert"><p>Remove this {removal.kind} and its saved values and drafts? This cannot be undone here.</p><div className="actions"><button disabled={blocked} onClick={() => invoke(() => removal.kind === 'exercise' ? removeWorkoutExercise(id, removal.id) : removeSet(id, removal.id), () => setRemoval(undefined))}>Confirm removal</button><button className="secondary" disabled={blocked} onClick={() => setRemoval(undefined)}>Keep it</button></div></div>}
-    {review && <div className="review-box" role="alert"><h3>{review === 'finish' ? 'Finish this workout?' : 'Cancel this workout?'}</h3><p>{review === 'finish' ? `${completed} completed sets will count. ${incomplete} incomplete sets stay in history. Pending invalid edits must be corrected or reverted first.` : 'Recorded sets stay in cancelled history. Pending drafts will be discarded.'}</p><div className="actions"><button disabled={blocked} onClick={() => invoke(() => review === 'finish' ? finishWorkout(id, true) : cancelWorkout(id), onBack)}>{review === 'finish' ? 'Finish with completed sets' : 'Confirm cancellation'}</button><button className="secondary" disabled={blocked} onClick={() => setReview(undefined)}>Keep logging</button></div></div>}
+    {review && <div className="review-box" role="alert"><h3>{review === 'finish' ? 'Finish this workout?' : 'Cancel this workout?'}</h3><p>{review === 'finish' ? `${completed} completed sets will count. ${incomplete} incomplete sets stay in history. Pending invalid edits must be corrected or reverted first.` : 'Recorded sets stay in cancelled history. Pending drafts will be discarded.'}</p><div className="actions"><button disabled={blocked} onClick={() => {
+      if (review === 'finish') void run(async () => onFinished(await finishWorkout(id, true)), undefined, false)
+      else invoke(() => cancelWorkout(id), onBack)
+    }}>{review === 'finish' ? 'Finish with completed sets' : 'Confirm cancellation'}</button><button className="secondary" disabled={blocked} onClick={() => setReview(undefined)}>Keep logging</button></div></div>}
     {error && <p role="alert" className="error">{error}</p>}
     {showTimer && <aside className={`rest-timer ${timerRound ? 'rest-timer--superset' : ''}`} aria-label="Rest timer"><div className="rest-timer__heading"><strong>{remaining ? `${timer.status === 'paused' ? 'Paused' : 'Rest'} ${time(remaining)}` : 'Rest complete'}</strong><span>{timerLabel}</span></div><p className="rest-timer__scope">Current timer only · saved defaults unchanged</p><div className="rest-timer__controls"><button disabled={blocked || !remaining} aria-label="Subtract 15 seconds" onClick={() => invoke(() => controlRest(id, 'adjust', -15))}>−15s</button><button disabled={blocked || !remaining} onClick={() => invoke(() => controlRest(id, timer.status === 'paused' ? 'resume' : 'pause'))}>{timer.status === 'paused' ? 'Resume' : 'Pause'}</button><button disabled={blocked || !remaining} aria-label="Add 15 seconds" onClick={() => invoke(() => controlRest(id, 'adjust', 15))}>+15s</button><button disabled={blocked} onClick={() => invoke(() => controlRest(id, 'skip'))}>{remaining ? 'Skip' : 'Dismiss'}</button></div><button className="timer-edit-toggle" aria-expanded={timerEditor !== undefined} disabled={blocked} onClick={() => setTimerEditor(timerEditor === undefined ? remaining : undefined)}>{timerEditor === undefined ? 'Set exact remaining time' : 'Close timer adjustment'}</button>{timerEditor !== undefined && <DurationEditor seconds={timerEditor} label="Current timer only" saveLabel="Apply to current timer" disabled={blocked} onDirty={value => reportRest('timer', value)} onSave={seconds => saveRest(async () => { await replaceCurrentRest(id, seconds); setTimerEditor(undefined) })} />}</aside>}
   </section>

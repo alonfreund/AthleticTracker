@@ -63,7 +63,7 @@ export function App() {
       <PageHeader destination={view} />
       {!databaseReady && <p role={storageError ? 'alert' : 'status'} className={storageError ? 'error' : 'bootstrap-status'}>{storageError || 'Opening your saved training…'}</p>}
       <div className="screen-content">
-        {databaseReady && view === 'train' && <WorkoutsPanel key="train" mode="train" initialSessionId={resumeId} onNavigateHistory={() => changeView('history')} />}
+        {databaseReady && view === 'train' && <WorkoutsPanel key="train" mode="train" initialSessionId={resumeId} onNavigateHistory={id => { if (changeView('history')) setHistoryId(id) }} />}
         {databaseReady && view === 'history' && <WorkoutsPanel key="history" mode="history" initialSessionId={historyId} />}
         {databaseReady && view === 'analytics' && <Suspense fallback={<p role="status">Opening Analytics…</p>}>
           <AnalyticsPanel onOpenWorkout={id => { if (changeView('history')) setHistoryId(id) }} />

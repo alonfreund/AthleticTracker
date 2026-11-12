@@ -1,3 +1,5 @@
+import { workoutRecapRecords } from '../../domain/strength/workoutRecap'
+import type { StrengthData } from '../../domain/strength/models'
 import { buildTrainingTrends, trendCalendar, type TrendWindow } from '../../domain/strength/trainingTrends'
 import { buildMonthlyReport, monthBounds, type TrainingMonth } from '../../domain/strength/monthlyReport'
 import { collectExerciseHistory, countSessionMuscles, type FinishedSession } from '../../domain/strength/analyticsHistory'
@@ -79,4 +81,18 @@ export async function readSetRecordBaselines(keys: ReadonlySet<string>, startedA
     }
   }
   return baselines
+}
+
+export async function readWorkoutRecapRecords(workout: StrengthData, database = db) {
+  const session = workout.sessions[0]
+  const setsByCard = groupBy(workout.strengthSets.filter(isWorkingSet), set => set.sessionExerciseId)
+  const cards = workout.sessionExercises.flatMap(({ id, snapshot }) => {
+    const sets = setsByCard.get(id)
+    return sets?.length ? [{ snapshot, sets }] : []
+  })
+  if (!cards.length) return []
+  const keys = new Set(cards.map(card => analyticsExerciseKey(card.snapshot)))
+  const before = new Date(Date.parse(session.startedAt) + 1).toISOString()
+  const history = await readFinishedWorkingSets(database, { before }, keys)
+  return workoutRecapRecords({ ...session, cards }, history.filter(row => row.id !== session.id))
 }

@@ -1,3 +1,4 @@
+import { WorkoutRecap } from './WorkoutRecap'
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { updateSafety } from '../../app/updateSafety'
 import { initializeExerciseLibrary, listExercises } from '../../data/repositories/exercises'
@@ -11,10 +12,11 @@ import { ActiveWorkout } from './ActiveWorkout'
 import { durationText, WorkoutHistory } from './WorkoutHistory'
 import { FinishedWorkoutEditor } from './FinishedWorkoutEditor'
 
-export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHistory }: { mode?: 'train' | 'history'; initialSessionId?: string; onNavigateHistory?: () => void }) {
+export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHistory }: { mode?: 'train' | 'history'; initialSessionId?: string; onNavigateHistory?: (id?: string) => void }) {
   const [sessions, setSessions] = useState<Session[]>([])
   const [library, setLibrary] = useState<Exercise[]>([])
   const [selected, setSelected] = useState<Workout>()
+  const [showRecap, setShowRecap] = useState(false)
   const [routines, setRoutines] = useState<SavedRoutine[]>([])
   const [editing, setEditing] = useState<SavedRoutine | null>()
   const [deleting, setDeleting] = useState<string>()
@@ -72,12 +74,19 @@ export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHist
       }, 'Could not save routine.')} />
     {busy && <p role="status">Saving routine…</p>}{error && <p role="alert" className="error">{error}</p>}
   </>
-  function back() { setSelected(undefined); setHistoryMessage(''); setError(''); void refresh().catch(() => setError('Could not refresh workout list. Reopen to retry.')) }
+  function back() { setShowRecap(false); setSelected(undefined); setHistoryMessage(''); setError(''); void refresh().catch(() => setError('Could not refresh workout list. Reopen to retry.')) }
   const active = sessions.find(session => session.status === 'active')
   function closeHistoryEditor() { setEditingHistory(false); setHistoryDirty(false); setError('') }
   if (selected) {
     const session = selected.sessions[0]
-    if (session.status === 'active') return <ActiveWorkout key={session.id} initial={selected} library={library} onBack={back} />
+    if (session.status === 'active') return <ActiveWorkout key={session.id} initial={selected} library={library} onBack={back} onFinished={workout => {
+      setSelected(workout)
+      setShowRecap(true)
+    }} />
+    if (showRecap) return <WorkoutRecap workout={selected} onDone={back} onView={() => {
+      if (onNavigateHistory) onNavigateHistory(session.id)
+      else setShowRecap(false)
+    }} />
     const disabled = busy || applying
     if (editingHistory) return <FinishedWorkoutEditor key={session.id} workout={selected} disabled={disabled} error={error}
       onDirty={setHistoryDirty} onCancel={closeHistoryEditor} onSave={edit => void perform(async () => {
@@ -133,7 +142,7 @@ export function WorkoutsPanel({ mode = 'train', initialSessionId, onNavigateHist
         </div>}
       </li>)}</ul>
     </section>}
-    <div className="section-heading"><h2>{mode === 'history' ? 'All sessions' : 'Recent sessions'}</h2>{mode === 'train' && onNavigateHistory && <Button variant="quiet" disabled={busy || applying || loading} onClick={onNavigateHistory}>View history <Icon name="arrow" /></Button>}</div>
+    <div className="section-heading"><h2>{mode === 'history' ? 'All sessions' : 'Recent sessions'}</h2>{mode === 'train' && onNavigateHistory && <Button variant="quiet" disabled={busy || applying || loading} onClick={() => onNavigateHistory()}>View history <Icon name="arrow" /></Button>}</div>
     {mode === 'history' && loading && <p role="status">Opening your history…</p>}
     {!loading && !history.length && <div className="empty-state"><Icon name="history" /><h3>No sessions recorded yet</h3><p>Your finished workouts will appear here.</p></div>}
     <ul className="exercise-list">{visibleHistory.map(session => <li key={session.id}><button className="exercise-row" disabled={busy || applying} onClick={() => void open(session.id)}><strong>{session.title}</strong><span>{new Date(session.startedAt).toLocaleString()} · {durationText(session.startedAt, session.endedAt!)}</span><span className="badge">{session.status === 'cancelled' ? 'Cancelled' : 'Finished'}</span></button></li>)}</ul>
