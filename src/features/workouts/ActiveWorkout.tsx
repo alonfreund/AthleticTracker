@@ -100,9 +100,10 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
   async function run(action: () => Promise<unknown>, after?: () => void, refresh = true) {
     if (lock.current || updateSafety.getSnapshot().applying) return
     lock.current = true; updateSafety.setBusy(true); setBusy(true); setError('')
-    try { await store.flush(); await details.flush(); await action(); if (refresh) await refreshRef.current(); after?.() }
-    catch (error) { setError(error instanceof Error ? error.message : 'Could not save workout.'); await refreshRef.current().catch(() => {}) }
+    try { await store.flush(); await details.flush(); await action(); if (refresh) await refreshRef.current() }
+    catch (error) { setError(error instanceof Error ? error.message : 'Could not save workout.'); await refreshRef.current().catch(() => {}); return }
     finally { lock.current = false; updateSafety.setBusy(false); setBusy(false) }
+    after?.()
   }
   const invoke = (action: () => Promise<unknown>, after?: () => void) => { void run(action, after) }
   const blocked = busy || applying || !!dragging

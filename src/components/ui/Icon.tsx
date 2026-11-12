@@ -1,6 +1,7 @@
-export type IconName = 'train' | 'history' | 'analytics' | 'library' | 'settings' | 'arrow' | 'check' | 'medal' | 'shield'
+export type IconName = 'train' | 'performance' | 'history' | 'analytics' | 'library' | 'settings' | 'arrow' | 'check' | 'medal' | 'shield'
 const paths: Record<IconName, string[]> = {
   train: ['M7 5v14M4 8v8M17 5v14M20 8v8M7 12h10'],
+  performance: ['M3 12h4l3-7 4 14 3-7h4'],
   history: ['M3 11a9 9 0 1 1 2.6 7M3 4v7h7', 'M12 7v5l3 2'],
   analytics: ['M4 4v16h16M7 15l4-5 4 3 5-7'],
   library: ['M4 5h6a3 3 0 0 1 3 3v12a4 4 0 0 0-4-2H4V5Z', 'M13 8a3 3 0 0 1 3-3h5v13h-5a4 4 0 0 0-3 2'],

@@ -11,7 +11,7 @@ export function durationText(start: string, end: string) {
   const minutes = Math.max(0, Math.floor((Date.parse(end) - Date.parse(start)) / 60000))
   return minutes >= 60 ? `${Math.floor(minutes / 60)} h ${minutes % 60} min` : `${minutes} min`
 }
-export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Train', disabled, message, error, onEdit, onDelete, onExerciseAnalytics }: {
+export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Strength', disabled, message, error, onEdit, onDelete, onExerciseAnalytics }: {
   workout: Workout; onBack: () => void; backLabel?: string; disabled?: boolean; message?: string; error?: string
   onExerciseAnalytics?: (exercise: Exercise) => void
   onEdit?: () => void; onDelete?: () => void

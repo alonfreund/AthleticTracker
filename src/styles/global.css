@@ -54,7 +54,7 @@ input[type=checkbox] { accent-color: var(--color-accent); }
 .empty-state .icon { width: 28px; height: 28px; color: var(--color-muted); margin-bottom: 12px; }
 .empty-state p { color: var(--color-muted); margin: 0; }
 .bottom-nav { position: fixed; inset: auto 0 0; background: var(--color-surface); border-top: 1px solid var(--color-border); box-shadow: var(--shadow-bar); z-index: 30; padding-bottom: env(safe-area-inset-bottom); }
-.bottom-nav__inner { height: var(--nav-height); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); max-width: var(--page-width); margin: auto; padding: 6px 8px; }
+.bottom-nav__inner { height: var(--nav-height); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: var(--page-width); margin: auto; padding: 6px 8px; }
 .bottom-nav__item { flex-direction: column; gap: 4px; background: transparent; color: var(--color-muted); padding: 5px 4px; border: 0; border-radius: 12px; font-size: var(--text-small); font-weight: 600; min-width: 0; }
 .bottom-nav__item:hover:not(:disabled) { background: var(--color-surface-soft); }
 .bottom-nav__item.is-active { color: var(--color-accent); }
@@ -430,3 +430,8 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 .records-board-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
 .records-board-heading .icon { color: var(--color-warning); width: 18px; height: 18px; }
 .records-board-list button { overflow-wrap: anywhere; }
+
+.strength-shortcuts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin-bottom: var(--space-4); }
+.strength-shortcuts button { padding-inline: var(--space-2); }
+.strength-shortcuts .icon { width: 18px; height: 18px; }
+.section-back { margin-bottom: var(--space-4); }

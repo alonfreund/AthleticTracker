@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { verifyLocalStorage } from '../data/db/database'
 import { StorageProtection } from '../components/StorageProtection'
 import { WorkoutsPanel } from '../features/workouts/WorkoutsPanel'
@@ -7,7 +7,7 @@ import { activeWorkout } from '../data/repositories/workouts'
 import type { Exercise, Session } from '../domain/strength/models'
 import { updateSafety } from './updateSafety'
 import { UpdatePanel } from './UpdatePanel'
-import { destinationFromHash, destinationHash, navigationDecision, type Destination } from './navigation'
+import { routeFromHash, routeHash, routeTab, navigationDecision, type AppRoute } from './navigation'
 import { BottomNavigation } from '../components/ui/BottomNavigation'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Icon } from '../components/ui/Icon'
@@ -16,38 +16,54 @@ const AnalyticsPanel = lazy(() => import('../features/analytics/AnalyticsPanel')
 const FoundationPanel = lazy(() => import('../features/foundation/FoundationPanel').then(module => ({ default: module.FoundationPanel })))
 
 export function App() {
-  const [view, setView] = useState<Destination>(() => destinationFromHash(window.location.hash))
-  const viewRef = useRef(view)
+  const [route, setRoute] = useState(() => routeFromHash(window.location.hash))
+  const routeRef = useRef(route)
+  const view = route.screen
+  const [returnToAnalytics, setReturnToAnalytics] = useState(() => window.history.state?.returnToAnalytics === true)
+  const returnRef = useRef(returnToAnalytics)
   const [analyticsExercise, setAnalyticsExercise] = useState<Exercise>()
-  const [historyId, setHistoryId] = useState<string>()
-  const [resumeId, setResumeId] = useState<string>()
   const [active, setActive] = useState<Session>()
   const [updateAvailable, setUpdateAvailable] = useState(false)
   const safety = useSyncExternalStore(updateSafety.subscribe, updateSafety.getSnapshot)
   const [databaseReady, setDatabaseReady] = useState(false)
   const [storageError, setStorageError] = useState('')
-  function changeView(next: Destination, fromHistory = false): boolean {
-    if (next === viewRef.current) return false
+  function navigate(next: AppRoute, options: { browser?: boolean; fromAnalytics?: boolean } = {}): boolean {
+    const hash = routeHash(next)
+    if (hash === routeHash(routeRef.current)) return false
     const decision = navigationDecision(updateSafety.getSnapshot())
     if (decision === 'wait' || (decision === 'confirm' && !window.confirm('Discard your unsaved changes and switch screens?'))) {
-      if (fromHistory) window.history.pushState(null, '', destinationHash(viewRef.current))
+      if (options.browser) window.history.pushState({ returnToAnalytics: returnRef.current }, '', routeHash(routeRef.current))
       return false
     }
-    viewRef.current = next; setView(next); setResumeId(undefined); setHistoryId(undefined); setAnalyticsExercise(undefined)
-    if (!fromHistory) window.history.pushState(null, '', destinationHash(next))
+    const fromAnalytics = !!options.fromAnalytics
+    routeRef.current = next
+    returnRef.current = fromAnalytics
+    setRoute(next)
+    setReturnToAnalytics(fromAnalytics)
+    if (!options.browser) window.history.pushState({ returnToAnalytics: fromAnalytics }, '', hash)
+    else if (window.location.hash !== hash) window.history.replaceState({ returnToAnalytics: fromAnalytics }, '', hash)
     window.scrollTo(0, 0)
     return true
   }
   function openExerciseAnalytics(exercise: Exercise) {
-    if (changeView('analytics')) setAnalyticsExercise(exercise)
+    if (navigate({ screen: 'analytics' })) setAnalyticsExercise(exercise)
   }
-  const changeRef = useRef(changeView); changeRef.current = changeView
+  function openHistory(workoutId?: string, fromAnalytics = false) {
+    navigate({ screen: 'strength/history', workoutId }, { fromAnalytics })
+  }
+  const navigateRef = useRef(navigate)
+  navigateRef.current = navigate
   useEffect(() => {
-    window.history.replaceState(null, '', destinationHash(viewRef.current))
-    const onHistory = () => { changeRef.current(destinationFromHash(window.location.hash), true) }
+    window.history.replaceState({ returnToAnalytics: returnRef.current }, '', routeHash(routeRef.current))
+    const onHistory = () => navigateRef.current(routeFromHash(window.location.hash), {
+      browser: true, fromAnalytics: window.history.state?.returnToAnalytics === true,
+    })
     window.addEventListener('popstate', onHistory)
     window.addEventListener('hashchange', onHistory)
-    return () => { window.removeEventListener('popstate', onHistory); window.removeEventListener('hashchange', onHistory) }
+    return () => {
+      window.removeEventListener('popstate', onHistory)
+      window.removeEventListener('hashchange', onHistory)
+    }
   }, [])
   useEffect(() => {
     let mounted = true
@@ -60,19 +76,30 @@ export function App() {
     void activeWorkout().then(row => { if (mounted) setActive(row) }).catch(() => { if (mounted) setActive(undefined) })
     return () => { mounted = false }
   }, [view, databaseReady])
+  useLayoutEffect(() => {
+    if (databaseReady && view === 'performance') updateSafety.setSafety({ dirty: false, busy: false, restoring: false, loading: false })
+  }, [databaseReady, view])
   const blocked = safety.busy || safety.restoring || safety.applying || safety.loading
-  const showResume = !!active && view !== 'train'
+  const showResume = !!active && view !== 'strength'
   return <>
     <main className={`app-content ${showResume ? 'has-resume' : ''}`}>
       <PageHeader destination={view} />
       {!databaseReady && <p role={storageError ? 'alert' : 'status'} className={storageError ? 'error' : 'bootstrap-status'}>{storageError || 'Opening your saved training…'}</p>}
       <div className="screen-content">
-        {databaseReady && view === 'train' && <WorkoutsPanel key="train" mode="train" onExerciseAnalytics={openExerciseAnalytics} initialSessionId={resumeId} onNavigateHistory={id => { if (changeView('history')) setHistoryId(id) }} />}
-        {databaseReady && view === 'history' && <WorkoutsPanel key="history" mode="history" onExerciseAnalytics={openExerciseAnalytics} initialSessionId={historyId} />}
+        {databaseReady && view === 'strength' && <WorkoutsPanel key="strength" mode="train" onExerciseAnalytics={openExerciseAnalytics}
+          initialSessionId={route.workoutId} onLeaveResume={route.workoutId ? () => navigate({ screen: 'strength' }) : undefined} onNavigateHistory={openHistory} onNavigateLibrary={() => navigate({ screen: 'strength/library' })} />}
+        {databaseReady && view === 'strength/history' && <WorkoutsPanel key={routeHash(route)} mode="history" onExerciseAnalytics={openExerciseAnalytics}
+          initialSessionId={route.workoutId} onNavigateHistory={id => openHistory(id, returnToAnalytics)}
+          onLeaveHistory={() => navigate({ screen: 'strength' })}
+          onReturnToAnalytics={returnToAnalytics ? () => navigate({ screen: 'analytics' }) : undefined} />}
+        {databaseReady && view === 'performance' && <section className="surface-card" aria-labelledby="performance-heading">
+          <h2 id="performance-heading">Cardio is the first planned discipline</h2>
+          <p>Performance will be the place to log activities and track your benchmarks and skills.</p>
+        </section>}
         {databaseReady && view === 'analytics' && <Suspense fallback={<p role="status">Opening Analytics…</p>}>
-          <AnalyticsPanel initialExercise={analyticsExercise} onOpenWorkout={id => { if (changeView('history')) setHistoryId(id) }} />
+          <AnalyticsPanel initialExercise={analyticsExercise} onOpenWorkout={id => openHistory(id, true)} />
         </Suspense>}
-        {databaseReady && view === 'library' && <ExerciseLibrary onExerciseAnalytics={openExerciseAnalytics} />}
+        {databaseReady && view === 'strength/library' && <ExerciseLibrary onExerciseAnalytics={openExerciseAnalytics} onBackToStrength={() => navigate({ screen: 'strength' })} />}
         <div className="settings-stack" hidden={view !== 'settings'}>
           {databaseReady && view === 'settings' && <Suspense fallback={<p role="status">Opening data settings…</p>}><FoundationPanel onDataRestored={async () => { setActive(await activeWorkout()) }} /></Suspense>}
           <details><summary>Device storage</summary><StorageProtection /></details>
@@ -80,7 +107,9 @@ export function App() {
         </div>
       </div>
     </main>
-    {showResume && <aside className="resume-strip" aria-label="Workout in progress"><button disabled={blocked} onClick={() => { if (changeView('train')) setResumeId(active.id) }}><span className="resume-strip__text"><strong>{active.title}</strong><span>Workout in progress · Resume</span></span><Icon name="arrow" /></button></aside>}
-    <BottomNavigation current={view} blocked={blocked} updateAvailable={updateAvailable} onNavigate={next => changeView(next)} />
+    {showResume && <aside className="resume-strip" aria-label="Workout in progress"><button disabled={blocked} onClick={() => { navigate({ screen: 'strength', workoutId: active.id }) }}><span className="resume-strip__text"><strong>{active.title}</strong><span>Workout in progress · Resume</span></span><Icon name="arrow" /></button></aside>}
+    <BottomNavigation current={routeTab(view)} blocked={blocked} updateAvailable={updateAvailable} onNavigate={screen => {
+      if (navigate({ screen }) && screen === 'analytics') setAnalyticsExercise(undefined)
+    }} />
   </>
 }
