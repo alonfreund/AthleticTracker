@@ -3,10 +3,10 @@ import type { Safety } from './updateSafety'
 
 export const DESTINATIONS = ['strength', 'performance', 'analytics', 'settings'] as const
 export type Destination = typeof DESTINATIONS[number]
-export type Screen = Destination | 'strength/history' | 'strength/library' | 'performance/cardio' | 'performance/cardio/history' | 'performance/cardio/activity' | 'performance/cardio/session' | 'performance/cardio/live'
+export type Screen = Destination | 'performance/calisthenics' | 'strength/history' | 'strength/library' | 'performance/cardio' | 'performance/cardio/history' | 'performance/cardio/activity' | 'performance/cardio/session' | 'performance/cardio/live'
 export type AppRoute = { screen: Screen; workoutId?: string; cardioActivity?: CardioActivity }
 export function routeTab(screen: Screen): Destination {
-  if (screen === 'performance/cardio' || screen === 'performance/cardio/history' || screen === 'performance/cardio/activity' || screen === 'performance/cardio/session' || screen === 'performance/cardio/live') return 'performance'
+  if (screen === 'performance/calisthenics' || screen === 'performance/cardio' || screen === 'performance/cardio/history' || screen === 'performance/cardio/activity' || screen === 'performance/cardio/session' || screen === 'performance/cardio/live') return 'performance'
   if (screen === 'strength/history' || screen === 'strength/library') return 'strength'
   return screen
 }
@@ -23,6 +23,7 @@ export function routeFromHash(hash: string): AppRoute {
     const activity = path.slice('performance/cardio/'.length)
     return isCardioActivity(activity) ? { screen: 'performance/cardio/activity', cardioActivity: activity } : { screen: 'performance/cardio' }
   }
+  if (path === 'performance/calisthenics') return { screen: 'performance/calisthenics' }
   if (path === 'performance/cardio') return { screen: 'performance/cardio' }
   const workout = /^strength\/(history|workout)\/([\w-]+)$/.exec(path)
   if (workout) return { screen: workout[1] === 'history' ? 'strength/history' : 'strength', workoutId: workout[2] }

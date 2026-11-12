@@ -3,7 +3,7 @@ import { CardioForm } from '../features/performance/CardioForm'
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { verifyLocalStorage } from '../data/db/database'
 import { CardioHome, CardioHistory, CardioSessionScreen } from '../features/performance/CardioScreens'
-import { PerformanceHome } from '../features/performance/PerformanceScreens'
+import { CalisthenicsHome, PerformanceHome } from '../features/performance/PerformanceScreens'
 import { StorageProtection } from '../components/StorageProtection'
 import { WorkoutsPanel } from '../features/workouts/WorkoutsPanel'
 import { ExerciseLibrary } from '../features/exercises/ExerciseLibrary'
@@ -101,7 +101,10 @@ export function App() {
           onLeaveHistory={() => navigate({ screen: 'strength' })}
           onReturnToAnalytics={returnToAnalytics ? () => navigate({ screen: 'analytics' }) : undefined} />}
         {databaseReady && view === 'performance' && <PerformanceHome blocked={blocked}
-          onOpenCardio={() => navigate({ screen: 'performance/cardio' })} />}
+          onOpenCardio={() => navigate({ screen: 'performance/cardio' })}
+          onOpenCalisthenics={() => navigate({ screen: 'performance/calisthenics' })} />}
+        {databaseReady && view === 'performance/calisthenics' && <CalisthenicsHome blocked={blocked}
+          onBack={() => navigate({ screen: 'performance' })} />}
         {databaseReady && view === 'performance/cardio' && <LiveCardioEntry onOpen={() => navigate({ screen: 'performance/cardio/live' })} />}
         {databaseReady && view === 'performance/cardio' && <CardioHome blocked={blocked}
           onBack={() => navigate({ screen: 'performance' })}

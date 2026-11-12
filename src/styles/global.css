@@ -464,3 +464,5 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 .cardio-analytics-controls label { flex-basis: min(135px, 100%); }
 .cardio-analytics-controls label:first-child { flex-basis: min(135px, 100%); }
 .cardio-analytics-totals dd { overflow-wrap: anywhere; font-size: clamp(1rem, 4vw, 1.25rem); }
+
+.performance-disciplines { display: grid; gap: var(--space-4); }
