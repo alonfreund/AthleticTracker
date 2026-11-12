@@ -5,18 +5,19 @@ import { discardStage, exportBackupFile, restoreStagedBackup, stageImport, stage
 import { AthleticDatabase, verifyLocalStorage } from '../src/data/db/database'
 import { recordMuscleupAttempt } from '../src/data/repositories/muscleups'
 import { deletePlancheAttempt, listPlancheAttempts, recordPlancheAttempt } from '../src/data/repositories/planche'
-import { parsePlancheValue, PLANCHE_MOVEMENTS, PLANCHE_ORDER } from '../src/domain/calisthenics/planche'
+import { parseMeasurement } from '../src/domain/calisthenics/measurement'
+import { PLANCHE_MOVEMENTS, PLANCHE_ORDER } from '../src/domain/calisthenics/planche'
 import { attemptProgress } from '../src/domain/calisthenics/pushups'
 
 it('accepts decimal weights and whole reps or seconds beyond the milestones', () => {
   expect(PLANCHE_ORDER).toHaveLength(8)
-  expect(parsePlancheValue('12,5', 'kg')).toBe(12.5)
-  expect(parsePlancheValue('12.5', 'kg')).toBe(12.5)
-  expect(parsePlancheValue('24', 'reps')).toBe(24)
-  expect(parsePlancheValue('42', 'seconds')).toBe(42)
-  expect(parsePlancheValue('3.5', 'reps')).toBeUndefined()
-  expect(parsePlancheValue('-2', 'kg')).toBeUndefined()
-  expect(parsePlancheValue('', 'seconds')).toBeUndefined()
+  expect(parseMeasurement('12,5', 'kg')).toBe(12.5)
+  expect(parseMeasurement('12.5', 'kg')).toBe(12.5)
+  expect(parseMeasurement('24', 'reps')).toBe(24)
+  expect(parseMeasurement('42', 'seconds')).toBe(42)
+  expect(parseMeasurement('3.5', 'reps')).toBeUndefined()
+  expect(parseMeasurement('-2', 'kg')).toBeUndefined()
+  expect(parseMeasurement('', 'seconds')).toBeUndefined()
 })
 
 it('keeps measurements independent and restores Planche and older progression records', async () => {
@@ -39,9 +40,9 @@ it('keeps measurements independent and restores Planche and older progression re
     expect(progress.timeline.map(row => row.best)).toEqual([12.5, 12.5])
 
     const snapshot = await createBackup(source)
-    const { plancheAttempts: _planche, ...legacyData } = snapshot.data
+    const { handstandAttempts: _handstand, plancheAttempts: _planche, ...legacyData } = snapshot.data
     expect(validateBackup({ ...snapshot, formatVersion: 12, data: legacyData }).data)
-      .toMatchObject({ plancheAttempts: [], muscleupAttempts: snapshot.data.muscleupAttempts })
+      .toMatchObject({ plancheAttempts: [], handstandAttempts: [], muscleupAttempts: snapshot.data.muscleupAttempts })
     const exported = await exportBackupFile(source)
     await deletePlancheAttempt(flies[0].id, source)
     expect(await listPlancheAttempts('straight-arm-dumbbell-flies', source)).toEqual([flies[1]])

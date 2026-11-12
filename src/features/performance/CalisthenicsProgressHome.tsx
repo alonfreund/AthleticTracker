@@ -6,12 +6,13 @@ import { pushupProgress, type PushupAttempt } from '../../domain/calisthenics/pu
 import { Button } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
 
-export function CalisthenicsProgressHome({ blocked, hasWorkoutInProgress, onBack, onHistory, onOpenTrack, onOpenMuscleups, onOpenPlanche }: {
+export function CalisthenicsProgressHome({ blocked, hasWorkoutInProgress, onBack, onHistory, onOpenTrack, onOpenMuscleups, onOpenPlanche, onOpenHandstand }: {
   blocked: boolean
   hasWorkoutInProgress: boolean
   onBack: () => void
   onHistory: () => void
   onOpenMuscleups: () => void
+  onOpenHandstand: () => void
   onOpenPlanche: () => void
   onOpenTrack: (track: RepTrack) => void
 }) {
@@ -31,6 +32,10 @@ export function CalisthenicsProgressHome({ blocked, hasWorkoutInProgress, onBack
         <button type="button" className="exercise-row rep-track" disabled={blocked} onClick={onOpenPlanche}>
           <strong>Planche <Icon name="arrow" /></strong>
           <span>Track strength, transitions, and holds</span>
+        </button>
+        <button type="button" className="exercise-row rep-track" disabled={blocked} onClick={onOpenHandstand}>
+          <strong>30-Second Handstand <Icon name="arrow" /></strong>
+          <span>Build up to a 30-second freestanding hold</span>
         </button>
       </section>
       <section className="surface-card" aria-labelledby="calisthenics-previous-heading">

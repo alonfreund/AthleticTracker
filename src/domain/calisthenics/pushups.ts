@@ -23,12 +23,17 @@ export function pushupProgress(attempts: PushupAttempt[], milestones: readonly n
   return attemptProgress(attempts, attempt => attempt.reps, milestones)
 }
 
-export function attemptProgress<T>(attempts: T[], value: (attempt: T) => number, milestones: readonly number[]) {
-  let best = 0
+export function milestoneReached(best: number | undefined, milestone: number, lowerIsBetter = false) {
+  return best !== undefined && (lowerIsBetter ? best <= milestone : best >= milestone)
+}
+
+export function attemptProgress<T>(attempts: T[], value: (attempt: T) => number, milestones: readonly number[], lowerIsBetter = false) {
+  let best: number | undefined
   const timeline = attempts.map(attempt => {
-    best = Math.max(best, value(attempt))
+    const result = value(attempt)
+    best = best === undefined ? result : lowerIsBetter ? Math.min(best, result) : Math.max(best, result)
     return { ...attempt, best }
   })
-  return { timeline, latest: attempts.length ? value(attempts.at(-1)!) : undefined, best: attempts.length ? best : undefined,
-    next: milestones.find(milestone => milestone > best) }
+  return { timeline, latest: attempts.length ? value(attempts.at(-1)!) : undefined, best,
+    next: milestones.find(milestone => !milestoneReached(best, milestone, lowerIsBetter)) }
 }

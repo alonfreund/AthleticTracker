@@ -112,7 +112,7 @@ it('preserves out-of-order superset rounds through replacement, reopening and fo
   const target = database()
   await verifyLocalStorage(target)
   const incoming = await stageImport(blob, target)
-  expect(incoming.header.formatVersion).toBe(13)
+  expect(incoming.header.formatVersion).toBe(14)
   await restoreStagedBackup(incoming, await stageSnapshot(target), target)
   expect(await loadWorkout(id, target)).toEqual(after)
   expect(await listRoutines(target)).toEqual(await listRoutines(reopened))
@@ -157,7 +157,7 @@ it('rejects duplicate rounds and prevents importing replacement metadata as an o
   expect(() => validateBackup(backup)).toThrow('duplicate round')
   await expect(stageImport(new Blob([JSON.stringify(backup)]), db)).rejects.toThrow()
   const current = await createBackup(db)
-  const { cardioDetails: _details, cardioDrafts: _drafts, cardioTiming: _timing, cardioLive: _live, plancheAttempts: _planche, muscleupAttempts: _muscleups, pullupAttempts: _pullups, pushupAttempts: _attempts, ...legacyData } = current.data
+  const { cardioDetails: _details, cardioDrafts: _drafts, cardioTiming: _timing, cardioLive: _live, handstandAttempts: _handstand, plancheAttempts: _planche, muscleupAttempts: _muscleups, pullupAttempts: _pullups, pushupAttempts: _attempts, ...legacyData } = current.data
   const legacy = { ...current, data: legacyData, formatVersion: 5 }
   expect(() => validateBackup(legacy)).toThrow('format 6')
   await expect(stageImport(new Blob([JSON.stringify(legacy)]), db)).rejects.toThrow('format 6')

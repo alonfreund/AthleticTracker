@@ -1,5 +1,8 @@
+import { formatMeasurement, parseMeasurement, type MeasurementUnit } from '../../domain/calisthenics/measurement'
+import { HANDSTAND_MOVEMENTS, isHandstandMovement, type HandstandMovement } from '../../domain/calisthenics/handstand'
+import { deleteHandstandAttempt, listHandstandAttempts, recordHandstandAttempt } from '../../data/repositories/handstand'
 import { deletePlancheAttempt, listPlancheAttempts, recordPlancheAttempt } from '../../data/repositories/planche'
-import { formatPlancheValue, isPlancheMovement, parsePlancheValue, PLANCHE_MOVEMENTS, type PlancheMovement, type PlancheUnit } from '../../domain/calisthenics/planche'
+import { isPlancheMovement, PLANCHE_MOVEMENTS, type PlancheMovement } from '../../domain/calisthenics/planche'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { liveQuery } from 'dexie'
 import { updateSafety } from '../../app/updateSafety'
@@ -8,17 +11,17 @@ import { deleteRepAttempt, listRepAttempts, recordRepAttempt } from '../../data/
 import { deleteMuscleupAttempt, listMuscleupAttempts, recordMuscleupAttempt } from '../../data/repositories/muscleups'
 import type { MuscleupMovement } from '../../domain/calisthenics/muscleups'
 import { REP_TRACKS, type RepTrack } from '../../domain/calisthenics/repTracks'
-import { MAX_PUSHUP_REPS, attemptProgress, type PushupAttempt } from '../../domain/calisthenics/pushups'
+import { MAX_PUSHUP_REPS, attemptProgress, milestoneReached, type PushupAttempt } from '../../domain/calisthenics/pushups'
 import { ExerciseChart } from '../analytics/ExerciseChart'
 
 const date = new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
 const time = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' })
 
 type Attempt = Omit<PushupAttempt, 'reps'> & { value: number }
-type Config = { heading: string; goal?: number; technique?: string; unit?: PlancheUnit; milestones?: readonly number[] }
+type Config = { heading: string; goal?: number; technique?: string; unit?: MeasurementUnit; lowerIsBetter?: boolean; milestones?: readonly number[] }
 
 export function RepProgress({ track, onBack, applying, config, backLabel = 'Back to Calisthenics' }: {
-  track: RepTrack | MuscleupMovement | PlancheMovement
+  track: RepTrack | MuscleupMovement | PlancheMovement | HandstandMovement
   onBack?: () => void
   applying: boolean
   config?: Config
@@ -26,13 +29,16 @@ export function RepProgress({ track, onBack, applying, config, backLabel = 'Back
 }) {
   const repTrack = track === 'pushups' || track === 'pullups' ? track : undefined
   const planche = isPlancheMovement(track) ? PLANCHE_MOVEMENTS[track] : undefined
-  const settings: Config | undefined = config ?? planche ?? (repTrack ? REP_TRACKS[repTrack] : undefined)
+  const handstand = isHandstandMovement(track) ? HANDSTAND_MOVEMENTS[track] : undefined
+  const settings: Config | undefined = config ?? planche ?? handstand ?? (repTrack ? REP_TRACKS[repTrack] : undefined)
   if (!settings) throw new Error('Missing progression settings.')
   const unit = settings.unit ?? 'reps'
   const seconds = unit === 'seconds'
   const weight = unit === 'kg'
+  const steps = unit === 'steps'
+  const bestLabel = settings.lowerIsBetter ? 'Fewest steps so far' : 'Best so far'
   const milestones = settings.milestones ?? (settings.goal === undefined ? [] : [settings.goal])
-  const format = (value: number) => formatPlancheValue(value, unit)
+  const format = (value: number) => formatMeasurement(value, unit)
   const summaryValue = (value: number | undefined) => value === undefined ? '—' : unit === 'reps' ? value : format(value)
   const [attempts, setAttempts] = useState<Attempt[]>()
   const [showForm, setShowForm] = useState(false)
@@ -53,6 +59,7 @@ export function RepProgress({ track, onBack, applying, config, backLabel = 'Back
       if (track === 'pushups' || track === 'pullups') {
         return (await listRepAttempts(track)).map(({ reps, ...attempt }) => ({ ...attempt, value: reps }))
       }
+      if (isHandstandMovement(track)) return listHandstandAttempts(track)
       return isPlancheMovement(track) ? listPlancheAttempts(track) : listMuscleupAttempts(track)
     }).subscribe({ next: setAttempts, error: () => setReadError(true) })
     return () => subscription.unsubscribe()
@@ -75,7 +82,7 @@ export function RepProgress({ track, onBack, applying, config, backLabel = 'Back
   function closeForm() {
     setReps(''); setNotes(''); setShowForm(false); setError('')
   }
-  const progress = attemptProgress(attempts ?? [], attempt => attempt.value, milestones)
+  const progress = attemptProgress(attempts ?? [], attempt => attempt.value, milestones, settings.lowerIsBetter)
   const points = progress.timeline.map(attempt => ({
     ...attempt, at: Date.parse(attempt.recordedAt), label: date.format(new Date(attempt.recordedAt)),
     source: time.format(new Date(attempt.recordedAt)), measurement: attempt.value, value: chart === 'best' ? attempt.best : attempt.value,
@@ -95,20 +102,21 @@ export function RepProgress({ track, onBack, applying, config, backLabel = 'Back
         {!showForm && <Button disabled={disabled} onClick={() => { setError(''); setShowForm(true) }}>{track === 'muscleups' ? 'Log muscle-up attempt' : 'Record attempt'}</Button>}
         {showForm && <form onSubmit={event => {
           event.preventDefault()
-          const value = parsePlancheValue(reps, unit)
-          if (value === undefined || (!planche && value > MAX_PUSHUP_REPS)) {
-            setError(weight ? 'Enter a weight in kg.' : seconds ? 'Enter a whole number of seconds.' : 'Enter a whole number of clean reps.')
+          const value = parseMeasurement(reps, unit)
+          if (value === undefined || (!planche && !handstand && value > MAX_PUSHUP_REPS)) {
+            setError(steps ? 'Enter at least one whole hand step.' : weight ? 'Enter a weight in kg.' : seconds ? 'Enter a whole number of seconds.' : 'Enter a whole number of clean reps.')
             return
           }
           void run(async () => {
             if (track === 'pushups' || track === 'pullups') await recordRepAttempt(track, value, notes)
+            else if (isHandstandMovement(track)) await recordHandstandAttempt(track, value, notes)
             else if (isPlancheMovement(track)) await recordPlancheAttempt(track, value, notes)
             else await recordMuscleupAttempt(track, value, notes)
             closeForm()
           })
         }}>
           <fieldset className="form-fields" disabled={disabled}>
-            <label>{weight ? 'Weight (kg)' : seconds ? 'Hold duration (seconds)' : 'Clean reps'}<input required inputMode={weight ? 'decimal' : 'numeric'} maxLength={planche ? 24 : 5} value={reps} onChange={event => setReps(event.target.value)} /></label>
+            <label>{steps ? 'Hand steps' : weight ? 'Weight (kg)' : seconds ? 'Hold duration (seconds)' : 'Clean reps'}<input required inputMode={weight ? 'decimal' : 'numeric'} maxLength={planche || handstand ? 24 : 5} value={reps} onChange={event => setReps(event.target.value)} /></label>
             <label>Notes (optional)<textarea maxLength={10000} value={notes} onChange={event => setNotes(event.target.value)} /></label>
             <div className="actions">
               <Button type="submit">{busy ? 'Saving…' : 'Save attempt'}</Button>
@@ -121,26 +129,26 @@ export function RepProgress({ track, onBack, applying, config, backLabel = 'Back
       {milestones.length > 0 && <section className="surface-card" aria-labelledby="rep-milestones">
         <h2 id="rep-milestones">Milestones</h2>
         <ol className="rep-milestones">
-          {milestones.map(reps => <li key={reps} data-achieved={(progress.best ?? 0) >= reps}>
-            <strong>{format(reps)}</strong><span>{(progress.best ?? 0) >= reps ? 'Achieved' : progress.next === reps ? 'Next' : 'Ahead'}</span>
+          {milestones.map(reps => <li key={reps} data-achieved={milestoneReached(progress.best, reps, settings.lowerIsBetter)}>
+            <strong>{format(reps)}{settings.lowerIsBetter && ' or fewer'}</strong><span>{milestoneReached(progress.best, reps, settings.lowerIsBetter) ? 'Achieved' : progress.next === reps ? 'Next' : 'Ahead'}</span>
           </li>)}
         </ol>
-        {progress.next === undefined && <p role="status">{planche ? 'All milestones reached. Keep logging to track further progress.' : 'Goal achieved.'}</p>}
+        {progress.next === undefined && <p role="status">{planche || (handstand && settings.goal === undefined) ? 'All milestones reached. Keep logging to track further progress.' : 'Goal achieved.'}</p>}
       </section>}
       <section className="surface-card" aria-labelledby="rep-graph">
-        <h2 id="rep-graph">{weight ? 'Weight over time' : seconds ? 'Hold duration over time' : 'Reps over time'}</h2>
+        <h2 id="rep-graph">{steps ? 'Hand steps over time' : weight ? 'Weight over time' : seconds ? 'Hold duration over time' : 'Reps over time'}</h2>
         {readError ? <p role="alert">Could not load attempts.</p> : !attempts ? <p role="status">Loading attempts…</p>
           : !attempts.length ? <p className="note">Your graph will appear after your first attempt.</p> : <>
             <label>Show<select value={chart} onChange={event => setChart(event.target.value as typeof chart)}>
-              <option value="attempts">Each attempt</option><option value="best">Best so far</option>
+              <option value="attempts">Each attempt</option><option value="best">{bestLabel}</option>
             </select></label>
-            <ExerciseChart key={chart} points={points} title={chart === 'best' ? 'Best so far' : weight ? 'Weight per attempt' : seconds ? 'Hold duration per attempt' : 'Clean reps per attempt'} bars={false}
+            <ExerciseChart key={chart} points={points} title={chart === 'best' ? bestLabel : steps ? 'Hand steps per attempt' : weight ? 'Weight per attempt' : seconds ? 'Hold duration per attempt' : 'Clean reps per attempt'} bars={false}
               format={format}
               details={point => <>
                 <p role="status">{format(point.measurement)} · {point.label} · {point.source}</p>
                 {point.notes && <p className="multiline">{point.notes}</p>}
                 <Button variant="secondary" disabled={disabled} onClick={() => {
-                  if (window.confirm(track === 'pullups' ? 'Delete this attempt from both pull-up and muscle-up progress?' : 'Delete this attempt?')) void run(() => track === 'pushups' || track === 'pullups' ? deleteRepAttempt(track, point.id) : isPlancheMovement(track) ? deletePlancheAttempt(point.id) : deleteMuscleupAttempt(point.id))
+                  if (window.confirm(track === 'pullups' ? 'Delete this attempt from both pull-up and muscle-up progress?' : 'Delete this attempt?')) void run(() => track === 'pushups' || track === 'pullups' ? deleteRepAttempt(track, point.id) : isHandstandMovement(track) ? deleteHandstandAttempt(point.id) : isPlancheMovement(track) ? deletePlancheAttempt(point.id) : deleteMuscleupAttempt(point.id))
                 }}>Delete attempt</Button>
               </>} />
           </>}
