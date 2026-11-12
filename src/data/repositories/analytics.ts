@@ -1,3 +1,4 @@
+import { buildAnalyticsOverview } from '../../domain/strength/analyticsOverview'
 import { workoutRecapRecords } from '../../domain/strength/workoutRecap'
 import type { StrengthData } from '../../domain/strength/models'
 import { buildTrainingTrends, trendCalendar, type TrendWindow } from '../../domain/strength/trainingTrends'
@@ -95,4 +96,9 @@ export async function readWorkoutRecapRecords(workout: StrengthData, database = 
   const before = new Date(Date.parse(session.startedAt) + 1).toISOString()
   const history = await readFinishedWorkingSets(database, { before }, keys)
   return workoutRecapRecords({ ...session, cards }, history.filter(row => row.id !== session.id))
+}
+
+export async function readAnalyticsOverview(size: TrendWindow, database = db, now = new Date()) {
+  const calendar = trendCalendar(size, now)
+  return buildAnalyticsOverview(calendar, await readFinishedWorkingSets(database, calendar.range))
 }
