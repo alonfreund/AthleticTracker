@@ -1,3 +1,4 @@
+import { buildTrainingTrends, trendCalendar, type TrendWindow } from '../../domain/strength/trainingTrends'
 import { buildMonthlyReport, monthBounds, type TrainingMonth } from '../../domain/strength/monthlyReport'
 import { collectExerciseHistory, countSessionMuscles, type FinishedSession } from '../../domain/strength/analyticsHistory'
 import { isWorkingSet, type AnalyticsExercise } from '../../domain/strength/analytics'
@@ -50,4 +51,9 @@ export async function readExerciseAnalytics(database = db): Promise<AnalyticsExe
 export async function readMonthlyReport(month: TrainingMonth, database = db) {
   const { before } = monthBounds(month)
   return buildMonthlyReport(month, await readFinishedWorkingSets(database, { before }))
+}
+
+export async function readTrainingTrends(size: TrendWindow, database = db, now = new Date()) {
+  const calendar = trendCalendar(size, now)
+  return buildTrainingTrends(calendar, await readFinishedWorkingSets(database, calendar.range))
 }

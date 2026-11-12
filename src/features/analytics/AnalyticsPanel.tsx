@@ -1,3 +1,4 @@
+import { TrainingTrendsPanel } from './TrainingTrendsPanel'
 import { MonthlyReportPanel } from './MonthlyReportPanel'
 import { metricLabel, metricValueText } from './metricText'
 import { MuscleDistributionPanel } from './MuscleDistributionPanel'
@@ -83,7 +84,7 @@ function ExerciseProgress({ exercise, onOpenWorkout }: { exercise: AnalyticsExer
 }
 
 export function AnalyticsPanel({ onOpenWorkout }: { onOpenWorkout: (id: string) => void }) {
-  const [view, setView] = useState<'exercises' | 'muscles' | 'monthly'>('exercises')
+  const [view, setView] = useState<'exercises' | 'muscles' | 'monthly' | 'trends'>('exercises')
   useLayoutEffect(() => {
     updateSafety.setSafety({ dirty: false, busy: false, restoring: false, loading: false })
   }, [])
@@ -92,10 +93,12 @@ export function AnalyticsPanel({ onOpenWorkout }: { onOpenWorkout: (id: string) 
       <Button variant={view === 'exercises' ? 'primary' : 'secondary'} aria-pressed={view === 'exercises'} onClick={() => setView('exercises')}>Exercises</Button>
       <Button variant={view === 'muscles' ? 'primary' : 'secondary'} aria-pressed={view === 'muscles'} onClick={() => setView('muscles')}>Muscle distribution</Button>
       <Button variant={view === 'monthly' ? 'primary' : 'secondary'} aria-pressed={view === 'monthly'} onClick={() => setView('monthly')}>Monthly report</Button>
+      <Button variant={view === 'trends' ? 'primary' : 'secondary'} aria-pressed={view === 'trends'} onClick={() => setView('trends')}>Training trends</Button>
     </div>
     {view === 'exercises' && <ExerciseAnalytics onOpenWorkout={onOpenWorkout} />}
     {view === 'muscles' && <MuscleDistributionPanel />}
     {view === 'monthly' && <MonthlyReportPanel onOpenWorkout={onOpenWorkout} />}
+    {view === 'trends' && <TrainingTrendsPanel />}
   </>
 }
 
