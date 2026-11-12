@@ -1,3 +1,4 @@
+import { RecordsBoard } from './RecordsBoard'
 import { AnalyticsOverview } from './AnalyticsOverview'
 import { ExerciseChart } from './ExerciseChart'
 import { EXERCISE_RANGES, frequencyTimeline, timelineRange, type ExerciseRange } from '../../domain/strength/exerciseTimeline'
@@ -5,7 +6,7 @@ import { TrainingTrendsPanel } from './TrainingTrendsPanel'
 import { MonthlyReportPanel } from './MonthlyReportPanel'
 import { metricLabel, metricValueText } from './metricText'
 import { MuscleDistributionPanel } from './MuscleDistributionPanel'
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { liveQuery } from 'dexie'
 import { updateSafety } from '../../app/updateSafety'
 import { Button } from '../../components/ui/Button'
@@ -141,6 +142,8 @@ export function AnalyticsPanel({ onOpenWorkout, initialExercise }: { initialExer
 
 function ExerciseAnalytics({ onOpenWorkout, initialExercise }: { initialExercise?: Exercise; onOpenWorkout: (id: string) => void }) {
   const [exercises, setExercises] = useState<AnalyticsExercise[]>()
+  const [showRecords, setShowRecords] = useState(false)
+  const browse = useRef<HTMLButtonElement>(null)
   const [error, setError] = useState(false)
   const [exerciseKey, setExerciseKey] = useState(() => initialExercise ? analyticsExerciseKey(initialExercise) : '')
   useEffect(() => {
@@ -156,19 +159,26 @@ function ExerciseAnalytics({ onOpenWorkout, initialExercise }: { initialExercise
   const options = initialExercise && !exercises.some(row => row.key === initialKey)
     ? [{ key: initialKey!, snapshot: initialExercise, sessions: [] }, ...exercises] : exercises
   const exercise = options.find(row => row.key === exerciseKey) ?? options[0]
-  if (!exercise) return <p className="surface-card">Complete a working set and finish a workout to see your exercise progress here.</p>
   const counts = new Map<string, number>()
   for (const row of options) counts.set(row.snapshot.id, (counts.get(row.snapshot.id) ?? 0) + 1)
   return <>
-    <section className="surface-card analytics-card" aria-label="Choose an exercise">
-      <label>Exercise<select value={exercise.key} onChange={event => setExerciseKey(event.target.value)}>
-        {options.map(row => {
-          const { snapshot } = row
-          const convention = snapshot.metadata?.repetitionConvention === 'per-side' ? ', reps per side' : snapshot.tracking.weightConvention === 'per-hand' ? (snapshot.metadata?.repetitionConvention === 'total' ? ', total reps' : ', rep convention unspecified') : ''
-          return <option key={row.key} value={row.key}>{exerciseDisplayName(snapshot)}{counts.get(snapshot.id)! > 1 ? ` · ${trackingLabel(snapshot.tracking)}${convention}` : ''}</option>
-        })}
-      </select></label>
-    </section>
-    <ExerciseProgress key={exercise.key} exercise={exercise} onOpenWorkout={onOpenWorkout} />
+    {showRecords && <RecordsBoard exercises={exercises} onOpenWorkout={onOpenWorkout} onBack={() => {
+      setShowRecords(false)
+      requestAnimationFrame(() => browse.current?.focus())
+    }} />}
+    <div hidden={showRecords}>
+      <section className="surface-card analytics-card" aria-label="Choose an exercise">
+        {exercise && <label>Exercise<select value={exercise.key} onChange={event => setExerciseKey(event.target.value)}>
+          {options.map(row => {
+            const { snapshot } = row
+            const convention = snapshot.metadata?.repetitionConvention === 'per-side' ? ', reps per side' : snapshot.tracking.weightConvention === 'per-hand' ? (snapshot.metadata?.repetitionConvention === 'total' ? ', total reps' : ', rep convention unspecified') : ''
+            return <option key={row.key} value={row.key}>{exerciseDisplayName(snapshot)}{counts.get(snapshot.id)! > 1 ? ` · ${trackingLabel(snapshot.tracking)}${convention}` : ''}</option>
+          })}
+        </select></label>}
+        {!exercise && <p className="note">Complete a working set and finish a workout to see your exercise progress here.</p>}
+        <button ref={browse} type="button" className="secondary" onClick={() => setShowRecords(true)}>Browse all records</button>
+      </section>
+      {exercise && <ExerciseProgress key={exercise.key} exercise={exercise} onOpenWorkout={onOpenWorkout} />}
+    </div>
   </>
 }
