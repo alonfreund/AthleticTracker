@@ -20,11 +20,15 @@ export function validateRepAttempt(value: unknown, message = 'Invalid repetition
 }
 
 export function pushupProgress(attempts: PushupAttempt[], milestones: readonly number[] = PUSHUP_MILESTONES) {
+  return attemptProgress(attempts, attempt => attempt.reps, milestones)
+}
+
+export function attemptProgress<T>(attempts: T[], value: (attempt: T) => number, milestones: readonly number[]) {
   let best = 0
   const timeline = attempts.map(attempt => {
-    best = Math.max(best, attempt.reps)
+    best = Math.max(best, value(attempt))
     return { ...attempt, best }
   })
-  return { timeline, latest: attempts.at(-1)?.reps, best: attempts.length ? best : undefined,
+  return { timeline, latest: attempts.length ? value(attempts.at(-1)!) : undefined, best: attempts.length ? best : undefined,
     next: milestones.find(milestone => milestone > best) }
 }

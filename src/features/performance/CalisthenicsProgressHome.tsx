@@ -6,11 +6,12 @@ import { pushupProgress, type PushupAttempt } from '../../domain/calisthenics/pu
 import { Button } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
 
-export function CalisthenicsProgressHome({ blocked, hasWorkoutInProgress, onBack, onHistory, onOpenTrack }: {
+export function CalisthenicsProgressHome({ blocked, hasWorkoutInProgress, onBack, onHistory, onOpenTrack, onOpenMuscleups }: {
   blocked: boolean
   hasWorkoutInProgress: boolean
   onBack: () => void
   onHistory: () => void
+  onOpenMuscleups: () => void
   onOpenTrack: (track: RepTrack) => void
 }) {
   return <>
@@ -22,6 +23,10 @@ export function CalisthenicsProgressHome({ blocked, hasWorkoutInProgress, onBack
         <p>Choose a skill to see its variations and track what you can do today.</p>
         <ProgressTrack track="pushups" blocked={blocked} onOpen={onOpenTrack} />
         <ProgressTrack track="pullups" blocked={blocked} onOpen={onOpenTrack} />
+        <button type="button" className="exercise-row rep-track" disabled={blocked} onClick={onOpenMuscleups}>
+          <strong>3 Bar Muscle-ups <Icon name="arrow" /></strong>
+          <span>Requirements and practice</span>
+        </button>
       </section>
       <section className="surface-card" aria-labelledby="calisthenics-previous-heading">
         <h2 id="calisthenics-previous-heading">Previous workouts</h2>

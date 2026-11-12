@@ -474,3 +474,8 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 .rep-milestones li { padding: var(--space-2); border-radius: var(--radius-control); background: var(--color-surface-soft); }
 .rep-milestones li[data-achieved='true'] { background: var(--color-accent-soft); }
 .rep-milestones span { display: block; font-size: var(--text-small); }
+
+.muscleup-requirement-list { display: grid; gap: var(--space-3); list-style: none; padding: 0; }
+.muscleup-requirement-list li { display: grid; gap: var(--space-2); padding: var(--space-3); background: var(--color-surface-soft); border-radius: var(--radius-control); }
+.muscleup-requirement-list progress { width: 100%; }
+.muscleup-requirement-list button { justify-self: start; }
