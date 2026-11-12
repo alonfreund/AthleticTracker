@@ -1,5 +1,3 @@
-import type { AnalyticsSession } from './analytics'
-
 export const EXERCISE_RANGES = { '1': '1 month', '3': '3 months', '6': '6 months', '12': '1 year', all: 'All time' } as const
 export type ExerciseRange = keyof typeof EXERCISE_RANGES
 
@@ -11,7 +9,7 @@ export function timelineRange(range: ExerciseRange, now = new Date()) {
   return { from, before }
 }
 
-export function frequencyTimeline(sessions: AnalyticsSession[], range: ExerciseRange, now = new Date()) {
+export function frequencyTimeline<T extends { startedAt: string }>(sessions: T[], range: ExerciseRange, now = new Date()) {
   const { from, before } = timelineRange(range, now)
   const monthly = range === '12' || range === 'all'
   const inRange = sessions.filter(session => {
@@ -22,7 +20,7 @@ export function frequencyTimeline(sessions: AnalyticsSession[], range: ExerciseR
   if (!start) return []
   const bucketStart = (date: Date) => new Date(date.getFullYear(), date.getMonth(),
     monthly ? 1 : date.getDate() - (date.getDay() + 6) % 7)
-  const buckets = new Map<number, { at: number; sessions: AnalyticsSession[] }>()
+  const buckets = new Map<number, { at: number; sessions: T[] }>()
   for (let date = bucketStart(start); date < before;) {
     const at = date.getTime()
     buckets.set(at, { at, sessions: [] })

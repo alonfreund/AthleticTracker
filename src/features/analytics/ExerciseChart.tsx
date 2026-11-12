@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '../../components/ui/Button'
 
-export type ChartPoint = { at: number; value: number; label: string; source?: string }
+export type ChartPoint = { at: number; value: number; label: string; source?: string; breakBefore?: boolean }
 
 export function ExerciseChart<T extends ChartPoint>({ points, title, bars, format, details }: {
   points: T[]
@@ -20,7 +20,7 @@ export function ExerciseChart<T extends ChartPoint>({ points, title, bars, forma
   const x = (at: number) => end === start ? 200 : 18 + 364 * (at - start) / (end - start)
   const y = (value: number) => max === min ? (bars ? 151 : 83) : 151 - 136 * (value - min) / (max - min)
   const barWidth = Math.min(24, 230 / points.length)
-  const path = points.map((point, i) => `${i ? 'L' : 'M'}${x(point.at)},${y(point.value)}`).join(' ')
+  const path = points.map((point, i) => `${i && !point.breakBefore ? 'L' : 'M'}${x(point.at)},${y(point.value)}`).join(' ')
   const selectedPoint = points[selected]
   return <figure className="exercise-chart">
     <figcaption>{title}</figcaption>

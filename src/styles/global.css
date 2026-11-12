@@ -459,3 +459,8 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 .cardio-clock { font-size: clamp(2.4rem, 12vw, 4rem); font-variant-numeric: tabular-nums; line-height: 1; font-weight: 750; }
 .cardio-interval { background: var(--color-accent-soft); border-radius: var(--radius-control); padding: var(--space-3); }
 .cardio-discard, .cardio-lap-status { margin-top: var(--space-3); }
+
+.cardio-analytics-controls { margin-bottom: var(--space-4); }
+.cardio-analytics-controls label { flex-basis: min(135px, 100%); }
+.cardio-analytics-controls label:first-child { flex-basis: min(135px, 100%); }
+.cardio-analytics-totals dd { overflow-wrap: anywhere; font-size: clamp(1rem, 4vw, 1.25rem); }

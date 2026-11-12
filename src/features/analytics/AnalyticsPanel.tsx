@@ -1,3 +1,4 @@
+import { CardioAnalytics } from './CardioAnalytics'
 import { RecordsBoard } from './RecordsBoard'
 import { AnalyticsOverview } from './AnalyticsOverview'
 import { ExerciseChart } from './ExerciseChart'
@@ -118,8 +119,8 @@ function ExerciseProgress({ exercise, onOpenWorkout }: { exercise: AnalyticsExer
   </>
 }
 
-export function AnalyticsPanel({ onOpenWorkout, initialExercise }: { initialExercise?: Exercise; onOpenWorkout: (id: string) => void }) {
-  const [view, setView] = useState<'overview' | 'exercises' | 'muscles' | 'monthly' | 'trends'>(initialExercise ? 'exercises' : 'overview')
+export function AnalyticsPanel({ onOpenWorkout, onOpenCardioSession, initialExercise, initialCardio }: { initialExercise?: Exercise; initialCardio?: boolean; onOpenWorkout: (id: string) => void; onOpenCardioSession: (id: string) => void }) {
+  const [view, setView] = useState<'overview' | 'exercises' | 'muscles' | 'monthly' | 'trends' | 'cardio'>(initialCardio ? 'cardio' : initialExercise ? 'exercises' : 'overview')
   const [focusedExercise, setFocusedExercise] = useState(initialExercise)
   useLayoutEffect(() => {
     updateSafety.setSafety({ dirty: false, busy: false, restoring: false, loading: false })
@@ -131,12 +132,14 @@ export function AnalyticsPanel({ onOpenWorkout, initialExercise }: { initialExer
       <Button variant={view === 'muscles' ? 'primary' : 'secondary'} aria-pressed={view === 'muscles'} onClick={() => setView('muscles')}>Muscle distribution</Button>
       <Button variant={view === 'monthly' ? 'primary' : 'secondary'} aria-pressed={view === 'monthly'} onClick={() => setView('monthly')}>Monthly report</Button>
       <Button variant={view === 'trends' ? 'primary' : 'secondary'} aria-pressed={view === 'trends'} onClick={() => setView('trends')}>Training trends</Button>
+      <Button variant={view === 'cardio' ? 'primary' : 'secondary'} aria-pressed={view === 'cardio'} onClick={() => setView('cardio')}>Cardio</Button>
     </div>
     {view === 'overview' && <AnalyticsOverview onMuscles={() => setView('muscles')} onExercise={exercise => { setFocusedExercise(exercise); setView('exercises') }} />}
     {view === 'exercises' && <ExerciseAnalytics initialExercise={focusedExercise} onOpenWorkout={onOpenWorkout} />}
     {view === 'muscles' && <MuscleDistributionPanel />}
     {view === 'monthly' && <MonthlyReportPanel onOpenWorkout={onOpenWorkout} />}
     {view === 'trends' && <TrainingTrendsPanel />}
+    {view === 'cardio' && <CardioAnalytics onOpenSession={onOpenCardioSession} />}
   </>
 }
 

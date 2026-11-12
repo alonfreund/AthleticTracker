@@ -14,10 +14,11 @@ const icons: Record<CardioActivity, IconName> = {
   walking: 'walking', hiking: 'hiking', rowing: 'rowing', other: 'performance',
 }
 
-export function CardioHome({ onBack, onActivity, onHistory, onSession, blocked }: {
+export function CardioHome({ onBack, onActivity, onHistory, onSession, onAnalytics, blocked }: {
   onBack: () => void
   onActivity: (activity: CardioActivity) => void
   onHistory: () => void
+  onAnalytics: () => void
   onSession: (id: string) => void
   blocked: boolean
 }) {
@@ -50,6 +51,7 @@ export function CardioHome({ onBack, onActivity, onHistory, onSession, blocked }
         </dl>
         {totals?.sessions ? <p className="note">Distance includes sessions with recorded distance.</p>
           : <p className="note">Weekly totals will appear once you’ve logged cardio sessions.</p>}
+        <Button variant="secondary" disabled={blocked} onClick={onAnalytics}>View cardio analytics <Icon name="arrow" /></Button>
       </section>
       <section className="surface-card" aria-labelledby="cardio-recent">
         <h2 id="cardio-recent">Recent sessions</h2>
@@ -100,8 +102,8 @@ export function CardioHistory({ onBack, onSession, blocked }: {
   </>
 }
 
-export function CardioSessionScreen({ id, onBack, blocked, applying }: {
-  id: string; onBack: () => void; blocked: boolean; applying: boolean
+export function CardioSessionScreen({ id, onBack, onReturnToAnalytics, blocked, applying }: {
+  id: string; onBack: () => void; onReturnToAnalytics?: () => void; blocked: boolean; applying: boolean
 }) {
   const { sessions, failed } = useCardioSessions()
   const [editing, setEditing] = useState<CardioSession>()
@@ -130,7 +132,7 @@ export function CardioSessionScreen({ id, onBack, blocked, applying }: {
     } finally { updateSafety.setBusy(false); setBusy(false) }
   }
   return <>
-    <Button className="section-back" variant="secondary" onClick={onBack} disabled={disabled}>Back to cardio history</Button>
+    <Button className="section-back" variant="secondary" onClick={onReturnToAnalytics ?? onBack} disabled={disabled}>{onReturnToAnalytics ? 'Back to cardio analytics' : 'Back to cardio history'}</Button>
     {failed ? <p role="alert">Could not load the cardio session.</p> : !sessions ? <p role="status">Opening session…</p>
       : !record ? <p role="status">This cardio session could not be found.</p> : <section className="surface-card" aria-label="Session details">
         <h2>{record.session.title}</h2>

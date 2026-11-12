@@ -25,6 +25,7 @@ export function App() {
   const view = route.screen
   const [returnToAnalytics, setReturnToAnalytics] = useState(() => window.history.state?.returnToAnalytics === true)
   const returnRef = useRef(returnToAnalytics)
+  const [analyticsCardio, setAnalyticsCardio] = useState(false)
   const [analyticsExercise, setAnalyticsExercise] = useState<Exercise>()
   const [active, setActive] = useState<Session>()
   const [updateAvailable, setUpdateAvailable] = useState(false)
@@ -50,7 +51,10 @@ export function App() {
     return true
   }
   function openExerciseAnalytics(exercise: Exercise) {
-    if (navigate({ screen: 'analytics' })) setAnalyticsExercise(exercise)
+    if (navigate({ screen: 'analytics' })) { setAnalyticsCardio(false); setAnalyticsExercise(exercise) }
+  }
+  function openCardioAnalytics() {
+    if (navigate({ screen: 'analytics' })) { setAnalyticsExercise(undefined); setAnalyticsCardio(true) }
   }
   function openHistory(workoutId?: string, fromAnalytics = false) {
     navigate({ screen: 'strength/history', workoutId }, { fromAnalytics })
@@ -102,7 +106,7 @@ export function App() {
         {databaseReady && view === 'performance/cardio' && <CardioHome blocked={blocked}
           onBack={() => navigate({ screen: 'performance' })}
           onActivity={cardioActivity => navigate({ screen: 'performance/cardio/activity', cardioActivity })}
-          onHistory={() => navigate({ screen: 'performance/cardio/history' })}
+          onHistory={() => navigate({ screen: 'performance/cardio/history' })} onAnalytics={openCardioAnalytics}
           onSession={workoutId => navigate({ screen: 'performance/cardio/session', workoutId })} />}
         {databaseReady && view === 'performance/cardio/activity' && route.cardioActivity &&
           <>
@@ -119,9 +123,13 @@ export function App() {
           onSession={workoutId => navigate({ screen: 'performance/cardio/session', workoutId })} />}
         {databaseReady && view === 'performance/cardio/session' && route.workoutId &&
           <CardioSessionScreen key={route.workoutId} id={route.workoutId} blocked={blocked} applying={safety.applying}
+            onReturnToAnalytics={returnToAnalytics ? openCardioAnalytics : undefined}
             onBack={() => navigate({ screen: 'performance/cardio/history' })} />}
         {databaseReady && view === 'analytics' && <Suspense fallback={<p role="status">Opening Analytics…</p>}>
-          <AnalyticsPanel initialExercise={analyticsExercise} onOpenWorkout={id => openHistory(id, true)} />
+          <AnalyticsPanel initialExercise={analyticsExercise} initialCardio={analyticsCardio}
+            onOpenWorkout={id => openHistory(id, true)} onOpenCardioSession={workoutId => {
+              if (navigate({ screen: 'performance/cardio/session', workoutId }, { fromAnalytics: true })) setAnalyticsCardio(true)
+            }} />
         </Suspense>}
         {databaseReady && view === 'strength/library' && <ExerciseLibrary onExerciseAnalytics={openExerciseAnalytics} onBackToStrength={() => navigate({ screen: 'strength' })} />}
         <div className="settings-stack" hidden={view !== 'settings'}>
@@ -133,7 +141,7 @@ export function App() {
     </main>
     {showResume && <aside className="resume-strip" aria-label="Workout in progress"><button disabled={blocked} onClick={() => { navigate({ screen: 'strength', workoutId: active.id }) }}><span className="resume-strip__text"><strong>{active.title}</strong><span>Workout in progress · Resume</span></span><Icon name="arrow" /></button></aside>}
     <BottomNavigation current={routeTab(view)} blocked={blocked} updateAvailable={updateAvailable} onNavigate={screen => {
-      if (navigate({ screen }) && screen === 'analytics') setAnalyticsExercise(undefined)
+      if (navigate({ screen }) && screen === 'analytics') { setAnalyticsExercise(undefined); setAnalyticsCardio(false) }
     }} />
   </>
 }
