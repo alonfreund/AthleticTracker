@@ -43,8 +43,8 @@ export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Strength'
     {session.notes && <p className="multiline">{session.notes}</p>}
     {message && <p role="status">{message}</p>}
     {error && <p role="alert" className="error">{error}</p>}
-    {session.status === 'finished' && (onEdit || onDelete) && <div className="actions">
-      {onEdit && <Button variant="secondary" disabled={disabled} onClick={onEdit}>Edit workout</Button>}
+    {((session.status === 'finished' && onEdit) || onDelete) && <div className="actions">
+      {session.status === 'finished' && onEdit && <Button variant="secondary" disabled={disabled} onClick={onEdit}>Edit workout</Button>}
       {onDelete && <Button variant="danger" disabled={disabled} onClick={onDelete}>Delete workout</Button>}
     </div>}
     {blocks.map(block => {

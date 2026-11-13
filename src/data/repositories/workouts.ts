@@ -415,11 +415,23 @@ export function editFinishedWorkout(baseline: Workout, edit: FinishedWorkoutEdit
   }, database, 'finished')
 }
 
-export function deleteFinishedWorkout(baseline: Workout, database = db) {
-  return mutate(baseline.sessions[0].id, workout => {
-    checkHistoryVersion(workout, baseline)
+function removeWorkout(id: string, status: Session['status'], database: AthleticDatabase, baseline?: Workout) {
+  return mutate(id, workout => {
+    if (baseline) checkHistoryVersion(workout, baseline)
     Object.assign(workout, emptyStrengthData())
-  }, database, 'finished')
+  }, database, status)
+}
+
+export function deleteFinishedWorkout(baseline: Workout, database = db) {
+  return removeWorkout(baseline.sessions[0].id, 'finished', database, baseline)
+}
+
+export function deleteCancelledWorkout(baseline: Workout, database = db) {
+  return removeWorkout(baseline.sessions[0].id, 'cancelled', database, baseline)
+}
+
+export function deleteActiveWorkout(id: string, database = db) {
+  return removeWorkout(id, 'active', database)
 }
 
 export function cancelWorkout(id: string, database = db) {

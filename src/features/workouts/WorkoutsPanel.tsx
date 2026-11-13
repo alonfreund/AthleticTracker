@@ -3,7 +3,7 @@ import { WorkoutRecap } from './WorkoutRecap'
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { updateSafety } from '../../app/updateSafety'
 import { initializeExerciseLibrary, listExercises } from '../../data/repositories/exercises'
-import { deleteFinishedWorkout, editFinishedWorkout, startWorkout, startRoutine, listWorkouts, loadWorkout, type Workout } from '../../data/repositories/workouts'
+import { deleteCancelledWorkout, deleteFinishedWorkout, editFinishedWorkout, startWorkout, startRoutine, listWorkouts, loadWorkout, type Workout } from '../../data/repositories/workouts'
 import { supportsCalisthenics, type Exercise, type MovementDiscipline, type Session } from '../../domain/strength/models'
 import { deleteRoutine, listRoutines, saveRoutine } from '../../data/repositories/routines'
 import { RoutineEditor, type SavedRoutine } from './RoutineEditor'
@@ -36,7 +36,7 @@ export function WorkoutsPanel({ mode = 'train', discipline = 'strength', initial
   const { applying } = useSyncExternalStore(updateSafety.subscribe, updateSafety.getSnapshot)
   useLayoutEffect(() => { if (!selected || selected.sessions[0].status !== 'active') updateSafety.setSafety({ dirty: routineDirty || historyDirty, busy, restoring: false, loading }) }, [selected, busy, loading, routineDirty, historyDirty])
   useEffect(() => {
-    const guard = (event: BeforeUnloadEvent) => { if (historyDirty || (selected?.sessions[0].status === 'finished' && lock.current)) event.preventDefault() }
+    const guard = (event: BeforeUnloadEvent) => { if (historyDirty || (selected && selected.sessions[0].status !== 'active' && lock.current)) event.preventDefault() }
     window.addEventListener('beforeunload', guard)
     return () => window.removeEventListener('beforeunload', guard)
   }, [historyDirty, selected])
@@ -106,11 +106,11 @@ export function WorkoutsPanel({ mode = 'train', discipline = 'strength', initial
       }, 'Could not save workout changes.')} />
     return <WorkoutHistory workout={selected} onBack={onReturnToAnalytics ?? back} backLabel={onReturnToAnalytics ? 'Back to Analytics' : mode === 'history' ? 'Back to history' : `Back to ${disciplineName}`}
       disabled={disabled} onExerciseAnalytics={onExerciseAnalytics} message={historyMessage} error={error}
-      onEdit={() => { setError(''); setEditingHistory(true) }}
+      onEdit={session.status === 'finished' ? () => { setError(''); setEditingHistory(true) } : undefined}
       onDelete={() => {
         if (!window.confirm(`Delete “${session.title}” from ${new Date(session.startedAt).toLocaleString()}? This permanently removes the workout and its sets from this device.`)) return
         void perform(async () => {
-          await deleteFinishedWorkout(selected)
+          await (session.status === 'cancelled' ? deleteCancelledWorkout(selected) : deleteFinishedWorkout(selected))
           setSessions(current => current.filter(row => row.id !== session.id))
           setSelected(undefined); setHistoryMessage('Workout deleted from this device.')
         }, 'Could not delete workout.').then(deleted => {

@@ -5,7 +5,7 @@ import { createBackup, restoreBackup } from '../src/data/backup/backup'
 import { AthleticDatabase, verifyLocalStorage } from '../src/data/db/database'
 import { setFavourite } from '../src/data/repositories/preferences'
 import { saveRoutine } from '../src/data/repositories/routines'
-import { addSet, addWorkoutExercise, cancelWorkout, deleteFinishedWorkout, editFinishedWorkout, finishWorkout, loadWorkout, recentExerciseHistory, saveInlineSet, saveSetDraft, saveSuperset, startWorkout } from '../src/data/repositories/workouts'
+import { addSet, addWorkoutExercise, cancelWorkout, deleteActiveWorkout, deleteCancelledWorkout, deleteFinishedWorkout, editFinishedWorkout, finishWorkout, loadWorkout, recentExerciseHistory, saveInlineSet, saveSetDraft, saveSuperset, startWorkout } from '../src/data/repositories/workouts'
 import { STARTER_EXERCISES } from '../src/domain/strength/catalog'
 import { inputFromSet } from '../src/domain/strength/logging'
 import { supersetRound } from '../src/domain/strength/supersets'
@@ -125,11 +125,30 @@ it('rolls back invalid corrections and failed cascading deletes without touching
   await expect(loadWorkout(id, restored)).rejects.toThrow('no longer exists')
 })
 
-it('only exposes edit and delete in finished workout details', async () => {
+it('exposes deletion for finished and cancelled workouts and editing for finished workouts', async () => {
   const { db, baseline } = await setup()
   const render = (workout: typeof baseline) => renderToStaticMarkup(<WorkoutHistory workout={workout} onBack={noop} onEdit={noop} onDelete={noop} />)
   expect(render(baseline)).toMatch(/Edit workout.*Delete workout/)
   const cancelled = await startWorkout(db)
   await cancelWorkout(cancelled, db)
-  expect(render(await loadWorkout(cancelled, db))).not.toMatch(/Edit workout|Delete workout/)
+  const cancelledMarkup = render(await loadWorkout(cancelled, db))
+  expect(cancelledMarkup).toContain('Delete workout')
+  expect(cancelledMarkup).not.toContain('Edit workout')
+})
+
+it('removes active and cancelled workouts with their dependent data', async () => {
+  const { db, source } = await setup()
+  const before = (await createBackup(db)).data
+  const active = await startWorkout(db)
+  await addWorkoutExercise(active, source.id, db)
+  const activeSet = (await loadWorkout(active, db)).strengthSets[0]
+  await saveSetDraft(active, activeSet.id, inputFromSet(activeSet), db)
+  await deleteActiveWorkout(active, db)
+  await expect(loadWorkout(active, db)).rejects.toThrow('no longer exists')
+  const cancelled = await startWorkout(db)
+  await addWorkoutExercise(cancelled, source.id, db)
+  await cancelWorkout(cancelled, db)
+  await deleteCancelledWorkout(await loadWorkout(cancelled, db), db)
+  const after = (await createBackup(db)).data
+  expect(after).toEqual(before)
 })
