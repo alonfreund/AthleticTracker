@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { liveQuery } from 'dexie'
 import { Button } from '../../components/ui/Button'
 import { updateSafety } from '../../app/updateSafety'
@@ -51,8 +51,8 @@ export function ChallengeList({ blocked, onBack, onNew, onOpen }: {
   return <>
     <Button className="section-back" variant="secondary" disabled={blocked} onClick={onBack}>Back to Performance</Button>
     <section className="surface-card">
-      <h2>Your challenges</h2>
-      <Button disabled={blocked} onClick={onNew}>New challenge</Button>
+      <div className="challenge-heading"><h2>Your challenges</h2>
+        <Button disabled={blocked} onClick={onNew}>New challenge</Button></div>
       {rows === null ? <p role="alert">Could not load challenges.</p> : !rows ? <p role="status">Loading challenges…</p> :
         rows.length === 0 ? <p className="note">Create a challenge, finisher or performance test to start tracking results.</p> :
         <div className="challenge-list">{rows.map(({ challenge, latest, best }) =>
@@ -191,33 +191,36 @@ export function ChallengeDetail({ id, blocked, onBack }: { id: string; blocked: 
     <Button className="section-back" variant="secondary" disabled={blocked} onClick={onBack}>Back to Challenges</Button>
     {data === null ? <p role="alert">Could not load challenge.</p> : !data ? <p role="status">Loading challenge…</p> :
       active && current ? <>
-        <section className="surface-card">
-          <div className="actions">
-            <Button variant="secondary" disabled={blocked} onClick={() => {
-              if (!updateSafety.getSnapshot().dirty || window.confirm('Discard unsaved changes?')) setEditing(true)
-            }}>{active.challenge.id === current.challenge.id ? 'Edit challenge' : 'Edit current version'}</Button>
-            <Button variant="danger" disabled={blocked} onClick={() => {
-              if (updateSafety.getSnapshot().dirty && !window.confirm('Discard unsaved changes?')) return
-              const count = data.reduce((total, row) => total + row.attempts.length, 0)
-              if (window.confirm(`Delete this challenge and its ${count} saved ${count === 1 ? 'attempt' : 'attempts'} across all versions?`)) {
-                void save(() => deleteChallenge(id, count), () => {
-                  updateSafety.setSafety({ dirty: false, busy: false, loading: false, restoring: false })
-                  onBack()
-                })
-              }
-            }}>Delete challenge</Button>
-          </div>
-          {error && <p role="alert" className="error">{error}</p>}
-          {data.length > 1 && <label>Version<select disabled={blocked} value={active.challenge.id} onChange={event => {
+        <ChallengeResults key={active.challenge.id} challenge={active.challenge} attempts={active.attempts}
+          current={active.challenge.id === current.challenge.id} blocked={blocked}
+          controls={<>
+            {error && <p role="alert" className="error">{error}</p>}
+            {data.length > 1 && <label>Version<select disabled={blocked} value={active.challenge.id} onChange={event => {
             if (!updateSafety.getSnapshot().dirty || window.confirm('Discard unsaved changes?')) setSelected(event.target.value === current.challenge.id ? undefined : event.target.value)
-          }}>
+            }}>
             {data.map(({ challenge }) => <option key={challenge.id} value={challenge.id}>
               Version {challengeVersion(challenge)}{challenge.id === current.challenge.id && ' (current)'}
             </option>)}
-          </select></label>}
-        </section>
-        <ChallengeResults key={active.challenge.id} challenge={active.challenge} attempts={active.attempts}
-          current={active.challenge.id === current.challenge.id} blocked={blocked} />
+            </select></label>}
+            <details className="challenge-options">
+                <summary>Manage challenge</summary>
+                <div className="actions">
+                <Button variant="secondary" disabled={blocked} onClick={() => {
+                  if (!updateSafety.getSnapshot().dirty || window.confirm('Discard unsaved changes?')) setEditing(true)
+                }}>{active.challenge.id === current.challenge.id ? 'Edit challenge' : 'Edit current version'}</Button>
+                <Button variant="danger" disabled={blocked} onClick={() => {
+                  if (updateSafety.getSnapshot().dirty && !window.confirm('Discard unsaved changes?')) return
+                  const count = data.reduce((total, row) => total + row.attempts.length, 0)
+                  if (window.confirm(`Delete this challenge and its ${count} saved ${count === 1 ? 'attempt' : 'attempts'} across all versions?`)) {
+                    void save(() => deleteChallenge(id, count), () => {
+                      updateSafety.setSafety({ dirty: false, busy: false, loading: false, restoring: false })
+                      onBack()
+                    })
+                  }
+                }}>Delete challenge</Button>
+                </div>
+            </details>
+          </>} />
       </> : <p>Challenge unavailable.</p>}
   </div>
 }
@@ -225,7 +228,7 @@ export function ChallengeDetail({ id, blocked, onBack }: { id: string; blocked: 
 const date = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' })
 const time = new Intl.DateTimeFormat(undefined, { timeStyle: 'short' })
 
-function ChallengeResults({ challenge, attempts, blocked, current }: { challenge: Challenge; attempts: ChallengeAttempt[]; blocked: boolean; current: boolean }) {
+function ChallengeResults({ challenge, attempts, blocked, current, controls }: { challenge: Challenge; attempts: ChallengeAttempt[]; blocked: boolean; current: boolean; controls: ReactNode }) {
   const [inputs, setInputs] = useState<ResultInput[]>()
   const [notes, setNotes] = useState('')
   const [editingAttempt, setEditingAttempt] = useState<string>()
@@ -267,17 +270,16 @@ function ChallengeResults({ challenge, attempts, blocked, current }: { challenge
     clearError()
   }
   function attemptActions(attempt: ChallengeAttempt) {
-    return <div className="actions">
+    return <details className="challenge-options"><summary>Attempt actions</summary><div className="actions">
       <Button variant="secondary" disabled={blocked} onClick={() => editAttempt(attempt)}>Edit attempt</Button>
       <Button variant="danger" disabled={blocked || !!inputs} onClick={() => {
         if (window.confirm('Delete this attempt?')) void save(() => deleteChallengeAttempt(attempt.id))
       }}>Delete attempt</Button>
-    </div>
+    </div></details>
   }
   return <div className="performance-disciplines">
-    <section className="surface-card">
-      <h2>{challenge.name}</h2>
-      <p className="note">{challenge.kind}</p>
+    <section className="surface-card challenge-overview">
+      <div className="challenge-title"><p className="note">{challenge.kind}</p><h2>{challenge.name}</h2></div>
       {challenge.rules && <p className="multiline">{challenge.rules}</p>}
       {inputs ? <form ref={attemptForm} onSubmit={event => {
         event.preventDefault()
@@ -299,6 +301,7 @@ function ChallengeResults({ challenge, attempts, blocked, current }: { challenge
         </fieldset>
       </form> : current && <Button disabled={blocked} onClick={() => setInputs(challenge.metrics.map(emptyResult))}>Log attempt</Button>}
       {error && <p role="alert" className="error">{error}</p>}
+      {controls}
     </section>
     <section className="surface-card">
       <h2>Progress</h2>
@@ -324,9 +327,9 @@ function ChallengeResults({ challenge, attempts, blocked, current }: { challenge
     </section>
     {attempts.length > 0 && <section className="surface-card">
       <h2>Attempt history</h2>
-      <div className="challenge-list">{attempts.slice(-historyLimit).reverse().map(attempt => <div key={attempt.id} className="challenge-metric">
-        <strong>{formatResult(attempt.results[0]!, challenge.metrics[0])}</strong>
-        <p className="note">{date.format(new Date(attempt.recordedAt))} · {time.format(new Date(attempt.recordedAt))}</p>
+      <div className="challenge-list">{attempts.slice(-historyLimit).reverse().map(attempt => <div key={attempt.id} className="challenge-history-row">
+        <div><strong>{formatResult(attempt.results[0]!, challenge.metrics[0])}</strong>
+        <p className="note">{date.format(new Date(attempt.recordedAt))} · {time.format(new Date(attempt.recordedAt))}</p></div>
         {attemptActions(attempt)}
       </div>)}</div>
       {historyLimit < attempts.length && <Button variant="secondary" onClick={() => setHistoryLimit(historyLimit + 10)}>Show older attempts</Button>}
