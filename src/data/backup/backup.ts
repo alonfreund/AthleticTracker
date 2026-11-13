@@ -21,8 +21,8 @@ import { validateText, type AppMetadata, type FoundationRecord } from '../../dom
 
 import { assertBackupSize, utf8Bytes } from './limits'
 export { MAX_BACKUP_BYTES } from './limits'
-export const BACKUP_VERSION = 16
-export const SUPPORTED_BACKUP_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, BACKUP_VERSION]
+export const BACKUP_VERSION = 17
+export const SUPPORTED_BACKUP_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, BACKUP_VERSION]
 
 function backupTables(version: number) {
   if (version >= 16) return [...BACKUP_TABLES]
@@ -169,9 +169,17 @@ export function validateBackup(value: unknown): Backup {
   if (!Array.isArray(challenges) || !Array.isArray(challengeAttempts)) throw new Error('Invalid challenge tables.')
   const challengeById = new Map<string, Challenge>()
   for (const challenge of challenges) {
-    validateChallenge(challenge)
+    validateBackupRecord('challenges', challenge, version)
     if (challengeById.has(challenge.id)) throw new Error('Duplicate challenge.')
     challengeById.set(challenge.id, challenge)
+  }
+  const versionKeys = new Set<string>()
+  for (const challenge of challenges as Challenge[]) {
+    if (!challenge.rootId) continue
+    const root = challengeById.get(challenge.rootId)
+    const key = JSON.stringify([challenge.rootId, challenge.version])
+    if (!root || root.rootId || versionKeys.has(key)) throw new Error('Invalid challenge version history.')
+    versionKeys.add(key)
   }
   attemptIds.clear()
   for (const attempt of challengeAttempts) {
@@ -304,7 +312,10 @@ export function validateBackupRecord(name: string, value: unknown, version: numb
   if (version < 7 && name === 'sessionActivities' && item.activityType === 'cardio') throw new Error('Cardio requires backup format 7.')
   if (name === 'cardioDetails') validateCardioDetails(value)
   if (name === 'cardioTiming') validateCardioTiming(value)
-  if (name === 'challenges') validateChallenge(value)
+  if (name === 'challenges') {
+    validateChallenge(value)
+    if (version < 17 && (Object.hasOwn(value, 'rootId') || Object.hasOwn(value, 'version'))) throw new Error('Challenge versions require backup format 17.')
+  }
   if (name === 'challengeAttempts') validateChallengeAttempt(value)
   if (name === 'frontLeverAttempts') validateFrontLeverAttempt(value)
   if (name === 'handstandAttempts') validateHandstandAttempt(value)

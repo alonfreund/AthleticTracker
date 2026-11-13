@@ -115,6 +115,12 @@ async function validateStage(id:string,header:StagedBackup['header'],database:At
             validateChallengeAttempt(value, challenge)
           }
           const keys = extraKeys(row)
+          if (name === 'challenges' && value.rootId) {
+            const root = await read('challenges', value.rootId)
+            validateChallenge(root)
+            if (root.rootId) throw new Error('Invalid challenge version history.')
+            keys.push({ jobId: id, scope: 'challenge-version', key: JSON.stringify([value.rootId, value.version]) })
+          }
           if ((STRENGTH_TABLES as readonly string[]).includes(name)) {
             const lookup = await references(database, id, name, value, read)
             validateStrengthRecord(name as typeof STRENGTH_TABLES[number], value, lookup)

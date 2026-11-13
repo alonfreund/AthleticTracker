@@ -6,7 +6,7 @@ export type MetricType = keyof typeof METRIC_TYPES
 export type Direction = 'higher' | 'lower' | 'trend'
 export type Result = number | { rounds: number; reps: number }
 export type ChallengeMetric = { name: string; type: MetricType; direction: Direction; unit: string }
-export type Challenge = { id: string; name: string; rules: string; kind: 'Challenge' | 'Finisher' | 'Performance test'; metrics: ChallengeMetric[]; target?: Result }
+export type Challenge = { id: string; name: string; rules: string; kind: 'Challenge' | 'Finisher' | 'Performance test'; metrics: ChallengeMetric[]; target?: Result; version?: number; rootId?: string }
 export type ChallengeAttempt = { id: string; challengeId: string; recordedAt: string; results: (Result | null)[]; notes: string }
 export const MAX_METRICS = 8
 
@@ -32,9 +32,12 @@ export function validResult(value: unknown, type: MetricType): value is Result {
 
 export function validateChallenge(value: unknown): asserts value is Challenge {
   const row = value as Challenge
-  if (!shape(value, ['id', 'name', 'rules', 'kind', 'metrics'], ['target']) || !uuid(row.id) || !named(row.name, 100) ||
+  if (!shape(value, ['id', 'name', 'rules', 'kind', 'metrics'], ['target', 'version', 'rootId']) || !uuid(row.id) || !named(row.name, 100) ||
     !text(row.rules, 3000) || !['Challenge', 'Finisher', 'Performance test'].includes(row.kind) ||
     !Array.isArray(row.metrics) || row.metrics.length < 1 || row.metrics.length > MAX_METRICS) throw new Error('Invalid challenge.')
+  if (row.rootId !== undefined || row.version !== undefined) {
+    if (!uuid(row.rootId) || row.rootId === row.id || !Number.isSafeInteger(row.version) || row.version! < 2) throw new Error('Invalid challenge version.')
+  }
   for (const metric of row.metrics) {
     if (!shape(metric, ['name', 'type', 'direction', 'unit']) || !named(metric.name, 60) ||
       typeof metric.type !== 'string' || !Object.hasOwn(METRIC_TYPES, metric.type) ||
@@ -82,4 +85,14 @@ export function parseResult(input: ResultInput, metric: ChallengeMetric): Result
   const result = metric.type === 'rounds-reps' ? { rounds: number(main), reps: number(extra || '0') } : number(main)
   if (!validResult(result, metric.type)) throw new Error(`Enter a valid result for ${metric.name || 'the primary metric'}.`)
   return result
+}
+
+export const challengeRoot = (challenge: Challenge) => challenge.rootId ?? challenge.id
+export const challengeVersion = (challenge: Challenge) => challenge.version ?? 1
+export type ChallengeSetup = Omit<Challenge, 'id' | 'rootId' | 'version'>
+
+export function resultInput(result: Result | null | undefined): ResultInput {
+  if (result == null) return emptyResult()
+  return typeof result === 'number' ? { value: String(result), extra: '' } :
+    { value: String(result.rounds), extra: String(result.reps) }
 }

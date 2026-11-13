@@ -81,6 +81,7 @@ export class AthleticDatabase extends Dexie {
     this.version(13).stores({ handstandAttempts: '&id, [movement+recordedAt]' })
     this.version(14).stores({ frontLeverAttempts: '&id, [movement+recordedAt]' })
     this.version(15).stores({ challenges: '&id, name', challengeAttempts: '&id, [challengeId+recordedAt]' })
+    this.version(16).stores({ challenges: '&id, name, rootId' })
     this.on('versionchange', () => this.close())
   }
 }
