@@ -1,3 +1,4 @@
+import { useRestChime } from './useRestChime'
 import { workoutElapsedMs } from '../../domain/strength/workoutTiming'
 import { db } from '../../data/db/database'
 import { liveQuery } from 'dexie'
@@ -166,6 +167,7 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
   const incomplete = workout.strengthSets.length - completed
   const timer = workout.restTimers[0]
   const remaining = timer ? timerSeconds(timer, now) : 0
+  const chime = useRestChime(timer, remaining, paused)
   function sessionExerciseName(id: string | number | undefined, fallback = 'exercise') {
     const snapshot = workout.sessionExercises.find(row => row.id === id)?.snapshot
     return snapshot ? exerciseDisplayName(snapshot) : fallback
@@ -219,7 +221,7 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
         const last = prior?.sets.filter(value => value.setType === set.setType)[ordinal]
         return <InlineSetRow key={set.id} exercise={exercise} set={set} row={row} index={index} last={index === sets.length - 1} previous={last} records={records ? records.get(set.id) : undefined} disabled={blocked}
           onChange={input => { if (!lock.current && !updateSafety.getSnapshot().applying) store.change(set.id, input) }} onSave={() => { void store.save(set.id).catch(() => {}) }}
-          onComplete={() => { if (!lock.current && !completing.current.has(set.id)) { completing.current.add(set.id); void store.save(set.id, !set.completed).catch(() => {}).finally(() => completing.current.delete(set.id)) } }}
+          onComplete={() => { if (!lock.current && !completing.current.has(set.id)) { if (!set.completed && chime.enabled) chime.prepare(); completing.current.add(set.id); void store.save(set.id, !set.completed).catch(() => {}).finally(() => completing.current.delete(set.id)) } }}
           onType={type => { if (!structuralBlocked) invoke(() => changeSetType(id, set.id, type)) }} onMove={direction => { if (!structuralBlocked) invoke(() => moveWorkoutItem(id, 'set', set.id, direction)) }} onRemove={() => { if (!blocked) { setReview(undefined); setRemoval({ kind: 'set', id: set.id }) } }}
           onRevert={() => invoke(async () => { await discardSetDraft(id, set.id); const current = await loadWorkout(id); store.reset(set.id, inputFromSet(current.strengthSets.find(value => value.id === set.id)!)) })} />
       })}
@@ -266,6 +268,7 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
     <div className="workout-title"><p className="eyebrow">{paused ? 'WORKOUT PAUSED' : 'ACTIVE WORKOUT'}</p>
       <strong>{time(Math.floor(workoutElapsedMs(workout.sessions[0], now) / 1000))} elapsed</strong></div>
     <button className="secondary" disabled={busy || applying || !!dragging} onClick={() => {
+      if (paused && chime.enabled) chime.prepare()
       invoke(() => setWorkoutPaused(id, !paused), () => { setReview(undefined); setRemoval(undefined); closePicker() })
     }}>{paused ? 'Resume workout' : 'Pause workout'}</button>
     <label className="sr-only" htmlFor="workout-title">Workout name</label><input className="workout-name" id="workout-title" maxLength={200} value={details.value.title} disabled={blocked} onChange={event => details.change({ ...details.value, title: event.target.value })} onBlur={() => void details.flush().catch(() => {})} />
@@ -333,18 +336,21 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
           onClick={() => {
             if (timerExpanded && restDrafts.timer && !window.confirm('Discard the timer adjustment?')) return
             if (timerExpanded) setTimerEditor(undefined)
+            if (!timerExpanded && chime.enabled) chime.prepare()
             setTimerExpanded(!timerExpanded)
           }}>
           <strong>{remaining ? `${timer.status === 'paused' ? 'Paused' : 'Rest'} ${time(remaining)}` : 'Rest complete'}</strong>
           <span>{timerExpanded ? 'Hide controls' : 'Controls'}</span>
         </button>
-        <button type="button" disabled={blocked} onClick={() => invoke(() => controlRest(id, 'skip'))}>{remaining ? 'Skip' : 'Dismiss'}</button>
+        <button type="button" disabled={blocked} onClick={() => { chime.silence(); invoke(() => controlRest(id, 'skip')) }}>{remaining ? 'Skip' : 'Dismiss'}</button>
       </div>
       {timerExpanded && <div className="rest-timer__options" id="rest-timer-options">
         {timerLabel && <p className="rest-timer__scope">{timerLabel}</p>}
+        <button type="button" className="timer-edit-toggle" aria-pressed={chime.enabled}
+          onClick={() => chime.toggle(!chime.enabled)}>Rest complete chime · {chime.enabled ? 'On' : 'Off'}</button>
         <div className="rest-timer__controls">
           <button disabled={blocked || !remaining} aria-label="Subtract 15 seconds" onClick={() => invoke(() => controlRest(id, 'adjust', -15))}>−15s</button>
-          <button disabled={blocked || !remaining} onClick={() => invoke(() => controlRest(id, timer.status === 'paused' ? 'resume' : 'pause'))}>{timer.status === 'paused' ? 'Resume' : 'Pause'}</button>
+          <button disabled={blocked || !remaining} onClick={() => { if (chime.enabled && timer.status === 'paused') chime.prepare(); invoke(() => controlRest(id, timer.status === 'paused' ? 'resume' : 'pause')) }}>{timer.status === 'paused' ? 'Resume' : 'Pause'}</button>
           <button disabled={blocked || !remaining} aria-label="Add 15 seconds" onClick={() => invoke(() => controlRest(id, 'adjust', 15))}>+15s</button>
         </div>
         <button className="timer-edit-toggle" aria-expanded={timerEditor !== undefined} disabled={blocked}
