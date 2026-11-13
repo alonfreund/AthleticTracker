@@ -159,13 +159,15 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 .set-details .actions button { font-size: .875rem; padding-inline: 10px; }
 .set-target { margin: 0 4px 8px; }
 .inline-exercise .add-set { width: 100%; min-height: 44px; padding: 8px; margin-top: 8px; background: var(--color-surface-soft); color: var(--color-accent); }
-.has-rest-timer { padding-bottom: 145px; }
-.rest-timer { position: fixed; bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 8px); left: 12px; right: 12px; max-width: 728px; margin: auto; z-index: 25; background: var(--color-text); color: var(--color-bg); padding: 10px 12px; border-radius: 14px; box-shadow: var(--shadow-bar); }
-.rest-timer__heading { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
-.rest-timer__heading strong { white-space: nowrap; font-variant-numeric: tabular-nums; }
-.rest-timer__heading span { font-size: .75rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.rest-timer__controls { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-top: 6px; }
-.rest-timer__controls button { min-height: 44px; padding: 6px 2px; color: inherit; background: #ffffff18; font-size: .875rem; }
+.has-rest-timer { padding-bottom: 64px; }
+.rest-timer { position: fixed; bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 8px); left: 12px; right: 12px; max-width: 728px; margin: auto; z-index: 25; background: var(--color-text); color: var(--color-bg); padding: 4px; border-radius: 14px; box-shadow: var(--shadow-bar); }
+.rest-timer__bar { display: flex; gap: 4px; }
+.rest-timer__bar button, .rest-timer__controls button { min-height: 44px; padding: 4px 10px; color: inherit; background: transparent; font-size: .875rem; }
+.rest-timer__bar button:hover:not(:disabled), .rest-timer__controls button:hover:not(:disabled) { background: color-mix(in srgb, currentColor 14%, transparent); }
+.rest-timer__toggle { flex: 1; justify-content: space-between; font-variant-numeric: tabular-nums; }
+.rest-timer__toggle strong { white-space: nowrap; }
+.rest-timer__options { border-top: 1px solid color-mix(in srgb, currentColor 25%, transparent); padding: 4px 8px; max-height: 38dvh; overflow-y: auto; }
+.rest-timer__controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
 .duration-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .duration-fields label { min-width: 0; }
 .duration-editor .note { margin: 8px 0; }
@@ -177,7 +179,6 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 .rest-timer__scope { font-size: .7rem; margin: 4px 0; }
 .rest-timer .timer-edit-toggle { min-height: 44px; width: 100%; padding: 6px; background: transparent; color: inherit; font-size: .875rem; }
 .rest-timer .duration-editor { background: var(--color-surface); color: var(--color-text); padding: 8px; border-radius: 10px; max-height: 45dvh; overflow-y: auto; }
-.has-rest-timer { padding-bottom: 200px; }
 .sortable-exercise { position: relative; }
 .sortable-exercise .exercise-card-heading { padding-left: 44px; min-height: 44px; }
 .exercise-drag-handle { position: absolute; top: 14px; left: 8px; min-width: 44px; min-height: 44px; padding: 4px; background: transparent; color: var(--color-muted); font-size: 1.6rem; touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: grab; }
@@ -263,8 +264,6 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 .superset-choice input { width: 24px; height: 24px; flex-shrink: 0; }
 .superset-choice small { display: block; font-weight: 400; color: var(--color-muted); }
 .rest-timer--superset { border: 2px solid var(--superset-border); }
-.rest-timer--superset .rest-timer__heading { flex-wrap: wrap; gap: 4px 12px; }
-.rest-timer--superset .rest-timer__heading span { white-space: normal; }
 
 .exercise-card-actions { display: flex; flex-shrink: 0; align-items: center; }
 .exercise-card-heading > :is(h3, h4) { min-width: 0; overflow-wrap: anywhere; }

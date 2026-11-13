@@ -60,6 +60,7 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
   useEffect(() => { if (removal) removalMessage.current?.focus() }, [removal])
   const [dragging, setDragging] = useState<string>()
   const [restDrafts, setRestDrafts] = useState<Record<string, boolean>>({})
+  const [timerExpanded, setTimerExpanded] = useState(false)
   const [timerEditor, setTimerEditor] = useState<number>()
   const sensors = useSensors(useSensor(MouseSensor, { activationConstraint: { distance: 6 } }), useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }))
   const reportRest = (key: string, dirty: boolean) => setRestDrafts(current => current[key] === dirty ? current : { ...current, [key]: dirty })
@@ -177,6 +178,7 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
     : sessionExerciseName(timerSource?.sessionExerciseId, '')
 
   useEffect(() => {
+    setTimerExpanded(false)
     setTimerEditor(undefined)
   }, [timer?.sourceSetId, showTimer])
 
@@ -324,7 +326,37 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
       else invoke(() => cancelWorkout(id), onBack)
     }}>{review === 'finish' ? 'Finish with completed sets' : review === 'delete' ? 'Confirm deletion' : 'Confirm cancellation'}</button><button className="secondary" disabled={blocked} onClick={() => setReview(undefined)}>Keep logging</button></div>{error && <p role="alert" className="error">{error}</p>}</div>}
     {!review && error && <p role="alert" className="error">{error}</p>}
-    {showTimer && <aside className={`rest-timer ${timerRound ? 'rest-timer--superset' : ''}`} aria-label="Rest timer"><div className="rest-timer__heading"><strong>{remaining ? `${timer.status === 'paused' ? 'Paused' : 'Rest'} ${time(remaining)}` : 'Rest complete'}</strong><span>{timerLabel}</span></div><p className="rest-timer__scope">Current timer only · saved defaults unchanged</p><div className="rest-timer__controls"><button disabled={blocked || !remaining} aria-label="Subtract 15 seconds" onClick={() => invoke(() => controlRest(id, 'adjust', -15))}>−15s</button><button disabled={blocked || !remaining} onClick={() => invoke(() => controlRest(id, timer.status === 'paused' ? 'resume' : 'pause'))}>{timer.status === 'paused' ? 'Resume' : 'Pause'}</button><button disabled={blocked || !remaining} aria-label="Add 15 seconds" onClick={() => invoke(() => controlRest(id, 'adjust', 15))}>+15s</button><button disabled={blocked} onClick={() => invoke(() => controlRest(id, 'skip'))}>{remaining ? 'Skip' : 'Dismiss'}</button></div><button className="timer-edit-toggle" aria-expanded={timerEditor !== undefined} disabled={blocked} onClick={() => setTimerEditor(timerEditor === undefined ? remaining : undefined)}>{timerEditor === undefined ? 'Set exact remaining time' : 'Close timer adjustment'}</button>{timerEditor !== undefined && <DurationEditor seconds={timerEditor} label="Current timer only" saveLabel="Apply to current timer" disabled={blocked} onDirty={value => reportRest('timer', value)} onSave={seconds => saveRest(async () => { await replaceCurrentRest(id, seconds); setTimerEditor(undefined) })} />}</aside>}
+    {showTimer && <aside className={`rest-timer ${timerRound ? 'rest-timer--superset' : ''}`} aria-label="Rest timer">
+      <div className="rest-timer__bar">
+        <button type="button" className="rest-timer__toggle" aria-expanded={timerExpanded}
+          aria-controls={timerExpanded ? 'rest-timer-options' : undefined}
+          onClick={() => {
+            if (timerExpanded && restDrafts.timer && !window.confirm('Discard the timer adjustment?')) return
+            if (timerExpanded) setTimerEditor(undefined)
+            setTimerExpanded(!timerExpanded)
+          }}>
+          <strong>{remaining ? `${timer.status === 'paused' ? 'Paused' : 'Rest'} ${time(remaining)}` : 'Rest complete'}</strong>
+          <span>{timerExpanded ? 'Hide controls' : 'Controls'}</span>
+        </button>
+        <button type="button" disabled={blocked} onClick={() => invoke(() => controlRest(id, 'skip'))}>{remaining ? 'Skip' : 'Dismiss'}</button>
+      </div>
+      {timerExpanded && <div className="rest-timer__options" id="rest-timer-options">
+        {timerLabel && <p className="rest-timer__scope">{timerLabel}</p>}
+        <div className="rest-timer__controls">
+          <button disabled={blocked || !remaining} aria-label="Subtract 15 seconds" onClick={() => invoke(() => controlRest(id, 'adjust', -15))}>−15s</button>
+          <button disabled={blocked || !remaining} onClick={() => invoke(() => controlRest(id, timer.status === 'paused' ? 'resume' : 'pause'))}>{timer.status === 'paused' ? 'Resume' : 'Pause'}</button>
+          <button disabled={blocked || !remaining} aria-label="Add 15 seconds" onClick={() => invoke(() => controlRest(id, 'adjust', 15))}>+15s</button>
+        </div>
+        <button className="timer-edit-toggle" aria-expanded={timerEditor !== undefined} disabled={blocked}
+          onClick={() => {
+            if (timerEditor !== undefined && restDrafts.timer && !window.confirm('Discard the timer adjustment?')) return
+            setTimerEditor(timerEditor === undefined ? remaining : undefined)
+          }}>{timerEditor === undefined ? 'Set exact remaining time' : 'Close timer adjustment'}</button>
+        {timerEditor !== undefined && <DurationEditor seconds={timerEditor} label="Current timer only" saveLabel="Apply to current timer"
+          disabled={blocked} onDirty={value => reportRest('timer', value)}
+          onSave={seconds => saveRest(async () => { await replaceCurrentRest(id, seconds); setTimerEditor(undefined) })} />}
+      </div>}
+    </aside>}
   </section>
 }
 
