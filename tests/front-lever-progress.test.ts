@@ -33,9 +33,9 @@ it('restores front lever holds alongside existing progress and rejects invalid m
     await recordFrontLeverAttempt('full-front-lever-hold', 12, '', source)
     const full = await listFrontLeverAttempts('full-front-lever-hold', source)
     const snapshot = await createBackup(source)
-    const { frontLeverAttempts: _holds, ...legacyData } = snapshot.data
+    const { challenges: _challenges, challengeAttempts: _challengeAttempts, frontLeverAttempts: _holds, ...legacyData } = snapshot.data
     expect(validateBackup({ ...snapshot, formatVersion: 14, data: legacyData }).data)
-      .toMatchObject({ frontLeverAttempts: [], handstandAttempts: snapshot.data.handstandAttempts })
+      .toMatchObject({ frontLeverAttempts: [], challenges: [], challengeAttempts: [], handstandAttempts: snapshot.data.handstandAttempts })
     const exported = await exportBackupFile(source)
     const incoming = await stageImport(exported.blob, target)
     await restoreStagedBackup(incoming, await stageSnapshot(target), target)

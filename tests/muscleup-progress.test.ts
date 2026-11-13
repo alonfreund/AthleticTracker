@@ -31,9 +31,9 @@ it('tracks requirements independently, shares pull-ups, and restores the final g
     expect(final).toMatchObject([{ value: 3, notes: 'Goal reached' }])
     expect(attemptProgress(final, row => row.value, [3])).toMatchObject({ best: 3, next: undefined })
     const saved = await createBackup(target)
-    const { frontLeverAttempts: _frontLever, handstandAttempts: _handstand, plancheAttempts: _planche, muscleupAttempts: _attempts, ...legacyData } = saved.data
+    const { challenges: _challenges, challengeAttempts: _challengeAttempts, frontLeverAttempts: _frontLever, handstandAttempts: _handstand, plancheAttempts: _planche, muscleupAttempts: _attempts, ...legacyData } = saved.data
     expect(validateBackup({ ...saved, formatVersion: 11, data: legacyData }).data)
-      .toMatchObject({ muscleupAttempts: [], plancheAttempts: [], handstandAttempts: [], frontLeverAttempts: [], pullupAttempts: legacyData.pullupAttempts })
+      .toMatchObject({ muscleupAttempts: [], plancheAttempts: [], handstandAttempts: [], frontLeverAttempts: [], challenges: [], challengeAttempts: [], pullupAttempts: legacyData.pullupAttempts })
     const invalid = structuredClone(saved)
     invalid.data.muscleupAttempts[0].value = -1
     await expect(stageImport(new Blob([JSON.stringify(invalid)]), target)).rejects.toThrow('Invalid muscle-up progression attempt')

@@ -1,9 +1,10 @@
 import { Button } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
 
-export function PerformanceHome({ onOpenCardio, onOpenCalisthenics, blocked }: {
+export function PerformanceHome({ onOpenCardio, onOpenCalisthenics, onOpenChallenges, blocked }: {
   onOpenCardio: () => void
   onOpenCalisthenics: () => void
+  onOpenChallenges: () => void
   blocked: boolean
 }) {
   return <div className="performance-disciplines">
@@ -18,6 +19,12 @@ export function PerformanceHome({ onOpenCardio, onOpenCalisthenics, blocked }: {
       <h2 id="performance-calisthenics">Calisthenics</h2>
       <p>Bodyweight and weighted movements, static holds, and skill progressions.</p>
       <Button onClick={onOpenCalisthenics} disabled={blocked}>Open Calisthenics <Icon name="arrow" /></Button>
+    </section>
+    <section className="training-hero" aria-labelledby="performance-challenges">
+      <span className="hero-symbol"><Icon name="medal" /></span>
+      <h2 id="performance-challenges">Challenges</h2>
+      <p>Create and track your own challenges, finishers, and performance tests.</p>
+      <Button onClick={onOpenChallenges} disabled={blocked}>Open Challenges <Icon name="arrow" /></Button>
     </section>
   </div>
 }

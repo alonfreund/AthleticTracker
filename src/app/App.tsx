@@ -1,3 +1,4 @@
+import { ChallengeList, ChallengeBuilder, ChallengeDetail } from '../features/challenges/Challenges'
 import { FRONT_LEVER_MOVEMENTS, FRONT_LEVER_ORDER } from '../domain/calisthenics/frontLever'
 import { listFrontLeverAttempts, recordFrontLeverAttempt } from '../data/repositories/frontLever'
 import { MovementProgress } from '../features/performance/MovementProgress'
@@ -98,7 +99,7 @@ export function App() {
     return () => subscription.unsubscribe()
   }, [databaseReady])
   useLayoutEffect(() => {
-    if (databaseReady && routeTab(view) === 'performance' && view !== 'performance/calisthenics/history' && view !== 'performance/calisthenics/pushups' && view !== 'performance/calisthenics/pullups' && view !== 'performance/calisthenics/front-lever' && view !== 'performance/calisthenics/front-lever/movement' && view !== 'performance/calisthenics/handstand' && view !== 'performance/calisthenics/handstand/movement' && view !== 'performance/calisthenics/planche' && view !== 'performance/calisthenics/planche/movement' && view !== 'performance/calisthenics/muscleups/requirement' && view !== 'performance/calisthenics/muscleups/practice' && (view !== 'performance/calisthenics' || !route.workoutId)) updateSafety.setSafety({ dirty: false, busy: false, restoring: false, loading: false })
+    if (databaseReady && routeTab(view) === 'performance' && view !== 'performance/challenges/new' && view !== 'performance/challenges/detail' && view !== 'performance/calisthenics/history' && view !== 'performance/calisthenics/pushups' && view !== 'performance/calisthenics/pullups' && view !== 'performance/calisthenics/front-lever' && view !== 'performance/calisthenics/front-lever/movement' && view !== 'performance/calisthenics/handstand' && view !== 'performance/calisthenics/handstand/movement' && view !== 'performance/calisthenics/planche' && view !== 'performance/calisthenics/planche/movement' && view !== 'performance/calisthenics/muscleups/requirement' && view !== 'performance/calisthenics/muscleups/practice' && (view !== 'performance/calisthenics' || !route.workoutId)) updateSafety.setSafety({ dirty: false, busy: false, restoring: false, loading: false })
   }, [databaseReady, view, route.workoutId])
   const blocked = safety.busy || safety.restoring || safety.applying || safety.loading
   const resumeScreen = active?.discipline === 'calisthenics' ? 'performance/calisthenics' : 'strength'
@@ -115,8 +116,17 @@ export function App() {
           onLeaveHistory={() => navigate({ screen: 'strength' })}
           onReturnToAnalytics={returnToAnalytics ? () => navigate({ screen: 'analytics' }) : undefined} />}
         {databaseReady && view === 'performance' && <PerformanceHome blocked={blocked}
+          onOpenChallenges={() => navigate({ screen: 'performance/challenges' })}
           onOpenCardio={() => navigate({ screen: 'performance/cardio' })}
           onOpenCalisthenics={() => navigate({ screen: 'performance/calisthenics' })} />}
+        {databaseReady && view === 'performance/challenges' && <ChallengeList blocked={blocked}
+          onBack={() => navigate({ screen: 'performance' })} onNew={() => navigate({ screen: 'performance/challenges/new' })}
+          onOpen={challengeId => navigate({ screen: 'performance/challenges/detail', challengeId })} />}
+        {databaseReady && view === 'performance/challenges/new' && <ChallengeBuilder blocked={blocked}
+          onBack={() => navigate({ screen: 'performance/challenges' })}
+          onSaved={challengeId => navigate({ screen: 'performance/challenges/detail', challengeId })} />}
+        {databaseReady && view === 'performance/challenges/detail' && route.challengeId && <ChallengeDetail key={route.challengeId}
+          id={route.challengeId} blocked={blocked} onBack={() => navigate({ screen: 'performance/challenges' })} />}
         {databaseReady && view === 'performance/calisthenics' && !route.workoutId && <CalisthenicsProgressHome blocked={blocked}
           onOpenTrack={track => navigate({ screen: `performance/calisthenics/${track}` })}
           onOpenFrontLever={() => navigate({ screen: 'performance/calisthenics/front-lever' })}

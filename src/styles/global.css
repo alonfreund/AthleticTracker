@@ -490,3 +490,8 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 .planche-milestones li { padding: var(--space-1) var(--space-2); border-radius: var(--radius-control); font-size: var(--text-small); }
 .planche-milestones li[data-achieved='true'] { background: var(--color-accent-soft); }
 .planche-form { display: grid; gap: var(--space-2); }
+
+.challenge-list { display: grid; gap: var(--space-3); margin-block-start: var(--space-3); }
+.challenge-list > .rep-track + .rep-track { margin-top: 0; }
+.challenge-metric { min-width: 0; padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-control); }
+.challenge-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }

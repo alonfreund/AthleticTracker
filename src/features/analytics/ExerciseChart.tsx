@@ -16,7 +16,7 @@ export function ExerciseChart<T extends ChartPoint>({ points, title, bars, forma
   const start = points[0].at
   const end = points[points.length - 1].at
   const min = bars ? 0 : points.reduce((value, point) => Math.min(value, point.value), Infinity)
-  const max = points.reduce((value, point) => Math.max(value, point.value), 0)
+  const max = points.reduce((value, point) => Math.max(value, point.value), bars ? 0 : -Infinity)
   const x = (at: number) => end === start ? 200 : 18 + 364 * (at - start) / (end - start)
   const y = (value: number) => max === min ? (bars ? 151 : 83) : 151 - 136 * (value - min) / (max - min)
   const barWidth = Math.min(24, 230 / points.length)

@@ -1,3 +1,4 @@
+import type { Challenge, ChallengeAttempt } from '../../domain/challenges/models'
 import type { FrontLeverAttempt } from '../../domain/calisthenics/frontLever'
 import type { HandstandAttempt } from '../../domain/calisthenics/handstand'
 import type { PlancheAttempt } from '../../domain/calisthenics/planche'
@@ -13,11 +14,13 @@ import type { Exercise, Session, SessionActivity, SessionExercise, StrengthSet, 
 import { STRENGTH_TABLES } from '../../domain/strength/models'
 import type { AppMetadata, FoundationRecord } from '../../domain/foundation'
 
-export const BACKUP_TABLES = ['metadata', 'foundationRecords', ...STRENGTH_TABLES, 'exercisePreferences', 'catalogueState', 'routines', 'routineExercises', ...CARDIO_TABLES, ...CARDIO_TIMING_TABLES, 'pushupAttempts', 'pullupAttempts', 'muscleupAttempts', 'plancheAttempts', 'handstandAttempts', 'frontLeverAttempts'] as const
+export const BACKUP_TABLES = ['metadata', 'foundationRecords', ...STRENGTH_TABLES, 'exercisePreferences', 'catalogueState', 'routines', 'routineExercises', ...CARDIO_TABLES, ...CARDIO_TIMING_TABLES, 'pushupAttempts', 'pullupAttempts', 'muscleupAttempts', 'plancheAttempts', 'handstandAttempts', 'frontLeverAttempts', 'challenges', 'challengeAttempts'] as const
 
 export const INTERNAL_BACKUP_TABLES = ['backupJobs','backupRows','backupKeys'] as const
 
 export class AthleticDatabase extends Dexie {
+  challenges!: Table<Challenge, string>
+  challengeAttempts!: Table<ChallengeAttempt, string>
   frontLeverAttempts!: Table<FrontLeverAttempt, string>
   handstandAttempts!: Table<HandstandAttempt, string>
   plancheAttempts!: Table<PlancheAttempt, string>
@@ -77,6 +80,7 @@ export class AthleticDatabase extends Dexie {
     this.version(12).stores({ plancheAttempts: '&id, [movement+recordedAt]' })
     this.version(13).stores({ handstandAttempts: '&id, [movement+recordedAt]' })
     this.version(14).stores({ frontLeverAttempts: '&id, [movement+recordedAt]' })
+    this.version(15).stores({ challenges: '&id, name', challengeAttempts: '&id, [challengeId+recordedAt]' })
     this.on('versionchange', () => this.close())
   }
 }
