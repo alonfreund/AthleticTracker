@@ -35,8 +35,8 @@ async function readFinishedWorkingSets(database: typeof db, range?: { from?: str
     const setsByCard = groupBy(sets, row => row.sessionExerciseId)
     const sessionByActivity = new Map(activities.map(row => [row.id, row.sessionId]))
     const cardsBySession = groupBy(cards, row => sessionByActivity.get(row.sessionActivityId))
-    return finished.filter(row => (activityTypes.get(row.id) ?? 'strength') === discipline).map(({ id, title, startedAt, endedAt }) => ({
-      id, title, startedAt, endedAt,
+    return finished.filter(row => (activityTypes.get(row.id) ?? 'strength') === discipline).map(({ id, title, startedAt, endedAt, workoutTiming }) => ({
+      id, title, startedAt, endedAt, workoutTiming,
       cards: (cardsBySession.get(id) ?? []).flatMap(({ id, snapshot }) => {
         const sets = setsByCard.get(id)
         return sets?.length ? [{ snapshot, sets }] : []

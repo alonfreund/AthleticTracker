@@ -1,3 +1,4 @@
+import { workoutElapsedMs } from '../../domain/strength/workoutTiming'
 import { db } from '../../data/db/database'
 import { liveQuery } from 'dexie'
 import { readSetRecordBaselines } from '../../data/repositories/analytics'
@@ -11,7 +12,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalS
 import { updateSafety } from '../../app/updateSafety'
 import type { ExerciseFilters } from '../../data/repositories/exercises'
 import { ExerciseBrowser } from '../exercises/ExerciseBrowser'
-import { saveSuperset, ungroupSuperset, saveSupersetRest, moveSupersetExercise, addSet, addWorkoutExercise, cancelWorkout, deleteActiveWorkout, changeSetType, controlRest, discardSetDraft, finishWorkout, loadWorkout, moveWorkoutItem, previousPerformance, removeSet, removeWorkoutExercise, replaceWorkoutExercise, saveInlineSet, saveWorkoutDetails, setExerciseRest, saveExerciseRest, reorderExercises, replaceCurrentRest, timerSeconds, type PreviousExercise, type Workout } from '../../data/repositories/workouts'
+import { saveSuperset, ungroupSuperset, saveSupersetRest, moveSupersetExercise, addSet, addWorkoutExercise, cancelWorkout, deleteActiveWorkout, changeSetType, controlRest, discardSetDraft, finishWorkout, setWorkoutPaused, loadWorkout, moveWorkoutItem, previousPerformance, removeSet, removeWorkoutExercise, replaceWorkoutExercise, saveInlineSet, saveWorkoutDetails, setExerciseRest, saveExerciseRest, reorderExercises, replaceCurrentRest, timerSeconds, type PreviousExercise, type Workout } from '../../data/repositories/workouts'
 import { DndContext, DragOverlay, MouseSensor, TouchSensor, KeyboardSensor, closestCorners, pointerWithin, useSensor, useSensors, type DragEndEvent, type CollisionDetection } from '@dnd-kit/core'
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { SortableExercise } from './SortableExercise'
@@ -20,7 +21,6 @@ import { inputFromSet } from '../../domain/strength/logging'
 import type { Exercise, SessionExercise } from '../../domain/strength/models'
 import { workoutLoadLabel } from '../../domain/strength/catalog'
 import { useAutosave } from './useAutosave'
-import { durationText } from './WorkoutHistory'
 import { InlineSetStore } from './InlineSetStore'
 import { ExerciseHistory } from './ExerciseHistory'
 import { InlineSetRow } from './InlineSetRow'
@@ -54,6 +54,10 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
   const returnGroupFocus = useRef<string | undefined>(undefined)
   const [review, setReview] = useState<'finish' | 'cancel' | 'delete'>()
   const [removal, setRemoval] = useState<{ kind: 'exercise' | 'set'; id: string }>()
+  const reviewHeading = useRef<HTMLHeadingElement>(null)
+  const removalMessage = useRef<HTMLParagraphElement>(null)
+  useEffect(() => { if (review) reviewHeading.current?.focus() }, [review])
+  useEffect(() => { if (removal) removalMessage.current?.focus() }, [removal])
   const [dragging, setDragging] = useState<string>()
   const [restDrafts, setRestDrafts] = useState<Record<string, boolean>>({})
   const [timerEditor, setTimerEditor] = useState<number>()
@@ -108,8 +112,9 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
     after?.()
   }
   const invoke = (action: () => Promise<unknown>, after?: () => void) => { void run(action, after) }
-  const blocked = busy || applying || !!dragging
-  const reorderBlocked = busy || applying || rows.saving || details.saving || Object.values(restDrafts).some(Boolean)
+  const paused = !!workout.sessions[0].workoutTiming?.pausedAt
+  const blocked = paused || busy || applying || !!dragging
+  const reorderBlocked = paused || busy || applying
   const structuralBlocked = reorderBlocked || !!dragging
   useLayoutEffect(() => {
     if (!picker && !blocked && returnPickerFocus.current) {
@@ -131,6 +136,7 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
   }
   function drop(event: DragEndEvent) {
     setDragging(undefined)
+    updateSafety.setBusy(false)
     if (!event.over || event.active.id === event.over.id) return
     const next = arrayMove(blocks, blocks.findIndex(block => block.id === event.active.id), blocks.findIndex(block => block.id === event.over!.id))
     const orderedIds = next.flatMap(block => block.exercises.map(row => row.id))
@@ -212,10 +218,10 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
         return <InlineSetRow key={set.id} exercise={exercise} set={set} row={row} index={index} last={index === sets.length - 1} previous={last} records={records ? records.get(set.id) : undefined} disabled={blocked}
           onChange={input => { if (!lock.current && !updateSafety.getSnapshot().applying) store.change(set.id, input) }} onSave={() => { void store.save(set.id).catch(() => {}) }}
           onComplete={() => { if (!lock.current && !completing.current.has(set.id)) { completing.current.add(set.id); void store.save(set.id, !set.completed).catch(() => {}).finally(() => completing.current.delete(set.id)) } }}
-          onType={type => { if (!structuralBlocked) invoke(() => changeSetType(id, set.id, type)) }} onMove={direction => { if (!structuralBlocked) invoke(() => moveWorkoutItem(id, 'set', set.id, direction)) }} onRemove={() => { if (!structuralBlocked) setRemoval({ kind: 'set', id: set.id }) }}
+          onType={type => { if (!structuralBlocked) invoke(() => changeSetType(id, set.id, type)) }} onMove={direction => { if (!structuralBlocked) invoke(() => moveWorkoutItem(id, 'set', set.id, direction)) }} onRemove={() => { if (!blocked) { setReview(undefined); setRemoval({ kind: 'set', id: set.id }) } }}
           onRevert={() => invoke(async () => { await discardSetDraft(id, set.id); const current = await loadWorkout(id); store.reset(set.id, inputFromSet(current.strengthSets.find(value => value.id === set.id)!)) })} />
       })}
-      <button className="add-set" disabled={structuralBlocked} onClick={() => invoke(() => addSet(id, exercise.id))}>+ Add set<span className="sr-only"> to {exerciseDisplayName(exercise.snapshot)}</span></button>
+      <button className="add-set" disabled={blocked} onClick={() => invoke(() => addSet(id, exercise.id))}>+ Add set<span className="sr-only"> to {exerciseDisplayName(exercise.snapshot)}</span></button>
     </div>
   }
   if (replacement) {
@@ -255,7 +261,11 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
     {error && <p role="alert" className="error">{error}</p>}
   </>
   return <section aria-label="Active workout" className={`active-workout inline-workout ${showTimer ? 'has-rest-timer' : ''}`}>
-    <div className="workout-title"><p className="eyebrow">ACTIVE WORKOUT</p><strong>{durationText(workout.sessions[0].startedAt, new Date(now).toISOString())} elapsed</strong></div>
+    <div className="workout-title"><p className="eyebrow">{paused ? 'WORKOUT PAUSED' : 'ACTIVE WORKOUT'}</p>
+      <strong>{time(Math.floor(workoutElapsedMs(workout.sessions[0], now) / 1000))} elapsed</strong></div>
+    <button className="secondary" disabled={busy || applying || !!dragging} onClick={() => {
+      invoke(() => setWorkoutPaused(id, !paused), () => { setReview(undefined); setRemoval(undefined); closePicker() })
+    }}>{paused ? 'Resume workout' : 'Pause workout'}</button>
     <label className="sr-only" htmlFor="workout-title">Workout name</label><input className="workout-name" id="workout-title" maxLength={200} value={details.value.title} disabled={blocked} onChange={event => details.change({ ...details.value, title: event.target.value })} onBlur={() => void details.flush().catch(() => {})} />
     <details className="workout-notes"><summary>Workout notes{details.value.notes ? ' · added' : ''}</summary><label className="sr-only" htmlFor="workout-notes">Workout notes</label><textarea id="workout-notes" maxLength={10000} value={details.value.notes} disabled={blocked} onChange={event => details.change({ ...details.value, notes: event.target.value })} /></details>
     <div className="workout-save-line"><span>{completed} completed · {incomplete} incomplete</span><span role="status">{saving ? 'Saving…' : dirty ? 'Changes not saved yet' : Object.values(rows.rows).some(row => row.pending) ? 'Drafts saved · check pending rows' : 'Saved on this device'}</span></div>
@@ -266,7 +276,7 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
       onDragStart: ({ active }) => `Picked up ${blockName(active.id)}.`,
       onDragOver: ({ over }) => over ? `Over ${blockName(over.id)}.` : 'Outside exercise list.',
       onDragEnd: () => 'Dropped exercise. Saving order.', onDragCancel: () => 'Reordering cancelled. Order unchanged.',
-    } }} sensors={sensors} collisionDetection={workoutCollision} onDragStart={event => { setDragging(String(event.active.id)); updateSafety.setBusy(true) }} onDragEnd={drop} onDragCancel={() => setDragging(undefined)}>
+    } }} sensors={sensors} collisionDetection={workoutCollision} onDragStart={event => { setDragging(String(event.active.id)); updateSafety.setBusy(true) }} onDragEnd={drop} onDragCancel={() => { setDragging(undefined); updateSafety.setBusy(false) }}>
     <SortableContext items={blocks.map(block => block.id)} strategy={verticalListSortingStrategy}>
     {blocks.map(block => <SortableExercise key={block.id} id={block.id} name={blockName(block.id)}
       disabled={reorderBlocked} className={block.group ? 'superset-group' : ''}>
@@ -297,23 +307,23 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
     </SortableExercise>)}
     </SortableContext><DragOverlay dropAnimation={null}>{dragging && <div className="exercise-drag-overlay"><span aria-hidden="true">⠿</span><strong>{blockName(dragging)}</strong><span>Drop to save order</span></div>}</DragOverlay>
     </DndContext>
-    <div className="actions workout-actions"><button ref={pickerTrigger} type="button" aria-expanded={picker} aria-controls={picker ? 'workout-exercise-picker' : undefined} disabled={blocked} onClick={() => picker ? closePicker() : setPicker(true)}>{picker ? 'Close exercise picker' : '+ Add exercise'}</button><button disabled={blocked || completed === 0} onClick={() => { setReview('finish'); setPicker(false) }}>Review and finish</button><button className="secondary" disabled={blocked} onClick={() => invoke(async () => {}, onBack)}>Back — workout stays active</button><button className="secondary" disabled={blocked} onClick={() => setReview('cancel')}>Cancel workout</button><button className="button--danger" disabled={blocked} onClick={() => setReview('delete')}>Delete workout</button></div>
+    <div className="actions workout-actions"><button ref={pickerTrigger} type="button" aria-expanded={picker} aria-controls={picker ? 'workout-exercise-picker' : undefined} disabled={blocked} onClick={() => picker ? closePicker() : setPicker(true)}>{picker ? 'Close exercise picker' : '+ Add exercise'}</button><button disabled={blocked} onClick={() => { setError(''); setRemoval(undefined); setReview('finish'); setPicker(false) }}>Review and finish</button><button className="secondary" disabled={busy || applying || !!dragging} onClick={() => invoke(async () => {}, onBack)}>{paused ? 'Back — workout stays paused' : 'Back — workout stays active'}</button><button className="secondary" disabled={blocked} onClick={() => setReview('cancel')}>Cancel workout</button><button className="button--danger" disabled={blocked} onClick={() => setReview('delete')}>Delete workout</button></div>
     {picker && <section className="exercise-picker" id="workout-exercise-picker" aria-labelledby="workout-exercise-picker-heading">
       <h3 id="workout-exercise-picker-heading">Add a library exercise</h3>
       <ExerciseBrowser picker exercises={library} filters={filters} onFiltersChange={setFilters}
         filtersOpen={filtersOpen} onFiltersOpenChange={setFiltersOpen} disabled={blocked}
         onSelect={exercise => invoke(() => addWorkoutExercise(id, exercise.id), closePicker)} />
     </section>}
-    {removal && <div className="review-box" role="alert"><p>Remove this {removal.kind} and its saved values and drafts? This cannot be undone here.</p><div className="actions"><button disabled={blocked} onClick={() => invoke(() => removal.kind === 'exercise' ? removeWorkoutExercise(id, removal.id) : removeSet(id, removal.id), () => setRemoval(undefined))}>Confirm removal</button><button className="secondary" disabled={blocked} onClick={() => setRemoval(undefined)}>Keep it</button></div></div>}
-    {review && <div className="review-box" role="alert"><h3>{review === 'finish' ? 'Finish this workout?' : review === 'delete' ? 'Delete this workout?' : 'Cancel this workout?'}</h3><p>{review === 'finish' ? `${completed} completed sets will count. ${incomplete} incomplete sets stay in history. Pending invalid edits must be corrected or reverted first.` : review === 'delete' ? 'This permanently removes this workout, its sets and any drafts from this device.' : 'Recorded sets stay in cancelled history. Pending drafts will be discarded.'}</p><div className="actions"><button disabled={blocked} onClick={() => {
+    {removal && <div className="review-box" role="alert"><p ref={removalMessage} tabIndex={-1}>Remove this {removal.kind} and its saved values and drafts? This cannot be undone here.</p><div className="actions"><button disabled={blocked} onClick={() => invoke(() => removal.kind === 'exercise' ? removeWorkoutExercise(id, removal.id) : removeSet(id, removal.id), () => setRemoval(undefined))}>Confirm removal</button><button className="secondary" disabled={blocked} onClick={() => setRemoval(undefined)}>Keep it</button></div></div>}
+    {review && <div className="review-box" role="alert"><h3 ref={reviewHeading} tabIndex={-1}>{review === 'finish' ? 'Finish this workout?' : review === 'delete' ? 'Delete this workout?' : 'Cancel this workout?'}</h3><p>{review === 'finish' ? `Completed sets count toward your results. Incomplete sets stay in history. Complete at least one set and resolve pending edits before finishing.` : review === 'delete' ? 'This permanently removes this workout, its sets and any drafts from this device.' : 'Recorded sets stay in cancelled history. Pending drafts will be discarded.'}</p><div className="actions"><button disabled={blocked} onClick={() => {
       if (review === 'finish') void run(async () => onFinished(await finishWorkout(id, true)), undefined, false)
       else if (review === 'delete') void run(() => deleteActiveWorkout(id), () => {
         updateSafety.setSafety({ dirty: false, busy: false, restoring: false, loading: false })
         onBack()
       }, false)
       else invoke(() => cancelWorkout(id), onBack)
-    }}>{review === 'finish' ? 'Finish with completed sets' : review === 'delete' ? 'Confirm deletion' : 'Confirm cancellation'}</button><button className="secondary" disabled={blocked} onClick={() => setReview(undefined)}>Keep logging</button></div></div>}
-    {error && <p role="alert" className="error">{error}</p>}
+    }}>{review === 'finish' ? 'Finish with completed sets' : review === 'delete' ? 'Confirm deletion' : 'Confirm cancellation'}</button><button className="secondary" disabled={blocked} onClick={() => setReview(undefined)}>Keep logging</button></div>{error && <p role="alert" className="error">{error}</p>}</div>}
+    {!review && error && <p role="alert" className="error">{error}</p>}
     {showTimer && <aside className={`rest-timer ${timerRound ? 'rest-timer--superset' : ''}`} aria-label="Rest timer"><div className="rest-timer__heading"><strong>{remaining ? `${timer.status === 'paused' ? 'Paused' : 'Rest'} ${time(remaining)}` : 'Rest complete'}</strong><span>{timerLabel}</span></div><p className="rest-timer__scope">Current timer only · saved defaults unchanged</p><div className="rest-timer__controls"><button disabled={blocked || !remaining} aria-label="Subtract 15 seconds" onClick={() => invoke(() => controlRest(id, 'adjust', -15))}>−15s</button><button disabled={blocked || !remaining} onClick={() => invoke(() => controlRest(id, timer.status === 'paused' ? 'resume' : 'pause'))}>{timer.status === 'paused' ? 'Resume' : 'Pause'}</button><button disabled={blocked || !remaining} aria-label="Add 15 seconds" onClick={() => invoke(() => controlRest(id, 'adjust', 15))}>+15s</button><button disabled={blocked} onClick={() => invoke(() => controlRest(id, 'skip'))}>{remaining ? 'Skip' : 'Dismiss'}</button></div><button className="timer-edit-toggle" aria-expanded={timerEditor !== undefined} disabled={blocked} onClick={() => setTimerEditor(timerEditor === undefined ? remaining : undefined)}>{timerEditor === undefined ? 'Set exact remaining time' : 'Close timer adjustment'}</button>{timerEditor !== undefined && <DurationEditor seconds={timerEditor} label="Current timer only" saveLabel="Apply to current timer" disabled={blocked} onDirty={value => reportRest('timer', value)} onSave={seconds => saveRest(async () => { await replaceCurrentRest(id, seconds); setTimerEditor(undefined) })} />}</aside>}
   </section>
 }

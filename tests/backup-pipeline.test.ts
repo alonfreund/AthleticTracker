@@ -31,7 +31,7 @@ describe('disk-staged backup pipeline',()=>{
   const v7 = { ...v6, formatVersion: 7, data: v7Data }
   const v8 = { ...validateBackup(previous), formatVersion: 8, data: v9Data }
   const v9 = { ...v8, formatVersion: 9 }
-  it.each([old,strength,previous,v4,v5,v6,v7,v8,v9,{ ...v9, formatVersion: 10, data: v10Data },{ ...v9, formatVersion: 11, data: v11Data },{ ...v9, formatVersion: 12, data: v12Data },{ ...v9, formatVersion: 13, data: v13Data },{ ...v9, formatVersion: 14, data: v14Data },{ ...v9, formatVersion: 15, data: v15Data },{ ...v9, formatVersion: 16, data: validateBackup(previous).data },validateBackup(previous)])('imports format $formatVersion, exports format 17 and restores with identical data',async fixture=>{
+  it.each([old,strength,previous,v4,v5,v6,v7,v8,v9,{ ...v9, formatVersion: 10, data: v10Data },{ ...v9, formatVersion: 11, data: v11Data },{ ...v9, formatVersion: 12, data: v12Data },{ ...v9, formatVersion: 13, data: v13Data },{ ...v9, formatVersion: 14, data: v14Data },{ ...v9, formatVersion: 15, data: v15Data },{ ...v9, formatVersion: 16, data: validateBackup(previous).data },{ ...v9, formatVersion: 17, data: validateBackup(previous).data },validateBackup(previous)])('imports format $formatVersion, exports format 18 and restores with identical data',async fixture=>{
     const db=database();await verifyLocalStorage(db);await saveRecord('Existing record',undefined,db)
     const incoming=await stageImport(file(fixture),db)
     expect(incoming.counts.sessions).toBe('sessions' in fixture.data?fixture.data.sessions.length:0)
@@ -189,7 +189,7 @@ describe('near-100 MB real-record integration',()=>{
     db.close();await db.open()
     const exported=await exportBackupFile(db)
     expect(exported.blob.size).toBeGreaterThan(MAX_BACKUP_BYTES-32*1024);expect(exported.blob.size).toBeLessThanOrEqual(MAX_BACKUP_BYTES)
-    expect(await exported.blob.slice(0,100).text()).toContain('"formatVersion":17')
+    expect(await exported.blob.slice(0,100).text()).toContain('"formatVersion":18')
     await discardStage(exported.snapshot.id,db);await emptyStages(db)
     expect(phases.some(phase=>phase.startsWith('Validating'))).toBe(true)
     for(let i=0;i<4;i++)await db.foundationRecords.add({id:crypto.randomUUID(),text:'x'.repeat(9500),createdAt:'2026-01-01T00:00:00.000Z',updatedAt:'2026-01-01T00:00:00.000Z'})

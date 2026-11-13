@@ -1,9 +1,10 @@
+import { workoutElapsedMs } from '../src/domain/strength/workoutTiming'
 import 'fake-indexeddb/auto'
 import { expect, it, vi } from 'vitest'
 import { createBackup, restoreBackup } from '../src/data/backup/backup'
 import { AthleticDatabase, verifyLocalStorage } from '../src/data/db/database'
 import { readWorkoutRecapRecords } from '../src/data/repositories/analytics'
-import { addSet, addWorkoutExercise, changeSetType, finishWorkout, loadWorkout, saveInlineSet, startWorkout } from '../src/data/repositories/workouts'
+import { addSet, addWorkoutExercise, changeSetType, finishWorkout, loadWorkout, saveInlineSet, setWorkoutPaused, removeSet, startWorkout } from '../src/data/repositories/workouts'
 import { STARTER_EXERCISES } from '../src/domain/strength/catalog'
 import { inputFromSet } from '../src/domain/strength/logging'
 
@@ -53,6 +54,42 @@ it('compares the saved workout with earlier sessions and restores the same recap
     await restoreBackup(await createBackup(db), target)
     const restored = await loadWorkout(saved.sessions[0].id, target)
     expect(await readWorkoutRecapRecords(restored, target)).toEqual(records)
+  } finally {
+    vi.useRealTimers()
+    await db.delete()
+    await target.delete()
+  }
+})
+
+it('preserves a paused workout through restore and excludes pause time from the finished summary', async () => {
+  const db = new AthleticDatabase(crypto.randomUUID())
+  const target = new AthleticDatabase(crypto.randomUUID())
+  try {
+    await verifyLocalStorage(db)
+    await verifyLocalStorage(target)
+    vi.setSystemTime(new Date('2026-01-01T09:00:00Z'))
+    await db.exercises.add(STARTER_EXERCISES[0])
+    const id = await startWorkout(db)
+    const exercise = await addWorkoutExercise(id, STARTER_EXERCISES[0].id, db)
+    const set = (await loadWorkout(id, db)).strengthSets[0]
+    const input = inputFromSet(set)
+    input.values.weight = '20'; input.values.reps = '5'
+    await saveInlineSet(id, set.id, input, true, db)
+    vi.setSystemTime(new Date('2026-01-01T09:01:00Z'))
+    await setWorkoutPaused(id, true, db)
+    await expect(addSet(id, exercise, db)).rejects.toThrow('Resume this workout')
+    await restoreBackup(await createBackup(db), target)
+    vi.setSystemTime(new Date('2026-01-01T09:04:00Z'))
+    const paused = await loadWorkout(id, target)
+    expect(paused.sessions[0].workoutTiming?.pausedAt).toBeTruthy()
+    expect(workoutElapsedMs(paused.sessions[0])).toBe(60000)
+    await setWorkoutPaused(id, false, target)
+    const extra = await addSet(id, exercise, target)
+    await removeSet(id, extra, target)
+    vi.setSystemTime(new Date('2026-01-01T09:05:00Z'))
+    const finished = await finishWorkout(id, true, target)
+    expect(workoutElapsedMs(finished.sessions[0])).toBe(120000)
+    expect(finished.strengthSets.map(row => row.id)).toEqual([set.id])
   } finally {
     vi.useRealTimers()
     await db.delete()

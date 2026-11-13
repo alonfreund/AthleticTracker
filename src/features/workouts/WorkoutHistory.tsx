@@ -1,3 +1,5 @@
+import { workoutElapsedMs } from '../../domain/strength/workoutTiming'
+import type { Session } from '../../domain/strength/models'
 import { useEffect, useRef } from 'react'
 import { Button } from '../../components/ui/Button'
 import { groupLetter, supersetSlots, workoutBlocks } from '../../domain/strength/supersets'
@@ -7,8 +9,8 @@ import type { Exercise, SessionExercise } from '../../domain/strength/models'
 import type { Workout } from '../../data/repositories/workouts'
 import { performanceText } from '../../domain/strength/logging'
 import { trackingLabel } from '../../domain/strength/catalog'
-export function durationText(start: string, end: string) {
-  const minutes = Math.max(0, Math.floor((Date.parse(end) - Date.parse(start)) / 60000))
+export function durationText(session: Session) {
+  const minutes = Math.floor(workoutElapsedMs(session) / 60000)
   return minutes >= 60 ? `${Math.floor(minutes / 60)} h ${minutes % 60} min` : `${minutes} min`
 }
 export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Strength', disabled, message, error, onEdit, onDelete, onExerciseAnalytics }: {
@@ -38,7 +40,7 @@ export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Strength'
     <button className="secondary" disabled={disabled} onClick={onBack}>{backLabel}</button>
     <p className="eyebrow">{session.status === 'cancelled' ? 'CANCELLED WORKOUT' : 'FINISHED WORKOUT'}</p>
     <h2 ref={heading} tabIndex={-1}>{session.title}</h2>
-    <p>{new Date(session.startedAt).toLocaleString()} · {durationText(session.startedAt, session.endedAt!)}</p>
+    <p>{new Date(session.startedAt).toLocaleString()} · {durationText(session)}</p>
     <p>{workout.strengthSets.filter(set => set.completed).length} completed sets</p>
     {session.notes && <p className="multiline">{session.notes}</p>}
     {message && <p role="status">{message}</p>}

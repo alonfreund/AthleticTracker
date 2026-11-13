@@ -52,6 +52,7 @@ export interface Session extends Entity {
   status: 'active' | 'finished' | 'cancelled'
   startedAt: string
   endedAt: string | null
+  workoutTiming?: { pausedAt: string | null; pausedMs: number; resumeRest: boolean }
   notes: string
 }
 export type MovementDiscipline = 'strength' | 'calisthenics'

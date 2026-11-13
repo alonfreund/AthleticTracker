@@ -1,3 +1,4 @@
+import { workoutElapsedMs } from '../../domain/strength/workoutTiming'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
@@ -10,19 +11,22 @@ import type { WeightUnit } from '../../domain/strength/models'
 import { metricLabel, metricValueText } from '../analytics/metricText'
 import { durationText } from './WorkoutHistory'
 
-export function WorkoutRecap({ workout, onDone, onView }: {
+export function WorkoutRecap({ workout, onDone, onView, modal = false }: {
   workout: Workout
   onDone: () => void
   onView: () => void
+  modal?: boolean
 }) {
   const session = workout.sessions[0]
   const [records, setRecords] = useState<WorkoutRecapRecord[]>()
   const [error, setError] = useState(false)
   const [unit, setUnit] = useState<WeightUnit>('kg')
   const heading = useRef<HTMLHeadingElement>(null)
-  const elapsed = Date.parse(session.endedAt!) - Date.parse(session.startedAt)
+  const dialog = useRef<HTMLDialogElement>(null)
+  const elapsed = workoutElapsedMs(session)
   const workingSets = workout.strengthSets.filter(isWorkingSet).length
   useEffect(() => {
+    if (modal && dialog.current && !dialog.current.open) dialog.current.showModal()
     heading.current?.focus()
     let mounted = true
     void readWorkoutRecapRecords(workout).then(
@@ -30,13 +34,13 @@ export function WorkoutRecap({ workout, onDone, onView }: {
       () => { if (mounted) setError(true) },
     )
     return () => { mounted = false }
-  }, [workout])
+  }, [workout, modal])
 
-  return <section className="surface-card workout-recap" aria-labelledby="workout-recap-heading">
+  const summary = <section className="surface-card workout-recap" aria-labelledby="workout-recap-heading">
     <h2 id="workout-recap-heading" tabIndex={-1} ref={heading}>Workout recap</h2>
     <p><strong>{session.title}</strong></p>
     <dl className="monthly-totals">
-      <div><dt>Session time</dt><dd>{elapsed > 0 && elapsed < 60000 ? '<1 min' : durationText(session.startedAt, session.endedAt!)}</dd></div>
+      <div><dt>Session time</dt><dd>{elapsed > 0 && elapsed < 60000 ? '<1 min' : durationText(session)}</dd></div>
       <div><dt>Working sets</dt><dd>{workingSets}</dd></div>
     </dl>
     <div className="actions">
@@ -58,4 +62,6 @@ export function WorkoutRecap({ workout, onDone, onView }: {
       </li>)}
     </ul>}
   </section>
+  return modal ? <dialog ref={dialog} className="workout-recap-dialog" aria-labelledby="workout-recap-heading"
+    onCancel={event => { event.preventDefault(); onDone() }}>{summary}</dialog> : summary
 }

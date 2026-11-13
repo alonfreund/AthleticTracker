@@ -2,7 +2,7 @@ import { analyticsExerciseKey, type AnalyticsExercise, type AnalyticsSession } f
 import type { Exercise, Session, StrengthSet } from './models'
 import { muscleDistribution } from './muscleDistribution'
 
-export type FinishedSession = Pick<Session, 'id' | 'title' | 'startedAt' | 'endedAt'> & {
+export type FinishedSession = Pick<Session, 'id' | 'title' | 'startedAt' | 'endedAt' | 'workoutTiming'> & {
   cards: { snapshot: Exercise; sets: StrengthSet[] }[]
 }
 

@@ -94,7 +94,7 @@ export function WorkoutsPanel({ mode = 'train', discipline = 'strength', initial
       setSelected(workout)
       setShowRecap(true)
     }} />
-    if (showRecap) return <WorkoutRecap workout={selected} onDone={back} onView={() => {
+    if (showRecap) return <WorkoutRecap modal workout={selected} onDone={back} onView={() => {
       if (onNavigateHistory) onNavigateHistory(session.id)
       else setShowRecap(false)
     }} />
@@ -169,7 +169,7 @@ export function WorkoutsPanel({ mode = 'train', discipline = 'strength', initial
     <div className="section-heading"><h2>{mode === 'history' ? 'All sessions' : 'Recent sessions'}</h2></div>
     {mode === 'history' && loading && <p role="status">Opening your history…</p>}
     {!loading && !history.length && <div className="empty-state"><Icon name="history" /><h3>No sessions recorded yet</h3><p>Your finished workouts will appear here.</p></div>}
-    <ul className="exercise-list">{visibleHistory.map(session => <li key={session.id}><button className="exercise-row" disabled={busy || applying} onClick={() => onNavigateHistory ? onNavigateHistory(session.id) : void open(session.id)}><strong>{session.title}</strong><span>{new Date(session.startedAt).toLocaleString()} · {durationText(session.startedAt, session.endedAt!)}</span><span className="badge">{session.status === 'cancelled' ? 'Cancelled' : 'Finished'}</span></button></li>)}</ul>
+    <ul className="exercise-list">{visibleHistory.map(session => <li key={session.id}><button className="exercise-row" disabled={busy || applying} onClick={() => onNavigateHistory ? onNavigateHistory(session.id) : void open(session.id)}><strong>{session.title}</strong><span>{new Date(session.startedAt).toLocaleString()} · {durationText(session)}</span><span className="badge">{session.status === 'cancelled' ? 'Cancelled' : 'Finished'}</span></button></li>)}</ul>
     {busy && <p role="status">Opening workout…</p>}{error && <p role="alert" className="error">{error}</p>}
   </section>
 }

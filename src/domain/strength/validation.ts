@@ -132,11 +132,19 @@ export function validateStrengthRecord(name: typeof STRENGTH_TABLES[number], row
   switch (name) {
     case 'exercises': validateExercise(row); return object(row)
     case 'sessions': {
-    const item = entity(row, ['title', 'status', 'startedAt', 'endedAt', 'notes'])
+    const item = entity(row, ['title', 'status', 'startedAt', 'endedAt', 'notes', ...(Object.hasOwn(object(row), 'workoutTiming') ? ['workoutTiming'] : [])])
     text(item.title, 200, true); text(item.notes); choice(item.status, ['active', 'finished', 'cancelled']); date(item.startedAt)
     nullable(item.endedAt, date)
     if (item.status === 'active' ? item.endedAt !== null : item.endedAt === null) fail('session end time does not match its status.')
     if (item.endedAt !== null && (item.endedAt as string) < item.startedAt) fail('session ends before it starts.')
+    if (Object.hasOwn(item, 'workoutTiming')) {
+      const timing = shape(item.workoutTiming, ['pausedAt', 'pausedMs', 'resumeRest'])
+      nullable(timing.pausedAt, date); num(timing.pausedMs, 0, Number.MAX_SAFE_INTEGER, true); bool(timing.resumeRest)
+      if (timing.pausedAt === null ? timing.resumeRest :
+        item.status !== 'active' || (timing.pausedAt as string) < item.startedAt || (timing.pausedAt as string) > (item.updatedAt as string)) fail('invalid workout pause.')
+      const end = timing.pausedAt ?? item.endedAt ?? item.updatedAt
+      if (timing.pausedMs > Date.parse(end as string) - Date.parse(item.startedAt)) fail('invalid workout pause duration.')
+    }
       return item
     }
     case 'sessionActivities': {

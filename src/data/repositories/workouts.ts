@@ -51,10 +51,11 @@ function clock(workout: Workout): string {
   const session = workout.sessions[0]
   return new Date(Math.max(Date.now(), Date.parse(session.startedAt), Date.parse(session.updatedAt), ...workout.strengthSets.flatMap(set => [Date.parse(set.updatedAt), set.completedAt ? Date.parse(set.completedAt) : 0]))).toISOString()
 }
-async function mutate<T>(id: string, action: (workout: Workout, now: string) => Promise<T> | T, database: AthleticDatabase, status: Session['status'] = 'active'): Promise<T> {
+async function mutate<T>(id: string, action: (workout: Workout, now: string) => Promise<T> | T, database: AthleticDatabase, status: Session['status'] = 'active', allowPaused = false): Promise<T> {
   return database.transaction('rw', tables(database), async () => {
     const workout = await readWorkout(id, database)
     if (workout.sessions[0].status !== status) throw new Error(`Only ${status} workouts can be changed here.`)
+    if (workout.sessions[0].workoutTiming?.pausedAt && !allowPaused) throw new Error('Resume this workout before making changes.')
     const before = structuredClone(workout)
     const now = clock(workout)
     const result = await action(workout, now)
@@ -321,6 +322,25 @@ export function moveWorkoutItem(id: string, kind: 'exercise' | 'set', itemId: st
     if (other) { stopExerciseTimer(workout, item.sessionExerciseId, now); [item.position, other.position] = [other.position, item.position]; item.updatedAt = now; other.updatedAt = now }
   }, database)
 }
+export function setWorkoutPaused(id: string, paused: boolean, database = db) {
+  return mutate(id, (workout, now) => {
+    const session = workout.sessions[0]
+    const timing = session.workoutTiming ?? { pausedAt: null, pausedMs: 0, resumeRest: false }
+    if (paused === (timing.pausedAt !== null)) return
+    const timer = workout.restTimers[0]
+    if (paused) {
+      const remaining = timer?.status === 'running' ? timerSeconds(timer, Date.parse(now)) : 0
+      session.workoutTiming = { ...timing, pausedAt: now, resumeRest: remaining > 0 }
+      if (timer?.status === 'running') Object.assign(timer, { status: remaining ? 'paused' : 'finished', deadline: null, remainingSeconds: remaining, updatedAt: now })
+    } else {
+      session.workoutTiming = { pausedAt: null, pausedMs: timing.pausedMs + Date.parse(now) - Date.parse(timing.pausedAt!), resumeRest: false }
+      if (timing.resumeRest && timer?.status === 'paused') {
+        Object.assign(timer, { status: 'running', deadline: new Date(Date.parse(now) + timer.remainingSeconds! * 1000).toISOString(), remainingSeconds: null, updatedAt: now })
+      }
+    }
+  }, database, 'active', true)
+}
+
 export function finishWorkout(id: string, allowIncomplete = false, database = db) {
   return mutate(id, (workout, now) => {
     if (workout.editorDrafts.length) throw new Error('Save values or discard the pending set edits before finishing.')
@@ -419,7 +439,7 @@ function removeWorkout(id: string, status: Session['status'], database: Athletic
   return mutate(id, workout => {
     if (baseline) checkHistoryVersion(workout, baseline)
     Object.assign(workout, emptyStrengthData())
-  }, database, status)
+  }, database, status, true)
 }
 
 export function deleteFinishedWorkout(baseline: Workout, database = db) {

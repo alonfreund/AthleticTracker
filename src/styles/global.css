@@ -506,3 +506,7 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 .challenge-options[open] > .actions { margin-block-end: var(--space-2); }
 .challenge-history-row { border-block-start: 1px solid var(--color-border); padding-block-start: var(--space-2); }
 .challenge-history-row p { margin: 0; }
+
+.workout-recap-dialog { width: min(34rem, calc(100% - 2rem)); max-height: 85dvh; padding: 0; border: 0; border-radius: var(--radius-card); background: var(--color-surface); color: var(--color-text); }
+.workout-recap-dialog::backdrop { background: rgb(0 0 0 / 55%); }
+.workout-recap-dialog .workout-recap { margin: 0; }

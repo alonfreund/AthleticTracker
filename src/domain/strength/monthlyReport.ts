@@ -1,3 +1,4 @@
+import { workoutElapsedMs } from './workoutTiming'
 import { analyticsExerciseKey, exerciseProgress, improvesMetric, type AnalyticsExercise, type Metric, type MetricPoint } from './analytics'
 import { collectExerciseHistory, countSessionMuscles, type FinishedSession } from './analyticsHistory'
 import { exerciseDisplayName } from './exerciseDisplayName'
@@ -38,7 +39,7 @@ export function buildMonthlyReport(month: TrainingMonth, history: FinishedSessio
   for (const session of sessions) {
     const day = new Date(session.startedAt).getDate()
     trainingDays.add(day)
-    if (session.endedAt) durationMs += Math.max(0, Date.parse(session.endedAt) - Date.parse(session.startedAt))
+    if (session.endedAt) durationMs += workoutElapsedMs(session)
     const sets = session.cards.reduce((sum, card) => sum + card.sets.length, 0)
     workingSets += sets
     weeks[Math.floor((day - 1 + daysBeforeMonday) / 7)].sets += sets
