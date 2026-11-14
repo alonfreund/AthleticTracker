@@ -106,6 +106,10 @@ export function App() {
   const resumeScreen = active?.discipline === 'calisthenics' ? 'performance/calisthenics' : 'strength'
   const showResume = !!active && (view !== resumeScreen || (active.discipline === 'calisthenics' && !route.workoutId))
   return <>
+    <div className="star-wars-plus-scene" aria-hidden="true">
+      <div className="star-wars-plus-station" />
+      <div className="star-wars-plus-fighter"><i /><i /><i /><i /><span /></div>
+    </div>
     <main className={`app-content ${showResume ? 'has-resume' : ''}`}>
       <PageHeader destination={view} cardioActivity={route.cardioActivity} />
       {!databaseReady && <p role={storageError ? 'alert' : 'status'} className={storageError ? 'error' : 'bootstrap-status'}>{storageError || 'Opening your saved training…'}</p>}

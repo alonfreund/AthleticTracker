@@ -6,6 +6,7 @@ export const THEMES = {
   forest: 'Forest',
   dusk: 'Dusk',
   'star-wars': 'Star Wars',
+  'star-wars-plus': 'Star Wars+',
 } as const
 export type Theme = keyof typeof THEMES
 

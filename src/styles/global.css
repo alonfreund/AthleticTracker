@@ -529,3 +529,73 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 :root[data-theme='star-wars'] .training-hero {
   background: linear-gradient(145deg, #1a2740, var(--color-surface) 70%);
 }
+
+.star-wars-plus-scene { display: none; }
+:root[data-theme='star-wars-plus'] {
+  --color-bg: #070b17;
+  --color-surface: #121a2d;
+  --color-surface-soft: #1c2a44;
+  --color-accent: #78e5ff;
+  --color-accent-hover: #a8efff;
+  --color-accent-soft: #17384a;
+  --color-on-accent: #071c2a;
+}
+:root[data-theme='star-wars-plus'] .star-wars-plus-scene {
+  display: block; position: fixed; inset: 0; overflow: hidden; pointer-events: none;
+  background:
+    radial-gradient(circle at 17px 23px, #d7e6ffba 0 1px, transparent 2px) 0 0 / 103px 111px,
+    radial-gradient(circle at 61px 74px, #fff2cba8 0 1px, transparent 2px) 0 0 / 157px 143px,
+    radial-gradient(ellipse at 85% 16%, #2b4785, transparent 55%),
+    radial-gradient(ellipse at 8% 66%, #41274d, transparent 48%),
+    #070b17;
+}
+:root[data-theme='star-wars-plus'] .app-content { position: relative; }
+.star-wars-plus-station {
+  position: absolute; top: -14vmin; right: -14vmin; width: 76vmin; aspect-ratio: 1;
+  border-radius: 50%; overflow: hidden; opacity: .79;
+  background:
+    radial-gradient(circle at 35% 42%, #34455f 0 10%, #7c8ba1 10.5% 11%, transparent 11.5%),
+    linear-gradient(156deg, transparent 52%, #11182a 52.4% 53.8%, transparent 54.4%),
+    repeating-linear-gradient(12deg, #71839a20 0 2px, transparent 2px 8px),
+    radial-gradient(circle at 27% 23%, #8f9fb4, #40536f 44%, #101a32 71%);
+  box-shadow: 0 0 55px #5c91f66b;
+}
+.star-wars-plus-fighter {
+  position: absolute; top: clamp(110px, 22vh, 240px); right: 6%; width: clamp(104px, 27vw, 218px);
+  aspect-ratio: 2; transform: rotate(-22deg); filter: drop-shadow(0 0 15px #192c60);
+}
+.star-wars-plus-fighter i {
+  position: absolute; inset: 46% 50% auto auto; width: 52%; height: 21%;
+  transform-origin: right center; transform: rotate(var(--wing-angle));
+  clip-path: polygon(0 0, 7% 0, 7% 20%, 100% 33%, 100% 100%, 7% 65%, 0 65%);
+  background: linear-gradient(90deg, #b8cee2 6%, #bb4859 7% 26%, #dbe2eb 27% 72%, #6c7c97 73%);
+}
+.star-wars-plus-fighter i:nth-child(1) { --wing-angle: 26deg; }
+.star-wars-plus-fighter i:nth-child(2) { --wing-angle: -26deg; }
+.star-wars-plus-fighter i:nth-child(3) { --wing-angle: 154deg; }
+.star-wars-plus-fighter i:nth-child(4) { --wing-angle: 206deg; }
+.star-wars-plus-fighter span {
+  position: absolute; inset: 0 39%; clip-path: polygon(49% 0, 65% 20%, 98% 84%, 74% 100%, 26% 100%, 2% 84%, 35% 20%);
+  background: linear-gradient(90deg, #717f99 26%, #d6dfe9 27% 73%, #717f99 74%);
+}
+.star-wars-plus-fighter span::after {
+  content: ''; position: absolute; inset: 34% 35% 29%; background: #16274d; border-radius: 50%;
+}
+:root[data-theme='star-wars-plus'] .page-header h1 {
+  color: #ffe29b; text-shadow: 0 0 18px #20172c, 0 2px 8px #070b17;
+}
+:root[data-theme='star-wars-plus'] .page-header { text-shadow: 0 1px 8px #070b17, 0 1px 4px #070b17; }
+:root[data-theme='star-wars-plus'] .training-hero {
+  background: linear-gradient(145deg, #213457f5, #121a2df5 70%);
+}
+:root[data-theme='star-wars-plus'] .training-hero > button {
+  background: linear-gradient(90deg, var(--color-accent), #a4f5cf);
+  box-shadow: 0 0 16px #78e5ff36;
+}
+:root[data-theme='star-wars-plus'] .button--danger, :root[data-theme='star-wars-plus'] button.button--danger:hover:not(:disabled) {
+  background: #ff9ca8; color: #340d1b;
+}
+:root[data-theme='star-wars-plus'] .bottom-nav__item.is-active .bottom-nav__icon::after {
+  content: ''; position: absolute; inset: auto 6px 0; height: 2px; border-radius: 2px;
+  background: #b7f7ff; box-shadow: 0 0 8px 2px #37d7ff;
+}
