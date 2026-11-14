@@ -1,3 +1,4 @@
+import { AppearancePanel } from './AppearancePanel'
 import { ChallengeList, ChallengeBuilder, ChallengeDetail } from '../features/challenges/Challenges'
 import { FRONT_LEVER_MOVEMENTS, FRONT_LEVER_ORDER } from '../domain/calisthenics/frontLever'
 import { listFrontLeverAttempts, recordFrontLeverAttempt } from '../data/repositories/frontLever'
@@ -206,6 +207,7 @@ export function App() {
         </Suspense>}
         {databaseReady && view === 'strength/library' && <ExerciseLibrary onExerciseAnalytics={openExerciseAnalytics} onBackToStrength={() => navigate({ screen: 'strength' })} />}
         <div className="settings-stack" hidden={view !== 'settings'}>
+          <AppearancePanel />
           {databaseReady && view === 'settings' && <Suspense fallback={<p role="status">Opening data settings…</p>}><FoundationPanel onDataRestored={async () => { setActive(await activeMovementWorkout()) }} /></Suspense>}
           <details><summary>Device storage</summary><StorageProtection /></details>
           <UpdatePanel onAvailabilityChange={setUpdateAvailable} />

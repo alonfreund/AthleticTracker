@@ -31,7 +31,7 @@
   --nav-height: max(76px, 4.75rem);
   --page-width: 760px;
 }
-/* Reference palette, not a shipped theme selector or customisation system. */
+/* Dark palette for explicit Dark mode and the system setting. */
 :root[data-theme='dark'] {
   color-scheme: dark;
   --color-bg: #10161d;
