@@ -32,7 +32,8 @@
   --page-width: 760px;
 }
 /* Dark palette for explicit Dark mode and the system setting. */
-:root[data-theme='dark'] {
+:root[data-theme='dark'],
+:root[data-theme='dusk'] {
   color-scheme: dark;
   --color-bg: #10161d;
   --color-surface: #18212b;
@@ -61,7 +62,8 @@
   --set-amrap-bg: #dcfce7; --set-amrap-text: #166534;
   --set-back-off-bg: #f3e8ff; --set-back-off-text: #6b21a8;
 }
-:root[data-theme='dark'] {
+:root[data-theme='dark'],
+:root[data-theme='dusk'] {
   --set-warm-up-bg: #422f0b; --set-warm-up-text: #fde68a;
   --set-failure-bg: #451b1b; --set-failure-text: #fca5a5;
   --set-drop-set-bg: #10334b; --set-drop-set-text: #bae6fd;
@@ -74,8 +76,49 @@
   --superset-border: #6366f1;
   --superset-text: #3730a3;
 }
-:root[data-theme='dark'] {
+:root[data-theme='dark'],
+:root[data-theme='dusk'] {
   --superset-bg: #202447;
   --superset-border: #a5b4fc;
   --superset-text: #c7d2fe;
+}
+
+:root[data-theme='ocean'] {
+  --color-bg: #edf6fc;
+  --color-surface: #ffffff;
+  --color-surface-soft: #e0eff9;
+  --color-text: #112d44;
+  --color-muted: #415d73;
+  --color-border: #bdd7e8;
+  --color-input-border: #648299;
+  --color-accent: #075985;
+  --color-accent-hover: #0c4a6e;
+  --color-accent-soft: #d2eaf8;
+}
+
+:root[data-theme='forest'] {
+  --color-bg: #edf4eb;
+  --color-surface: #fbfdf9;
+  --color-surface-soft: #e3eddf;
+  --color-text: #1d3123;
+  --color-muted: #475f4c;
+  --color-border: #c6d8c1;
+  --color-input-border: #6f846d;
+  --color-accent: #32623f;
+  --color-accent-hover: #244d30;
+  --color-accent-soft: #d9ebd7;
+}
+
+:root[data-theme='dusk'] {
+  --color-bg: #1a1629;
+  --color-surface: #242036;
+  --color-surface-soft: #302941;
+  --color-text: #f5f0ff;
+  --color-muted: #c4b9d7;
+  --color-border: #50445f;
+  --color-input-border: #9383a5;
+  --color-accent: #d4b5ff;
+  --color-accent-hover: #e4d1ff;
+  --color-accent-soft: #423254;
+  --color-on-accent: #2a173e;
 }

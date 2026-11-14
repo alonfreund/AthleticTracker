@@ -1,16 +1,28 @@
-export type Theme = 'system' | 'light' | 'dark'
+export const THEMES = {
+  system: 'System',
+  light: 'Light',
+  dark: 'Dark',
+  ocean: 'Ocean',
+  forest: 'Forest',
+  dusk: 'Dusk',
+} as const
+export type Theme = keyof typeof THEMES
+
+function isTheme(value: string): value is Theme {
+  return Object.hasOwn(THEMES, value)
+}
 
 const key = 'athletic-tracker:theme'
 
 export function readTheme(): Theme {
   try {
     const saved = localStorage.getItem(key)
-    if (saved === 'light' || saved === 'dark') return saved
+    if (saved !== null && isTheme(saved)) return saved
   } catch { /* Use the system appearance when storage is unavailable. */ }
   return 'system'
 }
 
-export function resolveTheme(theme: Theme, systemDark: boolean): 'light' | 'dark' {
+export function resolveTheme(theme: Theme, systemDark: boolean): Exclude<Theme, 'system'> {
   return theme === 'system' ? (systemDark ? 'dark' : 'light') : theme
 }
 

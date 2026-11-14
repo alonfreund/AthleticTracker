@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { applyTheme, readTheme, saveTheme, type Theme } from './theme'
+import { applyTheme, readTheme, saveTheme, THEMES, type Theme } from './theme'
 
 export function AppearancePanel() {
   const [theme, setTheme] = useState(readTheme)
@@ -20,9 +20,7 @@ export function AppearancePanel() {
         saveTheme(next)
         setTheme(next)
       }}>
-        <option value="system">System</option>
-        <option value="light">Light</option>
-        <option value="dark">Dark</option>
+        {Object.entries(THEMES).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
       </select>
     </label>
     <p className="note">System follows your device’s Light or Dark setting.</p>
