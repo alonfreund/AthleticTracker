@@ -600,21 +600,14 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
   background: #b7f7ff; box-shadow: 0 0 8px 2px #37d7ff;
 }
 
-.private-wallpaper-header {
-  color: #f1f5f9;
-  position: relative; isolation: isolate; min-height: clamp(210px, 55vw, 340px);
-  padding: var(--space-4); margin-bottom: var(--space-5); overflow: hidden;
-  border-radius: var(--radius-card); background: var(--color-surface);
-}
-.private-wallpaper-header::before,
 .private-wallpaper {
-  position: absolute; inset: 0; width: 100%; height: 100%;
+  position: fixed; inset: 0; overflow: hidden; pointer-events: none;
 }
-.private-wallpaper-header::before {
-  content: ''; background: linear-gradient(#070b17e8, #070b1770 43%, transparent 73%); z-index: -1;
+.private-wallpaper img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.private-wallpaper::after {
+  content: ''; position: absolute; inset: 0;
+  background: color-mix(in srgb, var(--color-bg) 73%, transparent);
 }
-.private-wallpaper { display: block; object-fit: cover; z-index: -2; }
+.app-content.has-wallpaper { position: relative; }
 .wallpaper-picker { border-top: 1px solid var(--color-border); padding-top: var(--space-4); }
 .wallpaper-preview { display: block; width: 100%; max-height: 160px; object-fit: cover; border-radius: var(--radius-control); }
-
-.private-wallpaper-header .page-header > p { color: #e2e8f0; }

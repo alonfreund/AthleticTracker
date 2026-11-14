@@ -110,15 +110,13 @@ export function App() {
   const [theme, setTheme] = useState(readTheme)
   const wallpaper = useWallpaper(supportsWallpapers(theme) ? theme : undefined, routeTab(view))
   return <>
-    <div className="star-wars-plus-scene" aria-hidden="true">
+    {!wallpaper && <div className="star-wars-plus-scene" aria-hidden="true">
       <div className="star-wars-plus-station" />
       <div className="star-wars-plus-fighter"><i /><i /><i /><i /><span /></div>
-    </div>
-    <main className={`app-content ${showResume ? 'has-resume' : ''}`}>
-      <div className={wallpaper ? 'private-wallpaper-header' : undefined}>
-        {wallpaper && <img className="private-wallpaper" src={wallpaper} alt="" />}
-        <PageHeader destination={view} cardioActivity={route.cardioActivity} />
-      </div>
+    </div>}
+    {wallpaper && <div className="private-wallpaper" aria-hidden="true"><img src={wallpaper} alt="" /></div>}
+    <main className={`app-content${wallpaper ? ' has-wallpaper' : ''} ${showResume ? 'has-resume' : ''}`}>
+      <PageHeader destination={view} cardioActivity={route.cardioActivity} />
       {!databaseReady && <p role={storageError ? 'alert' : 'status'} className={storageError ? 'error' : 'bootstrap-status'}>{storageError || 'Opening your saved training…'}</p>}
       <div className="screen-content">
         {databaseReady && view === 'strength' && <WorkoutsPanel key="strength" mode="train" onExerciseAnalytics={openExerciseAnalytics}
