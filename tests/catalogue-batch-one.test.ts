@@ -21,7 +21,7 @@ describe('approved catalogue preparation and Batch 1',()=>{
     expect(LEGACY_STARTER_EXERCISES).toEqual(released.legacy)
   })
   it('ships exactly 80 permanently reserved additions and no unapproved batches',()=>{
-    expect(CATALOGUE_BATCHES.map(batch=>batch.id)).toEqual(['original','batch-1','batch-2','batch-3','batch-4','batches-5-8','grip-variations'])
+    expect(CATALOGUE_BATCHES.map(batch=>batch.id)).toEqual(['original','batch-1','batch-2','batch-3','batch-4','batches-5-8','grip-variations','wrist-curls'])
     expect(BATCH_ONE_EXERCISES).toHaveLength(80);expect([...STARTER_EXERCISES,...BATCH_ONE_EXERCISES]).toHaveLength(92)
     expect(Object.fromEntries(BATCH_ONE_EXERCISES.map(row=>[row.id,row.name]))).toEqual(reservations)
     for(const row of BUILTIN_EXERCISES)expect(row.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)

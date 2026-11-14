@@ -12,7 +12,7 @@ import { GRIP_VARIATIONS } from '../src/domain/strength/catalogue/gripVariations
 import { exerciseDisplayName } from '../src/domain/strength/exerciseDisplayName'
 import history from './fixtures/backup-v3-rest-0.7.0.json'
 
-const released = CATALOGUE_BATCHES.filter(batch => batch.id !== 'grip-variations')
+const released = CATALOGUE_BATCHES.filter(batch => batch.id !== 'grip-variations' && batch.id !== 'wrist-curls')
   .flatMap(batch => [...batch.exercises])
 
 it('adds 15 unique grip variants alongside the exact 432 released definitions', () => {
@@ -20,7 +20,7 @@ it('adds 15 unique grip variants alongside the exact 432 released definitions', 
   expect(fingerprint).toBe('44f1b702afe02895b44276c3d45d8a8596edf15567a5b63f216921a17a55876d')
   expect(released).toHaveLength(432)
   expect(GRIP_VARIATIONS).toHaveLength(15)
-  expect(BUILTIN_EXERCISES).toHaveLength(447)
+  expect(BUILTIN_EXERCISES).toHaveLength(449)
   expect(() => validateCatalogue(BUILTIN_EXERCISES)).not.toThrow()
   for (const exercise of GRIP_VARIATIONS) {
     expect(exercise.id).toMatch(/^ba51c600-0000-4000-8000-\d{12}$/)
@@ -43,8 +43,9 @@ it('adds only the new definitions and preserves user data across repeat installs
     await setFavourite(released[6].id, true, db)
     const before = (await createBackup(db)).data
 
-    expect(await installCatalogue(undefined, db)).toEqual({ added: 15, updated: 0, preserved: [] })
-    expect(await installCatalogue(undefined, db)).toEqual({ added: 0, updated: 0, preserved: [] })
+    const gripCatalogue = [...released, ...GRIP_VARIATIONS]
+    expect(await installCatalogue(gripCatalogue, db)).toEqual({ added: 15, updated: 0, preserved: [] })
+    expect(await installCatalogue(gripCatalogue, db)).toEqual({ added: 0, updated: 0, preserved: [] })
     const backup = await createBackup(db)
     const added = new Set(GRIP_VARIATIONS.map(row => row.id))
     expect({
@@ -103,4 +104,30 @@ it('finds built-in exercises by either name and groups them by the displayed bas
     .map(exerciseDisplayName)).toContain('Straight-arm cable pulldown (Rope)')
   expect(exerciseDisplayName({ name: 'Neutral-grip lat pulldown', origin: 'custom' }))
     .toBe('Neutral-grip lat pulldown')
+})
+
+it('adds both two-handed wrist curls with per-dumbbell loading', async () => {
+  const db = new AthleticDatabase(crypto.randomUUID())
+  try {
+    await verifyLocalStorage(db)
+    const earlier = CATALOGUE_BATCHES.filter(batch => batch.id !== 'wrist-curls').flatMap(batch => [...batch.exercises])
+    await installCatalogue(earlier, db)
+    const before = (await createBackup(db)).data
+    await installCatalogue(BUILTIN_EXERCISES, db)
+    const after = (await createBackup(db)).data
+    const added = after.exercises.filter(row => !before.exercises.some(previous => previous.id === row.id))
+    expect(added.map(row => row.name)).toEqual(['Dumbbell wrist curl', 'Dumbbell reverse wrist curl'])
+    expect(added.map(row => row.metadata?.movementPatternIds)).toEqual([['wrist-flexion'], ['wrist-extension']])
+    for (const row of added) {
+      expect(row.tracking).toEqual({ measurement: 'reps', load: 'external', weightConvention: 'per-hand' })
+      expect(row.metadata?.repetitionConvention).toBe('total')
+    }
+    expect(after.exercises.filter(row => !added.includes(row))).toEqual(before.exercises)
+    expect(after.exercisePreferences).toEqual(before.exercisePreferences)
+    expect(after.sessions).toEqual(before.sessions)
+    await installCatalogue(BUILTIN_EXERCISES, db)
+    expect((await createBackup(db)).data).toEqual(after)
+  } finally {
+    await db.delete()
+  }
 })

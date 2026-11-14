@@ -32,7 +32,8 @@ export function defineBatchThree(entry:Entry):Exercise { return defineEntry(entr
 export function defineBatchFour(entry:Entry):Exercise { return defineEntry(entry, 'ba51c400') }
 export function defineCombinedBatches(entry:Entry):Exercise { return defineEntry(entry, 'ba51c580') }
 export function defineGripVariation(entry: Entry): Exercise { return defineEntry(entry, 'ba51c600') }
-function defineEntry(entry:Entry, namespace:'ba51c100'|'ba51c200'|'ba51c300'|'ba51c400'|'ba51c580'|'ba51c600'):Exercise {
+export function defineWristCurl(entry: Entry): Exercise { return defineEntry(entry, 'ba51c700') }
+function defineEntry(entry:Entry, namespace:'ba51c100'|'ba51c200'|'ba51c300'|'ba51c400'|'ba51c580'|'ba51c600'|'ba51c700'):Exercise {
   const mode:Tracking['load']=entry.load==='bodyweight'?'bodyweight':entry.load==='added'?'added':entry.load==='assisted'?'assisted':entry.load==='reps-only'||entry.load==='gripper'||entry.load==='unloaded'?'none':'external'
   const convention:Tracking['weightConvention']=mode==='none'||mode==='bodyweight'?null:entry.load==='dumbbells'||entry.load==='kettlebells'?'per-hand':entry.load==='stack'||entry.load==='assisted'?'machine-display':'total'
   return {

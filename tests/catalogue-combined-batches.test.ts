@@ -27,7 +27,7 @@ afterEach(async()=>{
 describe('combined Batches 5–8 catalogue expansion',()=>{
   it('adds exactly 100 permanent IDs and leaves every released definition unchanged',()=>{
     expect([...prior,...COMBINED_BATCH_EXERCISES]).toHaveLength(432)
-    expect(CATALOGUE_BATCHES.map(batch=>batch.id)).toEqual(['original','batch-1','batch-2','batch-3','batch-4','batches-5-8','grip-variations'])
+    expect(CATALOGUE_BATCHES.map(batch=>batch.id)).toEqual(['original','batch-1','batch-2','batch-3','batch-4','batches-5-8','grip-variations','wrist-curls'])
     expect(COMBINED_BATCH_EXERCISES).toHaveLength(100)
     expect(BUILTIN_EXERCISES.filter(row=>prior.some(old=>old.id===row.id))).toEqual(prior)
     expect(Object.fromEntries(COMBINED_BATCH_EXERCISES.map(row=>[row.id,row.name]))).toEqual(reservations)
