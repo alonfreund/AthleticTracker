@@ -7,8 +7,16 @@ export const THEMES = {
   dusk: 'Dusk',
   'star-wars': 'Star Wars',
   'star-wars-plus': 'Star Wars+',
+  'custom-1': 'Custom 1',
+  'custom-2': 'Custom 2',
 } as const
 export type Theme = keyof typeof THEMES
+
+export type WallpaperTheme = 'star-wars-plus' | 'custom-1' | 'custom-2'
+
+export function supportsWallpapers(theme: Theme): theme is WallpaperTheme {
+  return theme === 'star-wars-plus' || theme === 'custom-1' || theme === 'custom-2'
+}
 
 function isTheme(value: string): value is Theme {
   return Object.hasOwn(THEMES, value)

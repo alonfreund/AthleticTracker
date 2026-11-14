@@ -33,6 +33,7 @@
 }
 /* Dark palette for explicit Dark mode and the system setting. */
 :root[data-theme='dark'],
+:root[data-theme='custom-2'],
 :root[data-theme='dusk'],
 :root[data-theme='star-wars'],
 :root[data-theme='star-wars-plus'] {
@@ -65,6 +66,7 @@
   --set-back-off-bg: #f3e8ff; --set-back-off-text: #6b21a8;
 }
 :root[data-theme='dark'],
+:root[data-theme='custom-2'],
 :root[data-theme='dusk'],
 :root[data-theme='star-wars'],
 :root[data-theme='star-wars-plus'] {
@@ -81,6 +83,7 @@
   --superset-text: #3730a3;
 }
 :root[data-theme='dark'],
+:root[data-theme='custom-2'],
 :root[data-theme='dusk'],
 :root[data-theme='star-wars'],
 :root[data-theme='star-wars-plus'] {

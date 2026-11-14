@@ -1,3 +1,4 @@
+import { readTheme, supportsWallpapers } from './theme'
 import { useWallpaper } from './WallpaperPicker'
 import { AppearancePanel } from './AppearancePanel'
 import { ChallengeList, ChallengeBuilder, ChallengeDetail } from '../features/challenges/Challenges'
@@ -106,7 +107,8 @@ export function App() {
   const blocked = safety.busy || safety.restoring || safety.applying || safety.loading
   const resumeScreen = active?.discipline === 'calisthenics' ? 'performance/calisthenics' : 'strength'
   const showResume = !!active && (view !== resumeScreen || (active.discipline === 'calisthenics' && !route.workoutId))
-  const wallpaper = useWallpaper(routeTab(view))
+  const [theme, setTheme] = useState(readTheme)
+  const wallpaper = useWallpaper(supportsWallpapers(theme) ? theme : undefined, routeTab(view))
   return <>
     <div className="star-wars-plus-scene" aria-hidden="true">
       <div className="star-wars-plus-station" />
@@ -216,7 +218,7 @@ export function App() {
         </Suspense>}
         {databaseReady && view === 'strength/library' && <ExerciseLibrary onExerciseAnalytics={openExerciseAnalytics} onBackToStrength={() => navigate({ screen: 'strength' })} />}
         <div className="settings-stack" hidden={view !== 'settings'}>
-          <AppearancePanel />
+          <AppearancePanel theme={theme} onThemeChange={setTheme} />
           {databaseReady && view === 'settings' && <Suspense fallback={<p role="status">Opening data settings…</p>}><FoundationPanel onDataRestored={async () => { setActive(await activeMovementWorkout()) }} /></Suspense>}
           <details><summary>Device storage</summary><StorageProtection /></details>
           <UpdatePanel onAvailabilityChange={setUpdateAvailable} />

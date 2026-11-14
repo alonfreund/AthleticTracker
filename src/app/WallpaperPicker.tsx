@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { WallpaperTheme } from './theme'
 import { liveQuery } from 'dexie'
 import { DESTINATIONS, type Destination } from './navigation'
 import { saveWallpaper, validateWallpaper, wallpaperDb, WALLPAPER_TYPES } from './wallpapers'
@@ -7,30 +8,31 @@ const labels: Record<Destination, string> = {
   strength: 'Strength', performance: 'Performance', analytics: 'Analytics', settings: 'Settings',
 }
 
-export function useWallpaper(screen: Destination) {
-  const [wallpaper, setWallpaper] = useState<{ screen: Destination; url: string }>()
+export function useWallpaper(theme: WallpaperTheme | undefined, screen: Destination) {
+  const [wallpaper, setWallpaper] = useState<{ theme: WallpaperTheme; screen: Destination; url: string }>()
   useEffect(() => {
+    if (!theme) return
     let url: string | undefined
     const clear = () => { if (url) URL.revokeObjectURL(url); url = undefined }
-    const subscription = liveQuery(() => wallpaperDb.wallpapers.get(screen)).subscribe({
+    const subscription = liveQuery(() => wallpaperDb.themeWallpapers.get([theme, screen])).subscribe({
       next: row => {
         clear()
         url = row && URL.createObjectURL(row.image)
-        setWallpaper(url ? { screen, url } : undefined)
+        setWallpaper(url ? { theme, screen, url } : undefined)
       },
       error: () => { clear(); setWallpaper(undefined) },
     })
     return () => { subscription.unsubscribe(); clear() }
-  }, [screen])
-  return wallpaper?.screen === screen ? wallpaper.url : undefined
+  }, [theme, screen])
+  return wallpaper && wallpaper.theme === theme && wallpaper.screen === screen ? wallpaper.url : undefined
 }
 
-export function WallpaperPicker() {
+export function WallpaperPicker({ theme }: { theme: WallpaperTheme }) {
   const [screen, setScreen] = useState<Destination>('strength')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [status, setStatus] = useState('')
-  const url = useWallpaper(screen)
+  const url = useWallpaper(theme, screen)
 
   async function change(file?: File) {
     setBusy(true)
@@ -47,10 +49,10 @@ export function WallpaperPicker() {
             throw new Error('This image could not be opened. Try a JPEG or PNG.')
           })
         } finally { URL.revokeObjectURL(preview) }
-        await saveWallpaper(screen, file)
+        await saveWallpaper(theme, screen, file)
         setStatus('Wallpaper saved on this device.')
       } else {
-        await wallpaperDb.wallpapers.delete(screen)
+        await wallpaperDb.themeWallpapers.delete([theme, screen])
         setStatus('Wallpaper removed.')
       }
     } catch (error) {

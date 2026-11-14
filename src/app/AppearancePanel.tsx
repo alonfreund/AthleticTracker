@@ -1,9 +1,8 @@
 import { WallpaperPicker } from './WallpaperPicker'
-import { useEffect, useState } from 'react'
-import { applyTheme, readTheme, saveTheme, THEMES, type Theme } from './theme'
+import { useEffect } from 'react'
+import { applyTheme, saveTheme, supportsWallpapers, THEMES, type Theme } from './theme'
 
-export function AppearancePanel() {
-  const [theme, setTheme] = useState(readTheme)
+export function AppearancePanel({ theme, onThemeChange }: { theme: Theme; onThemeChange: (theme: Theme) => void }) {
 
   useEffect(() => {
     const system = matchMedia('(prefers-color-scheme: dark)')
@@ -19,12 +18,12 @@ export function AppearancePanel() {
       <select value={theme} onChange={event => {
         const next = event.target.value as Theme
         saveTheme(next)
-        setTheme(next)
+        onThemeChange(next)
       }}>
         {Object.entries(THEMES).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
       </select>
     </label>
     <p className="note">System follows your device’s Light or Dark setting.</p>
-    {theme === 'star-wars-plus' && <WallpaperPicker />}
+    {supportsWallpapers(theme) && <WallpaperPicker key={theme} theme={theme} />}
   </section>
 }
