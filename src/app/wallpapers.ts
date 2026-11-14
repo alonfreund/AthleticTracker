@@ -3,10 +3,11 @@ import type { WallpaperTheme } from './theme'
 import type { Destination } from './navigation'
 
 export const WALLPAPER_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/heic', 'image/heif']
+export const DEFAULT_WALLPAPER_TINT = 73
 const MAX_BYTES = 10 * 1024 * 1024
 
 export class WallpaperDatabase extends Dexie {
-  themeWallpapers!: Table<{ theme: WallpaperTheme; screen: Destination; image: Blob }, [WallpaperTheme, Destination]>
+  themeWallpapers!: Table<{ theme: WallpaperTheme; screen: Destination; image: Blob; tint?: number }, [WallpaperTheme, Destination]>
 
   constructor(name = 'athletic-tracker-wallpapers') {
     super(name)
@@ -30,5 +31,14 @@ export function validateWallpaper(image: Blob) {
 
 export async function saveWallpaper(theme: WallpaperTheme, screen: Destination, image: Blob, database = wallpaperDb) {
   validateWallpaper(image)
-  await database.themeWallpapers.put({ theme, screen, image })
+  await database.transaction('rw', database.themeWallpapers, async () => {
+    const current = await database.themeWallpapers.get([theme, screen])
+    await database.themeWallpapers.put({ ...current, theme, screen, image })
+  })
+}
+
+export async function saveWallpaperTint(theme: WallpaperTheme, screen: Destination, tint: number, database = wallpaperDb) {
+  if (!Number.isInteger(tint) || tint < 0 || tint > 100) throw new Error('Tint must be between 0 and 100%.')
+  const updated = await database.themeWallpapers.update([theme, screen], { tint })
+  if (!updated) throw new Error('Choose a wallpaper before setting its tint.')
 }

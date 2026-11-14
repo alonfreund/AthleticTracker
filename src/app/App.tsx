@@ -15,7 +15,7 @@ import { CalisthenicsProgressHome } from '../features/performance/CalisthenicsPr
 import { liveQuery } from 'dexie'
 import { LiveCardioEntry, LiveCardioScreen } from '../features/performance/LiveCardioScreen'
 import { CardioForm } from '../features/performance/CardioForm'
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react'
 import { verifyLocalStorage } from '../data/db/database'
 import { CardioHome, CardioHistory, CardioSessionScreen } from '../features/performance/CardioScreens'
 import { PerformanceHome } from '../features/performance/PerformanceScreens'
@@ -114,7 +114,7 @@ export function App() {
       <div className="star-wars-plus-station" />
       <div className="star-wars-plus-fighter"><i /><i /><i /><i /><span /></div>
     </div>}
-    {wallpaper && <div className="private-wallpaper" aria-hidden="true"><img src={wallpaper} alt="" /></div>}
+    {wallpaper && <div className="private-wallpaper" aria-hidden="true" style={{ '--wallpaper-tint': wallpaper.tint / 100 } as CSSProperties}><img src={wallpaper.url} alt="" /></div>}
     <main className={`app-content${wallpaper ? ' has-wallpaper' : ''} ${showResume ? 'has-resume' : ''}`}>
       <PageHeader destination={view} cardioActivity={route.cardioActivity} />
       {!databaseReady && <p role={storageError ? 'alert' : 'status'} className={storageError ? 'error' : 'bootstrap-status'}>{storageError || 'Opening your saved training…'}</p>}
