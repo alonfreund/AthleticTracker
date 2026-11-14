@@ -4,6 +4,7 @@ import type { ExerciseFilters } from '../../data/repositories/exercises'
 import type { Exercise, StrengthSet } from '../../domain/strength/models'
 import { matchesRoutineTracking, type Routine, type RoutineExercise } from '../../domain/strength/routines'
 import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
+import { groupLetter } from '../../domain/strength/supersets'
 import { SET_TYPES } from '../../domain/strength/setTypes'
 
 type SetDraft = { id: string; setType: StrengthSet['setType'] }
@@ -17,7 +18,7 @@ function setDraft(setType: StrengthSet['setType'] = 'normal'): SetDraft {
 export function RoutineEditor({ routine, library, disabled, onDirty, onSave, onCancel }: {
   routine: SavedRoutine | null; library: Exercise[]; disabled: boolean
   onDirty: () => void
-  onSave: (input: Pick<Routine, 'title' | 'notes'> & { id?: string }, exercises: RoutineExercise[]) => void
+  onSave: (input: Pick<Routine, 'title' | 'notes' | 'supersets'> & { id?: string }, exercises: RoutineExercise[]) => void
   onCancel: () => void
 }) {
   const [title, setTitle] = useState(routine?.title ?? '')
@@ -25,6 +26,8 @@ export function RoutineEditor({ routine, library, disabled, onDirty, onSave, onC
   const [exercises, setExercises] = useState<ExerciseDraft[]>(() => routine?.exercises.map(row => ({
     ...row, sets: row.sets.map(set => setDraft(set.setType)),
   })) ?? [])
+  const [supersets, setSupersets] = useState(routine?.supersets ?? [])
+  const [selection, setSelection] = useState<{ group: number; ids: string[] }>()
   const [picker, setPicker] = useState(false)
   const [filters, setFilters] = useState<ExerciseFilters>({})
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -43,9 +46,13 @@ export function RoutineEditor({ routine, library, disabled, onDirty, onSave, onC
     }
   }, [picker, addedId])
 
+  function rowPosition(id: string) { return exercises.findIndex(row => row.id === id) + 1 }
   function changeExercises(rows: ExerciseDraft[]) {
+    setSelection(undefined)
     onDirty()
     setExercises(rows)
+    const available = new Set(rows.map(row => row.id))
+    setSupersets(groups => groups.map(group => group.filter(id => available.has(id))).filter(group => group.length > 1))
   }
   function changeSets(id: string, sets: SetDraft[]) {
     changeExercises(exercises.map(row => row.id === id ? { ...row, sets } : row))
@@ -71,8 +78,10 @@ export function RoutineEditor({ routine, library, disabled, onDirty, onSave, onC
       const source = library.find(exercise => exercise.id === row.exerciseId)
       const name = source ? exerciseDisplayName(source) : 'Missing exercise'
       const available = matchesRoutineTracking(row, source)
-      return <section className="routine-card" key={row.id} aria-label={`${index + 1}. ${name}`}>
+      const group = supersets.findIndex(members => members.includes(row.id))
+      return <section className={`routine-card${group >= 0 ? ' superset-group' : ''}`} key={row.id} aria-label={`${index + 1}. ${name}`}>
         <h3 tabIndex={-1} ref={row.id === addedId ? addedHeading : undefined}>{index + 1}. {name}</h3>
+        {group >= 0 && <p className="superset-member-label">Superset {groupLetter(group)}</p>}
         {!available && <p role="status">Remove and re-add this exercise, or choose a replacement, before starting.</p>}
         <div className="actions">
           <button className="secondary" disabled={disabled || index === 0} onClick={() => move(index, -1)} aria-label={`Move ${name} up`}>Move up</button>
@@ -99,9 +108,44 @@ export function RoutineEditor({ routine, library, disabled, onDirty, onSave, onC
         }}>+ Add set<span className="sr-only"> to {name}</span></button>
       </section>
     })}
+    {exercises.length >= 2 && <section className="routine-card" aria-label="Routine supersets">
+      <h3>Supersets</h3>
+      {supersets.map((members, group) => <div className="actions" key={members[0]}>
+        <strong>Superset {groupLetter(group)}</strong>
+        <button className="secondary" disabled={disabled || !!selection} onClick={() => setSelection({ group, ids: members })}>Edit superset {groupLetter(group)}</button>
+        <button className="secondary" disabled={disabled || !!selection} onClick={() => {
+          onDirty()
+          setSupersets(supersets.filter((_, index) => index !== group))
+        }}>Ungroup superset {groupLetter(group)}</button>
+      </div>)}
+      {selection ? <fieldset disabled={disabled}>
+        <legend>{selection.group < 0 ? 'Create superset' : 'Edit superset'}</legend>
+        {exercises.map(row => {
+          if (supersets.some((members, index) => index !== selection.group && members.includes(row.id))) return null
+          const exercise = library.find(item => item.id === row.exerciseId)
+          return <label className="superset-choice" key={row.id}>
+            <input type="checkbox" checked={selection.ids.includes(row.id)} onChange={event => {
+              const ids = event.target.checked ? [...selection.ids, row.id] : selection.ids.filter(id => id !== row.id)
+              setSelection({ ...selection, ids })
+            }} />
+            {rowPosition(row.id)}. {exercise ? exerciseDisplayName(exercise) : 'Missing exercise'}
+          </label>
+        })}
+        <div className="actions">
+          <button disabled={selection.ids.length < 2} onClick={() => {
+            onDirty()
+            setSupersets(selection.group < 0 ? [...supersets, selection.ids] :
+              supersets.map((members, index) => index === selection.group ? selection.ids : members))
+            setSelection(undefined)
+          }}>Save superset</button>
+          <button className="secondary" onClick={() => setSelection(undefined)}>Cancel grouping</button>
+        </div>
+      </fieldset> : <button className="secondary" disabled={disabled || exercises.length - supersets.flat().length < 2}
+        onClick={() => setSelection({ group: -1, ids: [] })}>Create superset</button>}
+    </section>}
     <div className="actions">
       <button ref={addButton} disabled={disabled} aria-expanded={picker} aria-controls={picker ? pickerId : undefined} onClick={() => picker ? closePicker() : setPicker(true)}>{picker ? 'Close exercise picker' : '+ Add exercise'}</button>
-      <button disabled={disabled || !exercises.length} onClick={() => onSave({ id: routine?.id, title, notes }, exercises.map(row => ({
+      <button disabled={disabled || !exercises.length || !!selection} onClick={() => onSave({ id: routine?.id, title, notes, supersets }, exercises.map(row => ({
         ...row, sets: row.sets.map(({ setType }) => ({ setType, target: null })),
       })))}>Save routine</button>
       <button className="secondary" disabled={disabled} onClick={onCancel}>Cancel</button>

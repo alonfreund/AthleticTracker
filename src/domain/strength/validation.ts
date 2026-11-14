@@ -290,9 +290,21 @@ export function validateCatalogueStates(value: unknown): void {
 }
 
 export function validateRoutine(value: unknown): asserts value is Routine {
-  const row = entity(value, ['title', 'notes'])
+  const row = entity(value, ['title', 'notes', ...(Object.hasOwn(object(value), 'supersets') ? ['supersets'] : [])])
   text(row.title, 200, true)
   text(row.notes)
+  if (Object.hasOwn(row, 'supersets')) {
+    if (!Array.isArray(row.supersets)) fail('invalid routine supersets.')
+    const seen = new Set<string>()
+    for (const group of row.supersets) {
+      if (!Array.isArray(group) || group.length < 2) fail('routine supersets require at least two exercises.')
+      for (const member of group) {
+        id(member)
+        if (seen.has(member)) fail('an exercise can belong to only one routine superset.')
+        seen.add(member)
+      }
+    }
+  }
 }
 
 export function validateRoutineExercise(value: unknown): asserts value is RoutineExercise {

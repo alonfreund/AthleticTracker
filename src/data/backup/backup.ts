@@ -21,8 +21,8 @@ import { validateText, type AppMetadata, type FoundationRecord } from '../../dom
 
 import { assertBackupSize, utf8Bytes } from './limits'
 export { MAX_BACKUP_BYTES } from './limits'
-export const BACKUP_VERSION = 18
-export const SUPPORTED_BACKUP_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, BACKUP_VERSION]
+export const BACKUP_VERSION = 19
+export const SUPPORTED_BACKUP_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, BACKUP_VERSION]
 
 function backupTables(version: number) {
   if (version >= 16) return [...BACKUP_TABLES]
@@ -231,9 +231,11 @@ export function validateBackup(value: unknown): Backup {
   const routineIds = new Set<string>()
   for (const row of routines) {
     validateRoutine(row)
+    validateBackupRecord('routines', row, version)
     if (routineIds.has(row.id)) throw new Error('Duplicate routine.')
     routineIds.add(row.id)
   }
+  const routineExerciseOwners = new Map<string, string>()
   const exerciseIds = new Set<string>(), positions = new Set<string>()
   for (const row of routineExercises) {
     validateRoutineExercise(row)
@@ -241,6 +243,10 @@ export function validateBackup(value: unknown): Backup {
     const position = `${row.routineId}:${row.position}`
     if (exerciseIds.has(row.id) || positions.has(position)) throw new Error('Duplicate routine exercise or position.')
     exerciseIds.add(row.id); positions.add(position)
+    routineExerciseOwners.set(row.id, row.routineId)
+  }
+  for (const routine of routines as Routine[]) {
+    if (routine.supersets?.some(group => group.some(id => routineExerciseOwners.get(id) !== routine.id))) throw new Error('Invalid routine superset membership.')
   }
   return { format: 'athletic-tracker-backup', formatVersion: BACKUP_VERSION, exportedAt: date(root.exportedAt), appVersion: string(root.appVersion), data: { metadata, foundationRecords, ...structuredClone(strength), exercisePreferences: exercisePreferences as ExercisePreference[], catalogueState: catalogueState as CatalogueState[], routines: structuredClone(routines), routineExercises: structuredClone(routineExercises), cardioDetails: structuredClone(cardioDetails), cardioDrafts: structuredClone(cardioDrafts), cardioTiming: structuredClone(cardioTiming), cardioLive: structuredClone(cardioLive), pushupAttempts: structuredClone(pushupAttempts), pullupAttempts: structuredClone(pullupAttempts), muscleupAttempts: structuredClone(muscleupAttempts), plancheAttempts: structuredClone(plancheAttempts), handstandAttempts: structuredClone(handstandAttempts), frontLeverAttempts: structuredClone(frontLeverAttempts), challenges: structuredClone(challenges), challengeAttempts: structuredClone(challengeAttempts) } }
 }
@@ -305,6 +311,7 @@ export function validateBackupEnvelope(header: unknown, tables: string[]) {
 }
 export function validateBackupRecord(name: string, value: unknown, version: number): void {
   const item=object(value)
+  if (version < 19 && name === 'routines' && Object.hasOwn(item, 'supersets')) throw new Error('Routine supersets require backup format 19.')
   if (version < 18 && name === 'sessions' && Object.hasOwn(item, 'workoutTiming')) throw new Error('Workout timing requires backup format 18.')
   if (version < 6 && ((name === 'sessionExercises' && Object.hasOwn(item, 'supersetSlotId')) ||
     (name === 'strengthSets' && Object.hasOwn(item, 'supersetRoundIndex')))) {

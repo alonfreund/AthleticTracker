@@ -109,6 +109,11 @@ async function validateStage(id:string,header:StagedBackup['header'],database:At
         for(const row of rows) {
           const value=JSON.parse(row.json)
           validateBackupRecord(name,value,header.formatVersion)
+          if (name === 'routines' && value.supersets) {
+            for (const group of value.supersets) for (const member of group) {
+              if ((await read('routineExercises', member)).routineId !== value.id) throw new Error('Invalid routine superset membership.')
+            }
+          }
           if (name === 'challengeAttempts') {
             const challenge = await read('challenges', value.challengeId)
             validateChallenge(challenge)

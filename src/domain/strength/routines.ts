@@ -4,6 +4,7 @@ export interface Routine {
   id: string
   title: string
   notes: string
+  supersets?: string[][]
   createdAt: string
   updatedAt: string
 }

@@ -109,6 +109,16 @@ export function startRoutine(id: string, database = db): Promise<string> {
     const workout = newWorkout(routine.title, routine.notes)
     const now = workout.sessions[0].startedAt
     const sources = await database.exercises.bulkGet(plan.map(row => row.exerciseId))
+    const groups = new Map<string, string>()
+    const roundRest = routine.supersets?.length ? await globalRest(database) : 0
+    for (const members of routine.supersets ?? []) {
+      const id = crypto.randomUUID()
+      workout.supersetGroups.push({
+        id, sessionActivityId: workout.sessionActivities[0].id, name: 'Superset',
+        betweenExerciseRestSeconds: 0, betweenRoundRestSeconds: roundRest, createdAt: now, updatedAt: now,
+      })
+      for (const member of members) groups.set(member, id)
+    }
     for (const [position, row] of plan.entries()) {
       const source = sources[position]
       if (!source || !matchesRoutineTracking(row, source)) {
@@ -119,15 +129,17 @@ export function startRoutine(id: string, database = db): Promise<string> {
       workout.sessionExercises.push({
         id: exerciseId, sessionActivityId: workout.sessionActivities[0].id, sourceExerciseId: source.id,
         snapshot: snapshotExercise(source), position, notes: '', restSeconds: await exerciseRest(source.id, database),
-        supersetGroupId: null, createdAt: now, updatedAt: now,
+        supersetGroupId: groups.get(row.id) ?? null, createdAt: now, updatedAt: now,
       })
       row.sets.forEach((set, index) => workout.strengthSets.push({
         ...newSet(exerciseId, source.tracking.load, index, now), setType: set.setType,
       }))
     }
+    if (groups.size) applyExerciseOrder(workout, workoutBlocks(workout).flatMap(block => block.exercises.map(row => row.id)), now)
     validateStrengthData(workout)
     await database.sessions.add(workout.sessions[0])
     await database.sessionActivities.add(workout.sessionActivities[0])
+    await database.supersetGroups.bulkAdd(workout.supersetGroups)
     await database.sessionExercises.bulkAdd(workout.sessionExercises)
     await database.strengthSets.bulkAdd(workout.strengthSets)
     return workout.sessions[0].id

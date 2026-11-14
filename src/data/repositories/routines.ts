@@ -16,18 +16,21 @@ export function routineExercises(id: string, database = db) {
   return database.routineExercises.where('[routineId+position]').between([id, 0], [id, Number.MAX_SAFE_INTEGER], true, true).toArray()
 }
 
-export function saveRoutine(input: Pick<Routine, 'title' | 'notes'> & { id?: string }, exercises: RoutineExercise[], database = db) {
+export function saveRoutine(input: Pick<Routine, 'title' | 'notes' | 'supersets'> & { id?: string }, exercises: RoutineExercise[], database = db) {
   return database.transaction('rw', database.routines, database.routineExercises, async () => {
     const current = input.id ? await database.routines.get(input.id) : undefined
     if (input.id && !current) throw new Error('Routine no longer exists.')
     if (!exercises.length) throw new Error('Add at least one exercise.')
     const now = new Date().toISOString()
     const routine = { id: current?.id ?? crypto.randomUUID(), title: input.title.trim(), notes: input.notes, createdAt: current?.createdAt ?? now, updatedAt: current && current.updatedAt > now ? current.updatedAt : now }
-    validateRoutine(routine)
+    const saved = { ...routine, ...(input.supersets?.length ? { supersets: input.supersets } : {}) }
+    validateRoutine(saved)
+    const members = new Set(exercises.map(row => row.id))
+    if (saved.supersets?.some(group => group.some(id => !members.has(id)))) throw new Error('Choose exercises from this routine.')
     const rows = exercises.map((row, position) => ({ ...row, routineId: routine.id, position }))
     rows.forEach(validateRoutineExercise)
     if (current) await database.routineExercises.bulkDelete((await routineExercises(routine.id, database)).map(row => row.id))
-    await database.routines.put(routine)
+    await database.routines.put(saved)
     await database.routineExercises.bulkAdd(rows)
     return routine.id
   })
