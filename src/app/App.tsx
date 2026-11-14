@@ -1,3 +1,4 @@
+import { useWallpaper } from './WallpaperPicker'
 import { AppearancePanel } from './AppearancePanel'
 import { ChallengeList, ChallengeBuilder, ChallengeDetail } from '../features/challenges/Challenges'
 import { FRONT_LEVER_MOVEMENTS, FRONT_LEVER_ORDER } from '../domain/calisthenics/frontLever'
@@ -105,13 +106,17 @@ export function App() {
   const blocked = safety.busy || safety.restoring || safety.applying || safety.loading
   const resumeScreen = active?.discipline === 'calisthenics' ? 'performance/calisthenics' : 'strength'
   const showResume = !!active && (view !== resumeScreen || (active.discipline === 'calisthenics' && !route.workoutId))
+  const wallpaper = useWallpaper(routeTab(view))
   return <>
     <div className="star-wars-plus-scene" aria-hidden="true">
       <div className="star-wars-plus-station" />
       <div className="star-wars-plus-fighter"><i /><i /><i /><i /><span /></div>
     </div>
     <main className={`app-content ${showResume ? 'has-resume' : ''}`}>
-      <PageHeader destination={view} cardioActivity={route.cardioActivity} />
+      <div className={wallpaper ? 'private-wallpaper-header' : undefined}>
+        {wallpaper && <img className="private-wallpaper" src={wallpaper} alt="" />}
+        <PageHeader destination={view} cardioActivity={route.cardioActivity} />
+      </div>
       {!databaseReady && <p role={storageError ? 'alert' : 'status'} className={storageError ? 'error' : 'bootstrap-status'}>{storageError || 'Opening your saved training…'}</p>}
       <div className="screen-content">
         {databaseReady && view === 'strength' && <WorkoutsPanel key="strength" mode="train" onExerciseAnalytics={openExerciseAnalytics}

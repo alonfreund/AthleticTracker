@@ -1,3 +1,4 @@
+import { WallpaperPicker } from './WallpaperPicker'
 import { useEffect, useState } from 'react'
 import { applyTheme, readTheme, saveTheme, THEMES, type Theme } from './theme'
 
@@ -24,5 +25,6 @@ export function AppearancePanel() {
       </select>
     </label>
     <p className="note">System follows your device’s Light or Dark setting.</p>
+    {theme === 'star-wars-plus' && <WallpaperPicker />}
   </section>
 }
