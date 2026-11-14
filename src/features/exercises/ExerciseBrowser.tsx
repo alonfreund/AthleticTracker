@@ -31,8 +31,7 @@ export function ExerciseBrowser({
 }: Props) {
   const id = useId()
   const search = useRef<HTMLInputElement>(null)
-  const resultList = useRef<HTMLUListElement>(null)
-  const [searchFocused, setSearchFocused] = useState(false)
+  const selectOnFirstTap = useRef(false)
   const [browse, setBrowse] = useState<ExerciseBrowseData>()
   const [browseError, setBrowseError] = useState(false)
   useEffect(() => {
@@ -78,17 +77,19 @@ export function ExerciseBrowser({
   return <>
     <label htmlFor={id + '-search'}>{picker ? 'Find exercise' : 'Search exercises'}</label>
     <input ref={search} id={id + '-search'} type="search" placeholder="Name, muscle or equipment"
-      value={searchFocused ? filters.query ?? '' : ''}
-      onFocus={() => {
-        setSearchFocused(true)
-        if (filters.query) update({ query: '' })
+      value={filters.query ?? ''}
+      onFocus={event => {
+        selectOnFirstTap.current = !!event.currentTarget.value
+        event.currentTarget.select()
       }}
-      onBlur={event => {
-        setSearchFocused(false)
-        if (filters.query && !resultList.current?.contains(event.relatedTarget)) update({ query: '' })
+      onClick={event => {
+        // A touch can place the caret after focus has selected the query.
+        if (selectOnFirstTap.current) event.currentTarget.select()
+        selectOnFirstTap.current = false
       }}
       onChange={event => update({ query: event.target.value })}
       onKeyDown={event => {
+        selectOnFirstTap.current = false
         if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
           event.preventDefault()
           event.currentTarget.blur()
@@ -137,18 +138,8 @@ export function ExerciseBrowser({
     {browseError && <p role="alert">Could not load favourites or recently used exercises.</p>}
     <p role="status" aria-atomic="true">{waiting ? 'Loading exercises…' : `${results.length} matching exercise${results.length === 1 ? '' : 's'}`}</p>
     {!waiting && results.length === 0 && <p>Try a different search or clear your filters.</p>}
-    {!waiting && <ul ref={resultList} className="exercise-list" onBlur={event => {
-      if (filters.query && !event.currentTarget.contains(event.relatedTarget) && event.relatedTarget !== search.current) update({ query: '' })
-    }}>{results.map(exercise => <li key={exercise.id}>
-      <button type="button" className="exercise-row" disabled={disabled}
-        onPointerDown={event => {
-          // Keep the filtered row in place until the tap selects it.
-          if (document.activeElement === search.current && event.button === 0) event.preventDefault()
-        }}
-        onClick={() => {
-          if (filters.query) update({ query: '' })
-          onSelect(exercise)
-        }}>
+    {!waiting && <ul className="exercise-list">{results.map(exercise => <li key={exercise.id}>
+      <button type="button" className="exercise-row" disabled={disabled} onClick={() => onSelect(exercise)}>
         <span className="exercise-row-top">
           <strong>{exerciseDisplayName(exercise)}</strong>
           {!picker && <span className="badge">{exercise.origin === 'custom' ? 'Custom' : 'Built-in'}</span>}
