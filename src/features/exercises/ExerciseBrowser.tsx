@@ -70,9 +70,9 @@ export function ExerciseBrowser({
     return [field.options.find(([key]) => key === value)?.[1] ?? value]
   })
   if (filters.favouritesOnly) activeFilters.push('Favourites only')
-  const needsBrowseData = filters.favouritesOnly || filters.sort === 'recent' || filters.sort === 'favourites'
+  const needsBrowseData = (picker && !!filters.query?.trim()) || filters.favouritesOnly || filters.sort === 'recent' || filters.sort === 'favourites'
   const waiting = loading || (needsBrowseData && !browse && !browseError)
-  const results = useMemo(() => filterExercises(exercises, filters, browse), [exercises, filters, browse])
+  const results = useMemo(() => filterExercises(exercises, filters, browse, { prioritizeUsed: picker }), [exercises, filters, browse, picker])
   const update = (change: ExerciseFilters) => onFiltersChange({ ...filters, ...change })
 
   return <>

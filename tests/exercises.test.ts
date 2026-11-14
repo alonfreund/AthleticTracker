@@ -153,5 +153,10 @@ it('sorts by logged use and saved favourites without counting cancelled workouts
   expect(filterExercises(rows, { sort: 'favourites' }, browse)).toEqual([deadlift, squat, bench])
   expect(filterExercises(rows, { sort: 'az' }, browse)).toEqual([squat, bench, deadlift])
   expect(filterExercises(rows, { sort: 'za' }, browse)).toEqual([deadlift, bench, squat])
+  const pickerSearch = { query: 'barbell', sort: 'za' } as const
+  expect(filterExercises(rows, pickerSearch, browse, { prioritizeUsed: true })).toEqual([bench, squat, deadlift])
+  expect(filterExercises(rows, pickerSearch, browse)).toEqual([deadlift, bench, squat])
+  expect(filterExercises(rows, { ...pickerSearch, sort: 'favourites' }, browse, { prioritizeUsed: true })).toEqual([squat, bench, deadlift])
+  expect(filterExercises(rows, { sort: 'za' }, browse, { prioritizeUsed: true })).toEqual([deadlift, bench, squat])
   expect((await createBackup(db)).data).toEqual(before)
 })

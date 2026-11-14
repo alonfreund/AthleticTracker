@@ -42,7 +42,7 @@ const normalize = (value: string) => value.normalize('NFKD').replace(/\p{Diacrit
 export async function initializeExerciseLibrary(database: AthleticDatabase = db) {
   return installCatalogue(undefined, database)
 }
-export function filterExercises(exercises: Exercise[], filters: ExerciseFilters, browse = emptyBrowseData): Exercise[] {
+export function filterExercises(exercises: Exercise[], filters: ExerciseFilters, browse = emptyBrowseData, { prioritizeUsed = false } = {}): Exercise[] {
   const tokens = normalize(filters.query ?? '').split(/\s+/).filter(Boolean)
   return exercises.filter(exercise => {
     if (exercise.archived || (filters.origin && filters.origin !== 'all' && exercise.origin !== filters.origin)) return false
@@ -59,6 +59,10 @@ export function filterExercises(exercises: Exercise[], filters: ExerciseFilters,
     ].join(' '))
     return tokens.every(token => haystack.includes(token))
   }).sort((a, b) => {
+    if (prioritizeUsed && tokens.length) {
+      const priority = Number(browse.lastUsed.has(b.id)) - Number(browse.lastUsed.has(a.id))
+      if (priority) return priority
+    }
     if (filters.sort === 'recent') {
       const first = browse.lastUsed.get(a.id) ?? -Infinity
       const second = browse.lastUsed.get(b.id) ?? -Infinity
