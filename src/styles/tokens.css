@@ -33,7 +33,8 @@
 }
 /* Dark palette for explicit Dark mode and the system setting. */
 :root[data-theme='dark'],
-:root[data-theme='dusk'] {
+:root[data-theme='dusk'],
+:root[data-theme='star-wars'] {
   color-scheme: dark;
   --color-bg: #10161d;
   --color-surface: #18212b;
@@ -63,7 +64,8 @@
   --set-back-off-bg: #f3e8ff; --set-back-off-text: #6b21a8;
 }
 :root[data-theme='dark'],
-:root[data-theme='dusk'] {
+:root[data-theme='dusk'],
+:root[data-theme='star-wars'] {
   --set-warm-up-bg: #422f0b; --set-warm-up-text: #fde68a;
   --set-failure-bg: #451b1b; --set-failure-text: #fca5a5;
   --set-drop-set-bg: #10334b; --set-drop-set-text: #bae6fd;
@@ -77,7 +79,8 @@
   --superset-text: #3730a3;
 }
 :root[data-theme='dark'],
-:root[data-theme='dusk'] {
+:root[data-theme='dusk'],
+:root[data-theme='star-wars'] {
   --superset-bg: #202447;
   --superset-border: #a5b4fc;
   --superset-text: #c7d2fe;
@@ -121,4 +124,18 @@
   --color-accent-hover: #e4d1ff;
   --color-accent-soft: #423254;
   --color-on-accent: #2a173e;
+}
+
+:root[data-theme='star-wars'] {
+  --color-bg: #080d1a;
+  --color-surface: #121b2b;
+  --color-surface-soft: #1b2940;
+  --color-text: #f3f5ff;
+  --color-muted: #b4c1d9;
+  --color-border: #344565;
+  --color-input-border: #8193af;
+  --color-accent: #ffd36a;
+  --color-accent-hover: #ffe39e;
+  --color-accent-soft: #3e3020;
+  --color-on-accent: #231905;
 }

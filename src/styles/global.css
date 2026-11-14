@@ -509,3 +509,23 @@ input[type=file]::file-selector-button { font: inherit; min-height: 44px; backgr
 .workout-recap-dialog { width: min(34rem, calc(100% - 2rem)); max-height: 85dvh; padding: 0; border: 0; border-radius: var(--radius-card); background: var(--color-surface); color: var(--color-text); }
 .workout-recap-dialog::backdrop { background: rgb(0 0 0 / 55%); }
 .workout-recap-dialog .workout-recap { margin: 0; }
+
+:root[data-theme='star-wars'] body {
+  min-height: 100dvh;
+  background-image:
+    radial-gradient(circle at 17px 23px, #d7e6ff9c 0 1px, transparent 1.6px),
+    radial-gradient(circle at 61px 74px, #fff1c8a6 0 1px, transparent 1.7px),
+    radial-gradient(circle at 103px 37px, #93b8ff7d 0 .7px, transparent 1.5px),
+    radial-gradient(ellipse 75% 320px at 86% 0%, #26395e, transparent),
+    linear-gradient(170deg, #101b33, transparent 440px);
+  background-size: 139px 127px, 193px 179px, 241px 223px, 100% 480px, 100% 480px;
+  background-repeat: repeat, repeat, repeat, no-repeat, no-repeat;
+}
+:root[data-theme='star-wars'] .page-header h1 {
+  color: var(--color-accent);
+  letter-spacing: .045em;
+  text-shadow: 0 0 18px #ffd36a40;
+}
+:root[data-theme='star-wars'] .training-hero {
+  background: linear-gradient(145deg, #1a2740, var(--color-surface) 70%);
+}
