@@ -1,4 +1,4 @@
-import { routineDraftFromWorkout } from '../../domain/strength/routines'
+import { duplicateRoutineDraft, routineDraftFromWorkout } from '../../domain/strength/routines'
 import { db } from '../../data/db/database'
 import { WorkoutRecap } from './WorkoutRecap'
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
@@ -163,6 +163,10 @@ export function WorkoutsPanel({ mode = 'train', discipline = 'strength', initial
         <div className="actions">
           <Button disabled={busy || applying || !!active} aria-label={`Start routine: ${routine.title}`} onClick={() => void open(undefined, routine.id)}>Start routine</Button>
           <Button variant="quiet" disabled={busy || applying} aria-label={`Edit routine: ${routine.title}`} onClick={() => { setError(''); setEditing(routine) }}>Edit</Button>
+          <Button variant="quiet" disabled={busy || applying} aria-label={`Duplicate routine: ${routine.title}`} onClick={() => {
+            setError('')
+            setEditing(duplicateRoutineDraft(routine))
+          }}>Duplicate</Button>
           <Button variant="quiet" disabled={busy || applying} aria-label={`Delete routine: ${routine.title}`} onClick={() => setDeleting(routine.id)}>Delete</Button>
         </div>
         {deleting === routine.id && <div>

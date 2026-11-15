@@ -39,6 +39,19 @@ export function targetText(target: StrengthTarget) {
   ].filter(Boolean).join(' · ')
 }
 
+export function duplicateRoutineDraft(routine: Routine & { exercises: RoutineExercise[] }) {
+  const rowIds = new Map(routine.exercises.map(row => [row.id, crypto.randomUUID()]))
+  const exercises = routine.exercises.map(row => ({
+    ...row,
+    id: rowIds.get(row.id)!,
+    routineId: '',
+    tracking: { ...row.tracking },
+    sets: row.sets.map(({ setType }) => ({ setType, target: null })),
+  }))
+  const supersets = (routine.supersets ?? []).map(group => group.map(id => rowIds.get(id)!))
+  return { title: `Copy of ${routine.title}`.slice(0, 200), notes: routine.notes, exercises, supersets }
+}
+
 export function routineDraftFromWorkout(workout: StrengthData) {
   const session = workout.sessions[0]
   const exercises: RoutineExercise[] = []
