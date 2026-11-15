@@ -1,3 +1,4 @@
+import { routineDraftFromWorkout } from '../../domain/strength/routines'
 import { db } from '../../data/db/database'
 import { WorkoutRecap } from './WorkoutRecap'
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
@@ -23,7 +24,7 @@ export function WorkoutsPanel({ mode = 'train', discipline = 'strength', initial
   const [selected, setSelected] = useState<Workout>()
   const [showRecap, setShowRecap] = useState(false)
   const [routines, setRoutines] = useState<SavedRoutine[]>([])
-  const [editing, setEditing] = useState<SavedRoutine | null>()
+  const [editing, setEditing] = useState<SavedRoutine | ReturnType<typeof routineDraftFromWorkout> | null>()
   const [deleting, setDeleting] = useState<string>()
   const [editingHistory, setEditingHistory] = useState(false)
   const [historyDirty, setHistoryDirty] = useState(false)
@@ -36,10 +37,10 @@ export function WorkoutsPanel({ mode = 'train', discipline = 'strength', initial
   const { applying } = useSyncExternalStore(updateSafety.subscribe, updateSafety.getSnapshot)
   useLayoutEffect(() => { if (!selected || selected.sessions[0].status !== 'active') updateSafety.setSafety({ dirty: routineDirty || historyDirty, busy, restoring: false, loading }) }, [selected, busy, loading, routineDirty, historyDirty])
   useEffect(() => {
-    const guard = (event: BeforeUnloadEvent) => { if (historyDirty || (selected && selected.sessions[0].status !== 'active' && lock.current)) event.preventDefault() }
+    const guard = (event: BeforeUnloadEvent) => { if (routineDirty || historyDirty || (selected && selected.sessions[0].status !== 'active' && lock.current)) event.preventDefault() }
     window.addEventListener('beforeunload', guard)
     return () => window.removeEventListener('beforeunload', guard)
-  }, [historyDirty, selected])
+  }, [routineDirty, historyDirty, selected])
   async function refresh() { setSessions(await listWorkouts(db, discipline)) }
   useEffect(() => {
     let active = true
@@ -76,9 +77,9 @@ export function WorkoutsPanel({ mode = 'train', discipline = 'strength', initial
       onCancel={() => { if (!routineDirty || window.confirm('Discard your unsaved routine changes?')) closeEditor() }}
       onSave={(input, exercises) => void perform(async () => {
         await saveRoutine(input, exercises)
-        const updated = await listRoutines()
-        setRoutines(updated)
         closeEditor()
+        if (selected) setHistoryMessage('Routine saved on this device.')
+        setRoutines(await listRoutines())
       }, 'Could not save routine.')} />
     {busy && <p role="status">Saving routine…</p>}{error && <p role="alert" className="error">{error}</p>}
   </>
@@ -94,7 +95,13 @@ export function WorkoutsPanel({ mode = 'train', discipline = 'strength', initial
       setSelected(workout)
       setShowRecap(true)
     }} />
-    if (showRecap) return <WorkoutRecap modal workout={selected} disabled={busy || applying} saveError={error}
+    const saveAsRoutine = !calisthenics && session.status === 'finished' && selected.sessionExercises.length ? () => {
+      setError('')
+      setHistoryMessage('')
+      setEditing(routineDraftFromWorkout(selected))
+      setRoutineDirty(true)
+    } : undefined
+    if (showRecap) return <WorkoutRecap modal workout={selected} onSaveAsRoutine={saveAsRoutine} message={historyMessage} disabled={busy || applying} saveError={error}
       onDirty={dirty => { setHistoryDirty(dirty); updateSafety.setSafety({ ...updateSafety.getSnapshot(), dirty }) }} onSaveDuration={durationSeconds => perform(async () => {
         setSelected(await editFinishedWorkout(selected, { ...session, durationSeconds, sets: [], removedSetIds: [] }))
         setHistoryDirty(false)
@@ -110,6 +117,7 @@ export function WorkoutsPanel({ mode = 'train', discipline = 'strength', initial
       }, 'Could not save workout changes.')} />
     return <WorkoutHistory workout={selected} onBack={onReturnToAnalytics ?? back} backLabel={onReturnToAnalytics ? 'Back to Analytics' : mode === 'history' ? 'Back to history' : `Back to ${disciplineName}`}
       disabled={disabled} onExerciseAnalytics={onExerciseAnalytics} message={historyMessage} error={error}
+      onSaveAsRoutine={saveAsRoutine}
       onEdit={session.status === 'finished' ? () => { setError(''); setEditingHistory(true) } : undefined}
       onDelete={() => {
         if (!window.confirm(`Delete “${session.title}” from ${new Date(session.startedAt).toLocaleString()}? This permanently removes the workout and its sets from this device.`)) return

@@ -16,7 +16,7 @@ function setDraft(setType: StrengthSet['setType'] = 'normal'): SetDraft {
 }
 
 export function RoutineEditor({ routine, library, disabled, onDirty, onSave, onCancel }: {
-  routine: SavedRoutine | null; library: Exercise[]; disabled: boolean
+  routine: (Omit<SavedRoutine, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }) | null; library: Exercise[]; disabled: boolean
   onDirty: () => void
   onSave: (input: Pick<Routine, 'title' | 'notes' | 'supersets'> & { id?: string }, exercises: RoutineExercise[]) => void
   onCancel: () => void
@@ -69,7 +69,7 @@ export function RoutineEditor({ routine, library, disabled, onDirty, onSave, onC
   }
 
   return <section aria-label="Routine editor">
-    <h2>{routine ? 'Edit routine' : 'New routine'}</h2>
+    <h2>{routine?.id ? 'Edit routine' : 'New routine'}</h2>
     <div className="form-fields">
       <label>Routine name<input autoFocus required maxLength={200} value={title} disabled={disabled} onChange={event => { onDirty(); setTitle(event.target.value) }} /></label>
       <label>Workout notes (optional)<textarea maxLength={10000} value={notes} disabled={disabled} onChange={event => { onDirty(); setNotes(event.target.value) }} /></label>

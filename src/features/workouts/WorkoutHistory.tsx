@@ -13,10 +13,10 @@ export function durationText(session: Session) {
   const minutes = Math.floor(workoutElapsedMs(session) / 60000)
   return minutes >= 60 ? `${Math.floor(minutes / 60)} h ${minutes % 60} min` : `${minutes} min`
 }
-export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Strength', disabled, message, error, onEdit, onDelete, onExerciseAnalytics }: {
+export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Strength', disabled, message, error, onEdit, onDelete, onExerciseAnalytics, onSaveAsRoutine }: {
   workout: Workout; onBack: () => void; backLabel?: string; disabled?: boolean; message?: string; error?: string
   onExerciseAnalytics?: (exercise: Exercise) => void
-  onEdit?: () => void; onDelete?: () => void
+  onEdit?: () => void; onDelete?: () => void; onSaveAsRoutine?: () => void
 }) {
   const session = workout.sessions[0]
   const heading = useRef<HTMLHeadingElement>(null)
@@ -45,8 +45,9 @@ export function WorkoutHistory({ workout, onBack, backLabel = 'Back to Strength'
     {session.notes && <p className="multiline">{session.notes}</p>}
     {message && <p role="status">{message}</p>}
     {error && <p role="alert" className="error">{error}</p>}
-    {((session.status === 'finished' && onEdit) || onDelete) && <div className="actions">
+    {((session.status === 'finished' && (onEdit || onSaveAsRoutine)) || onDelete) && <div className="actions">
       {session.status === 'finished' && onEdit && <Button variant="secondary" disabled={disabled} onClick={onEdit}>Edit workout</Button>}
+      {session.status === 'finished' && onSaveAsRoutine && <Button variant="secondary" disabled={disabled} onClick={onSaveAsRoutine}>Save as routine</Button>}
       {onDelete && <Button variant="danger" disabled={disabled} onClick={onDelete}>Delete workout</Button>}
     </div>}
     {blocks.map(block => {

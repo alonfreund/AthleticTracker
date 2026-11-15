@@ -10,7 +10,7 @@ import { deleteRoutine, listRoutines, saveRoutine } from '../src/data/repositori
 import { finishWorkout, loadWorkout, saveInlineSet, startRoutine, startWorkout, timerSeconds } from '../src/data/repositories/workouts'
 import { STARTER_EXERCISES } from '../src/domain/strength/catalog'
 import { inputFromSet } from '../src/domain/strength/logging'
-import type { RoutineExercise } from '../src/domain/strength/routines'
+import { routineDraftFromWorkout, type RoutineExercise } from '../src/domain/strength/routines'
 import previous from './fixtures/backup-v3-rest-0.7.0.json'
 
 const databases: AthleticDatabase[] = []
@@ -184,4 +184,27 @@ it('restores routine supersets and creates an independent workout group', async 
   await saveRoutine({ ...input, supersets: [] }, exercises, target)
   expect((await listRoutines(target))[0].supersets).toBeUndefined()
   expect(await loadWorkout(workoutId, target)).toEqual(workout)
+})
+
+it('copies a finished workout into a new routine with blank measurements and fresh superset members', async () => {
+  const { db, id, exercises } = await setup()
+  await saveRoutine({ id, title: 'Strength A', notes: 'Original notes', supersets: [exercises.map(row => row.id)] }, exercises, db)
+  const workoutId = await startRoutine(id, db)
+  const active = await loadWorkout(workoutId, db)
+  const set = active.strengthSets.find(row => row.setType === 'warm-up')!
+  const input = inputFromSet(set)
+  input.values.weight = '10'
+  input.values.reps = '8'
+  await saveInlineSet(workoutId, set.id, input, true, db)
+  const finished = await finishWorkout(workoutId, true, db)
+  const draft = routineDraftFromWorkout(finished)
+  expect(draft.exercises.map(row => row.exerciseId)).toEqual(exercises.map(row => row.exerciseId))
+  expect(draft.exercises[0].sets).toEqual([{ setType: 'warm-up', target: null }, { setType: 'normal', target: null }])
+  expect(draft.supersets).toEqual([draft.exercises.map(row => row.id)])
+  expect(draft.exercises.every(row => !finished.sessionExercises.some(exercise => exercise.id === row.id))).toBe(true)
+  const copiedId = await saveRoutine(draft, draft.exercises, db)
+  const copy = await loadWorkout(await startRoutine(copiedId, db), db)
+  expect(copy.supersetGroups).toHaveLength(1)
+  expect(copy.strengthSets.every(row => !row.completed && row.reps === null && row.target === null)).toBe(true)
+  expect(await loadWorkout(workoutId, db)).toEqual(finished)
 })

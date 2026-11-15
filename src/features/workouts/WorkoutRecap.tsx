@@ -10,10 +10,12 @@ import type { WorkoutRecapRecord } from '../../domain/strength/workoutRecap'
 import type { WeightUnit } from '../../domain/strength/models'
 import { metricLabel, metricValueText } from '../analytics/metricText'
 
-export function WorkoutRecap({ workout, onDone, onView, modal = false, disabled, saveError, onDirty, onSaveDuration }: {
+export function WorkoutRecap({ workout, onDone, onView, modal = false, disabled, saveError, onDirty, onSaveDuration, onSaveAsRoutine, message }: {
   workout: Workout
   onDone: () => void
   onView: () => void
+  onSaveAsRoutine?: () => void
+  message?: string
   modal?: boolean
   disabled?: boolean
   saveError?: string
@@ -88,7 +90,9 @@ export function WorkoutRecap({ workout, onDone, onView, modal = false, disabled,
     <div className="actions">
       <Button disabled={disabled} onClick={() => dismiss(onDone)}>Done</Button>
       <Button variant="secondary" disabled={disabled} onClick={() => dismiss(onView)}>View workout</Button>
+      {onSaveAsRoutine && <Button variant="secondary" disabled={disabled} onClick={() => dismiss(onSaveAsRoutine)}>Save as routine</Button>}
     </div>
+    {message && <p role="status">{message}</p>}
     <h3 className="recap-record-heading">Personal records</h3>
     {!records && !error && <p role="status" className="note">Checking for personal records…</p>}
     {error && <p role="status" className="note">Personal records couldn’t be loaded. Your workout is saved.</p>}

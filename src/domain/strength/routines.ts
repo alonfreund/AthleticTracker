@@ -1,4 +1,5 @@
-import type { Exercise, StrengthSet, StrengthTarget, Tracking } from './models'
+import { workoutBlocks } from './supersets'
+import type { Exercise, StrengthData, StrengthSet, StrengthTarget, Tracking } from './models'
 
 export interface Routine {
   id: string
@@ -36,4 +37,25 @@ export function targetText(target: StrengthTarget) {
     target.rpe && `RPE ${range(target.rpe)}`,
     target.rir && `RIR ${range(target.rir)}`,
   ].filter(Boolean).join(' · ')
+}
+
+export function routineDraftFromWorkout(workout: StrengthData) {
+  const session = workout.sessions[0]
+  const exercises: RoutineExercise[] = []
+  const supersets: string[][] = []
+  for (const block of workoutBlocks(workout)) {
+    const members = block.exercises.map(exercise => {
+      const sets = workout.strengthSets.filter(set => set.sessionExerciseId === exercise.id)
+        .sort((a, b) => a.position - b.position).map(set => ({ setType: set.setType, target: null }))
+      const row: RoutineExercise = {
+        id: crypto.randomUUID(), routineId: '', position: exercises.length,
+        exerciseId: exercise.sourceExerciseId ?? exercise.snapshot.id, tracking: exercise.snapshot.tracking,
+        sets: sets.length ? sets : [{ setType: 'normal', target: null }],
+      }
+      exercises.push(row)
+      return row.id
+    })
+    if (block.group && members.length >= 2) supersets.push(members)
+  }
+  return { title: session.title, notes: '', exercises, supersets }
 }
