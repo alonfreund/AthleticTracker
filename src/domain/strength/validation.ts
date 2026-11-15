@@ -290,9 +290,11 @@ export function validateCatalogueStates(value: unknown): void {
 }
 
 export function validateRoutine(value: unknown): asserts value is Routine {
-  const row = entity(value, ['title', 'notes', ...(Object.hasOwn(object(value), 'supersets') ? ['supersets'] : [])])
+  const optional = ['pinned', 'supersets'].filter(field => Object.hasOwn(object(value), field))
+  const row = entity(value, ['title', 'notes', ...optional])
   text(row.title, 200, true)
   text(row.notes)
+  if (Object.hasOwn(row, 'pinned')) bool(row.pinned)
   if (Object.hasOwn(row, 'supersets')) {
     if (!Array.isArray(row.supersets)) fail('invalid routine supersets.')
     const seen = new Set<string>()

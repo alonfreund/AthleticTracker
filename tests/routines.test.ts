@@ -6,7 +6,7 @@ import { exportBackupFile, restoreStagedBackup, stageImport, stageSnapshot } fro
 import { AthleticDatabase, verifyLocalStorage } from '../src/data/db/database'
 import { initializeExerciseLibrary } from '../src/data/repositories/exercises'
 import { saveGlobalRest } from '../src/data/repositories/preferences'
-import { deleteRoutine, listRoutines, saveRoutine } from '../src/data/repositories/routines'
+import { deleteRoutine, listRoutines, saveRoutine, setRoutinePinned } from '../src/data/repositories/routines'
 import { finishWorkout, loadWorkout, saveInlineSet, startRoutine, startWorkout, timerSeconds } from '../src/data/repositories/workouts'
 import { STARTER_EXERCISES } from '../src/domain/strength/catalog'
 import { inputFromSet } from '../src/domain/strength/logging'
@@ -186,14 +186,54 @@ it('restores routine supersets and creates an independent workout group', async 
   expect(await loadWorkout(workoutId, target)).toEqual(workout)
 })
 
-it('duplicates an ordered routine with independent exercise rows and superset membership', async () => {
+it('keeps pins through editing, reopening and backup restore while sorting both groups alphabetically', async () => {
+  const { db, id, exercises } = await setup()
+  const addRoutine = (title: string) => saveRoutine({ title, notes: '' }, exercises.map(row => ({
+    ...row, id: crypto.randomUUID(),
+  })), db)
+  const upper = await addRoutine('Upper')
+  await addRoutine('Full body')
+  await addRoutine('Lower')
+  await setRoutinePinned(upper, true, db)
+  await setRoutinePinned(id, true, db)
+  await saveRoutine({ id, title: 'Strength B', notes: '' }, exercises, db)
+
+  db.close()
+  const reopened = database(db.name)
+  const saved = await listRoutines(reopened)
+  expect(saved.map(row => [row.title, !!row.pinned])).toEqual([
+    ['Strength B', true], ['Upper', true], ['Full body', false], ['Lower', false],
+  ])
+  const target = database()
+  await verifyLocalStorage(target)
+  const exported = await exportBackupFile(reopened)
+  const incoming = await stageImport(exported.blob, target)
+  await restoreStagedBackup(incoming, await stageSnapshot(target), target)
+  expect(await listRoutines(target)).toEqual(saved)
+
+  await setRoutinePinned(id, false, target)
+  const unpinned = await listRoutines(target)
+  expect(unpinned.map(row => row.title)).toEqual(['Upper', 'Full body', 'Lower', 'Strength B'])
+  expect(unpinned[3]).not.toHaveProperty('pinned')
+
+  const malformed = await createBackup(target)
+  const pinned = malformed.data.routines.find(row => row.id === upper)!
+  Object.assign(pinned, { pinned: 'true' })
+  expect(() => validateBackup(malformed)).toThrow('invalid boolean')
+  await expect(stageImport(new Blob([JSON.stringify(malformed)]), target)).rejects.toThrow('invalid boolean')
+  expect(await listRoutines(target)).toEqual(unpinned)
+})
+
+it('duplicates a pinned, ordered routine without its pin and with independent superset membership', async () => {
   const { db, id, exercises } = await setup()
   const ordered = [...exercises].reverse()
   await saveRoutine({ id, title: 'Strength A', notes: 'Brace first', supersets: [ordered.map(row => row.id)] }, ordered, db)
+  await setRoutinePinned(id, true, db)
   const [original] = await listRoutines(db)
   const draft = duplicateRoutineDraft(original)
   expect(draft).toMatchObject({ title: 'Copy of Strength A', notes: 'Brace first' })
   expect(draft).not.toHaveProperty('id')
+  expect(draft).not.toHaveProperty('pinned')
   expect(await listRoutines(db)).toEqual([original])
   expect(draft.exercises.map(row => row.exerciseId)).toEqual(ordered.map(row => row.exerciseId))
   expect(draft.exercises.map(row => row.sets.map(set => set.setType))).toEqual(ordered.map(row => row.sets.map(set => set.setType)))
@@ -209,6 +249,7 @@ it('duplicates an ordered routine with independent exercise rows and superset me
   expect(routines.find(row => row.id === id)).toEqual(original)
   const copy = routines.find(row => row.id === copyId)!
   expect(copy.title).toBe('Strength B')
+  expect(copy).not.toHaveProperty('pinned')
   expect(copy.exercises[0].sets[0].setType).toBe('drop-set')
   expect(copy.supersets).toEqual(draft.supersets)
   const workout = await loadWorkout(await startRoutine(copyId, reopened), reopened)

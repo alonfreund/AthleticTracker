@@ -6,7 +6,7 @@ export function listRoutines(database = db) {
   return database.transaction('r', database.routines, database.routineExercises, async () => {
     const routines = await database.routines.toArray()
     const rows = await database.routineExercises.toArray()
-    return routines.sort((a, b) => a.title.localeCompare(b.title)).map(routine => ({
+    return routines.sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned) || a.title.localeCompare(b.title)).map(routine => ({
       ...routine, exercises: rows.filter(row => row.routineId === routine.id).sort((a, b) => a.position - b.position),
     }))
   })
@@ -23,7 +23,7 @@ export function saveRoutine(input: Pick<Routine, 'title' | 'notes' | 'supersets'
     if (!exercises.length) throw new Error('Add at least one exercise.')
     const now = new Date().toISOString()
     const routine = { id: current?.id ?? crypto.randomUUID(), title: input.title.trim(), notes: input.notes, createdAt: current?.createdAt ?? now, updatedAt: current && current.updatedAt > now ? current.updatedAt : now }
-    const saved = { ...routine, ...(input.supersets?.length ? { supersets: input.supersets } : {}) }
+    const saved = { ...routine, ...(current?.pinned ? { pinned: true } : {}), ...(input.supersets?.length ? { supersets: input.supersets } : {}) }
     validateRoutine(saved)
     const members = new Set(exercises.map(row => row.id))
     if (saved.supersets?.some(group => group.some(id => !members.has(id)))) throw new Error('Choose exercises from this routine.')
@@ -34,6 +34,11 @@ export function saveRoutine(input: Pick<Routine, 'title' | 'notes' | 'supersets'
     await database.routineExercises.bulkAdd(rows)
     return routine.id
   })
+}
+
+export async function setRoutinePinned(id: string, pinned: boolean, database = db) {
+  const updated = await database.routines.update(id, { pinned: pinned ? true : undefined })
+  if (!updated) throw new Error('Routine no longer exists.')
 }
 
 export function deleteRoutine(id: string, database = db) {

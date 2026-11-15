@@ -6,7 +6,7 @@ import { updateSafety } from '../../app/updateSafety'
 import { initializeExerciseLibrary, listExercises } from '../../data/repositories/exercises'
 import { deleteCancelledWorkout, deleteFinishedWorkout, editFinishedWorkout, startWorkout, startRoutine, listWorkouts, loadWorkout, type Workout } from '../../data/repositories/workouts'
 import { supportsCalisthenics, type Exercise, type MovementDiscipline, type Session } from '../../domain/strength/models'
-import { deleteRoutine, listRoutines, saveRoutine } from '../../data/repositories/routines'
+import { deleteRoutine, listRoutines, saveRoutine, setRoutinePinned } from '../../data/repositories/routines'
 import { RoutineEditor, type SavedRoutine } from './RoutineEditor'
 import { Button } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
@@ -159,7 +159,7 @@ export function WorkoutsPanel({ mode = 'train', discipline = 'strength', initial
       {!routines.length && <p className="note">Save your exercises and sets to use them again.</p>}
       <ul className="exercise-list">{routines.map(routine => <li className="routine-card" key={routine.id}>
         <h3>{routine.title}</h3>
-        <p className="note">{routine.exercises.length} {routine.exercises.length === 1 ? 'exercise' : 'exercises'}</p>
+        <p className="note">{routine.exercises.length} {routine.exercises.length === 1 ? 'exercise' : 'exercises'}{routine.pinned ? ' · Pinned' : ''}</p>
         <div className="actions">
           <Button disabled={busy || applying || !!active} aria-label={`Start routine: ${routine.title}`} onClick={() => void open(undefined, routine.id)}>Start routine</Button>
           <Button variant="quiet" disabled={busy || applying} aria-label={`Edit routine: ${routine.title}`} onClick={() => { setError(''); setEditing(routine) }}>Edit</Button>
@@ -167,6 +167,11 @@ export function WorkoutsPanel({ mode = 'train', discipline = 'strength', initial
             setError('')
             setEditing(duplicateRoutineDraft(routine))
           }}>Duplicate</Button>
+          <Button variant="quiet" disabled={busy || applying} aria-label={`${routine.pinned ? 'Unpin' : 'Pin'} routine: ${routine.title}`}
+            onClick={() => void perform(async () => {
+              await setRoutinePinned(routine.id, !routine.pinned)
+              setRoutines(await listRoutines())
+            }, 'Could not change the routine pin.')}>{routine.pinned ? 'Unpin' : 'Pin'}</Button>
           <Button variant="quiet" disabled={busy || applying} aria-label={`Delete routine: ${routine.title}`} onClick={() => setDeleting(routine.id)}>Delete</Button>
         </div>
         {deleting === routine.id && <div>

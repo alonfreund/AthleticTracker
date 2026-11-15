@@ -5,6 +5,7 @@ export interface Routine {
   id: string
   title: string
   notes: string
+  pinned?: boolean
   supersets?: string[][]
   createdAt: string
   updatedAt: string
