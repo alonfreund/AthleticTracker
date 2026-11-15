@@ -94,7 +94,11 @@ export function WorkoutsPanel({ mode = 'train', discipline = 'strength', initial
       setSelected(workout)
       setShowRecap(true)
     }} />
-    if (showRecap) return <WorkoutRecap modal workout={selected} onDone={back} onView={() => {
+    if (showRecap) return <WorkoutRecap modal workout={selected} disabled={busy || applying} saveError={error}
+      onDirty={dirty => { setHistoryDirty(dirty); updateSafety.setSafety({ ...updateSafety.getSnapshot(), dirty }) }} onSaveDuration={durationSeconds => perform(async () => {
+        setSelected(await editFinishedWorkout(selected, { ...session, durationSeconds, sets: [], removedSetIds: [] }))
+        setHistoryDirty(false)
+      }, 'Could not save workout duration.')} onDone={back} onView={() => {
       if (onNavigateHistory) onNavigateHistory(session.id)
       else setShowRecap(false)
     }} />

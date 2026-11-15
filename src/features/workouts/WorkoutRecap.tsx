@@ -9,13 +9,16 @@ import { exerciseDisplayName } from '../../domain/strength/exerciseDisplayName'
 import type { WorkoutRecapRecord } from '../../domain/strength/workoutRecap'
 import type { WeightUnit } from '../../domain/strength/models'
 import { metricLabel, metricValueText } from '../analytics/metricText'
-import { durationText } from './WorkoutHistory'
 
-export function WorkoutRecap({ workout, onDone, onView, modal = false }: {
+export function WorkoutRecap({ workout, onDone, onView, modal = false, disabled, saveError, onDirty, onSaveDuration }: {
   workout: Workout
   onDone: () => void
   onView: () => void
   modal?: boolean
+  disabled?: boolean
+  saveError?: string
+  onDirty?: (dirty: boolean) => void
+  onSaveDuration?: (seconds: number) => Promise<boolean | undefined>
 }) {
   const session = workout.sessions[0]
   const [records, setRecords] = useState<WorkoutRecapRecord[]>()
@@ -23,7 +26,16 @@ export function WorkoutRecap({ workout, onDone, onView, modal = false }: {
   const [unit, setUnit] = useState<WeightUnit>('kg')
   const heading = useRef<HTMLHeadingElement>(null)
   const dialog = useRef<HTMLDialogElement>(null)
-  const elapsed = workoutElapsedMs(session)
+  const elapsed = Math.floor(workoutElapsedMs(session) / 1000)
+  const [draft, setDraft] = useState<{ minutes: string; seconds: string }>()
+  const [durationError, setDurationError] = useState('')
+  const dirty = !!draft && (draft.minutes !== String(Math.floor(elapsed / 60)) || draft.seconds !== String(elapsed % 60))
+  function closeEditor() { setDraft(undefined); setDurationError(''); onDirty?.(false) }
+  function dismiss(action: () => void) {
+    if (disabled || (dirty && !window.confirm('Discard unsaved duration changes?'))) return
+    closeEditor()
+    action()
+  }
   const workingSets = workout.strengthSets.filter(isWorkingSet).length
   useEffect(() => {
     if (modal && dialog.current && !dialog.current.open) dialog.current.showModal()
@@ -40,12 +52,42 @@ export function WorkoutRecap({ workout, onDone, onView, modal = false }: {
     <h2 id="workout-recap-heading" tabIndex={-1} ref={heading}>Workout recap</h2>
     <p><strong>{session.title}</strong></p>
     <dl className="monthly-totals">
-      <div><dt>Session time</dt><dd>{elapsed > 0 && elapsed < 60000 ? '<1 min' : durationText(session)}</dd></div>
+      <div><dt>Session time</dt><dd>{Math.floor(elapsed / 60)} min {elapsed % 60} sec</dd></div>
       <div><dt>Working sets</dt><dd>{workingSets}</dd></div>
     </dl>
+    {onSaveDuration && (draft ? <form onSubmit={async event => {
+      event.preventDefault()
+      if (disabled) return
+      const duration = Number(draft.minutes) * 60 + Number(draft.seconds)
+      if (!/^\d+$/.test(draft.minutes) || !/^\d+$/.test(draft.seconds) || Number(draft.seconds) >= 60 || !Number.isSafeInteger(duration * 1000)) {
+        setDurationError('Enter whole minutes and seconds from 0 to 59.')
+        return
+      }
+      setDurationError('')
+      if (!dirty || await onSaveDuration(duration)) closeEditor()
+    }}>
+      <fieldset className="form-fields" disabled={disabled}>
+        <legend>Edit duration</legend>
+        <div className="duration-fields">
+          <label>Minutes<input inputMode="numeric" required value={draft.minutes} onChange={event => {
+            setDraft({ ...draft, minutes: event.target.value }); onDirty?.(true)
+          }} /></label>
+          <label>Seconds<input inputMode="numeric" required value={draft.seconds} onChange={event => {
+            setDraft({ ...draft, seconds: event.target.value }); onDirty?.(true)
+          }} /></label>
+        </div>
+        <div className="actions">
+          <Button type="submit">Save duration</Button>
+          <Button variant="secondary" onClick={() => dismiss(() => {})}>Cancel</Button>
+        </div>
+      </fieldset>
+      {(durationError || saveError) && <p role="alert" className="error">{durationError || saveError}</p>}
+    </form> : <Button variant="secondary" disabled={disabled} onClick={() => {
+      setDraft({ minutes: String(Math.floor(elapsed / 60)), seconds: String(elapsed % 60) })
+    }}>Edit duration</Button>)}
     <div className="actions">
-      <Button onClick={onDone}>Done</Button>
-      <Button variant="secondary" onClick={onView}>View workout</Button>
+      <Button disabled={disabled} onClick={() => dismiss(onDone)}>Done</Button>
+      <Button variant="secondary" disabled={disabled} onClick={() => dismiss(onView)}>View workout</Button>
     </div>
     <h3 className="recap-record-heading">Personal records</h3>
     {!records && !error && <p role="status" className="note">Checking for personal records…</p>}
@@ -63,5 +105,5 @@ export function WorkoutRecap({ workout, onDone, onView, modal = false }: {
     </ul>}
   </section>
   return modal ? <dialog ref={dialog} className="workout-recap-dialog" aria-labelledby="workout-recap-heading"
-    onCancel={event => { event.preventDefault(); onDone() }}>{summary}</dialog> : summary
+    onCancel={event => { event.preventDefault(); dismiss(onDone) }}>{summary}</dialog> : summary
 }
