@@ -152,3 +152,15 @@ it('removes active and cancelled workouts with their dependent data', async () =
   const after = (await createBackup(db)).data
   expect(after).toEqual(before)
 })
+
+it('corrects a finished workout duration and keeps completed sets within the edited time', async () => {
+  const { db, baseline } = await setup()
+  const edit = { ...baseline.sessions[0], sets: [], removedSetIds: [] }
+  await expect(editFinishedWorkout(baseline, { ...edit, durationSeconds: -1 }, db)).rejects.toThrow('valid workout duration')
+  const edited = await editFinishedWorkout(baseline, { ...edit, durationSeconds: 0 }, db)
+  expect(edited.sessions[0].endedAt).toBe(edit.startedAt)
+  expect(edited.strengthSets.filter(set => set.completed).every(set => set.completedAt === edit.startedAt)).toBe(true)
+  const target = database()
+  await restoreBackup(await createBackup(db), target)
+  expect(await loadWorkout(edit.id, target)).toEqual(edited)
+})

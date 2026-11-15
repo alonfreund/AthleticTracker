@@ -1,3 +1,4 @@
+import { workoutElapsedMs } from '../../domain/strength/workoutTiming'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Button } from '../../components/ui/Button'
 import type { FinishedSetEdit, FinishedWorkoutEdit, Workout } from '../../data/repositories/workouts'
@@ -21,6 +22,12 @@ export function FinishedWorkoutEditor({ workout, disabled, error, onDirty, onCan
   const [title, setTitle] = useState(session.title)
   const [notes, setNotes] = useState(session.notes)
   const [start, setStart] = useState(originalStart)
+  const originalSeconds = Math.floor(workoutElapsedMs(session) / 1000)
+  const originalMinutes = String(Math.floor(originalSeconds / 60))
+  const originalRemainder = String(originalSeconds % 60)
+  const [minutes, setMinutes] = useState(originalMinutes)
+  const [seconds, setSeconds] = useState(originalRemainder)
+  const durationChanged = minutes !== originalMinutes || seconds !== originalRemainder
   const [dateError, setDateError] = useState('')
   const [originalRows] = useState<Row[]>(() => workout.strengthSets.slice().sort((a, b) => a.position - b.position).map(set => ({
     key: set.id, id: set.id, exerciseId: set.sessionExerciseId, input: inputFromSet(set), setType: set.setType, completed: set.completed,
@@ -28,7 +35,7 @@ export function FinishedWorkoutEditor({ workout, disabled, error, onDirty, onCan
   const [rows, setRows] = useState(originalRows)
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => { heading.current?.focus() }, [])
-  const dirty = title !== session.title || notes !== session.notes || start !== originalStart || JSON.stringify(rows) !== JSON.stringify(originalRows)
+  const dirty = title !== session.title || notes !== session.notes || start !== originalStart || durationChanged || JSON.stringify(rows) !== JSON.stringify(originalRows)
   useLayoutEffect(() => onDirty(dirty), [dirty, onDirty])
   function change(key: string, edit: (row: Row) => Row) { setRows(current => current.map(row => row.key === key ? edit(row) : row)) }
   function field(row: Row, key: keyof SetInput['values'], label: string, integer = false) {
@@ -41,18 +48,27 @@ export function FinishedWorkoutEditor({ workout, disabled, error, onDirty, onCan
     if (start !== originalStart && (!Number.isFinite(local.getTime()) || localMinute(local) !== start)) {
       setDateError('Choose a valid local workout date and time.'); return
     }
+    const durationSeconds = Number(minutes) * 60 + Number(seconds)
+    if (durationChanged && (!/^\d+$/.test(minutes) || !/^\d+$/.test(seconds) || Number(seconds) >= 60 || !Number.isSafeInteger(durationSeconds * 1000))) {
+      setDateError('Enter whole minutes and seconds from 0 to 59.'); return
+    }
     setDateError('')
     const original = new Map(originalRows.map(row => [row.key, row]))
     const kept = new Set(rows.map(row => row.key))
     onSave({ title, notes, startedAt: start === originalStart ? session.startedAt : local.toISOString(),
+      ...(durationChanged ? { durationSeconds } : {}),
       sets: rows.filter(row => JSON.stringify(row) !== JSON.stringify(original.get(row.key))).map(({ id, exerciseId, input, setType, completed }) => ({ id, exerciseId, input, setType, completed })),
       removedSetIds: originalRows.filter(row => !kept.has(row.key)).map(row => row.key) })
   }}>
     <h2 id="finished-edit-heading" ref={heading} tabIndex={-1}>Edit finished workout</h2>
-    <p className="note">Changes apply when you save. Changing the start time keeps the original workout duration.</p>
+    <p className="note">Changes apply when you save. Duration is your active workout time, excluding pauses.</p>
     <fieldset className="form-fields" disabled={disabled}>
       <label>Workout name<input required maxLength={200} value={title} onChange={event => setTitle(event.target.value)} /></label>
       <label>Start date and time<input required type="datetime-local" value={start} onChange={event => { setStart(event.target.value); setDateError('') }} /></label>
+      <div className="duration-fields" role="group" aria-label="Workout duration">
+        <label>Duration (minutes)<input required inputMode="numeric" value={minutes} onChange={event => { setMinutes(event.target.value); setDateError('') }} /></label>
+        <label>Duration (seconds)<input required inputMode="numeric" value={seconds} onChange={event => { setSeconds(event.target.value); setDateError('') }} /></label>
+      </div>
       {dateError && <p role="alert" className="error">{dateError}</p>}
       <label>Workout notes<textarea maxLength={10000} value={notes} onChange={event => setNotes(event.target.value)} /></label>
       {workout.sessionExercises.map(exercise => {

@@ -364,7 +364,7 @@ export function finishWorkout(id: string, allowIncomplete = false, database = db
   }, database)
 }
 export type FinishedSetEdit = { id?: string; exerciseId: string; input: SetInput; setType: StrengthSet['setType']; completed: boolean }
-export type FinishedWorkoutEdit = Pick<Session, 'title' | 'notes' | 'startedAt'> & { sets: FinishedSetEdit[]; removedSetIds: string[] }
+export type FinishedWorkoutEdit = Pick<Session, 'title' | 'notes' | 'startedAt'> & { sets: FinishedSetEdit[]; removedSetIds: string[]; durationSeconds?: number }
 
 function checkHistoryVersion(current: Workout, baseline: Workout) {
   for (const table of STRENGTH_TABLES) {
@@ -382,7 +382,16 @@ export function editFinishedWorkout(baseline: Workout, edit: FinishedWorkoutEdit
     const session = workout.sessions[0]
     const delta = Date.parse(edit.startedAt) - Date.parse(session.startedAt)
     const shift = (date: string) => new Date(Date.parse(date) + delta).toISOString()
-    Object.assign(session, { title: edit.title.trim(), notes: edit.notes, startedAt: edit.startedAt, endedAt: shift(session.endedAt!) })
+    let endedAt = shift(session.endedAt!)
+    if (edit.durationSeconds !== undefined) {
+      const durationMs = edit.durationSeconds * 1000
+      const end = new Date(Date.parse(edit.startedAt) + durationMs + (session.workoutTiming?.pausedMs ?? 0))
+      if (!Number.isSafeInteger(edit.durationSeconds) || durationMs < 0 || !Number.isSafeInteger(durationMs) || !Number.isFinite(end.getTime())) {
+        throw new Error('Enter a valid workout duration.')
+      }
+      endedAt = end.toISOString()
+    }
+    Object.assign(session, { title: edit.title.trim(), notes: edit.notes, startedAt: edit.startedAt, endedAt })
     const removed = new Set(edit.removedSetIds)
     const edited = new Set<string>()
     const detachTimer = new Set(removed)
@@ -400,9 +409,11 @@ export function editFinishedWorkout(baseline: Workout, edit: FinishedWorkoutEdit
       }
     }
     workout.strengthSets = workout.strengthSets.filter(set => !removed.has(set.id))
-    for (const set of workout.strengthSets) if (delta && set.completedAt) {
-      set.completedAt = shift(set.completedAt)
-      set.updatedAt = now
+    for (const set of workout.strengthSets) {
+      if (!set.completedAt) continue
+      const shifted = delta ? shift(set.completedAt) : set.completedAt
+      const completedAt = shifted > endedAt ? endedAt : shifted
+      if (completedAt !== set.completedAt) { set.completedAt = completedAt; set.updatedAt = now }
     }
     const assignRounds: { set: StrengthSet; exercise: Workout['sessionExercises'][number] }[] = []
     for (const change of edit.sets) {
