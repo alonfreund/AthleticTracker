@@ -234,7 +234,7 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
     return <section aria-labelledby="replace-exercise-heading">
       <h2 id="replace-exercise-heading" tabIndex={-1}>Replace {plan ? exerciseDisplayName(plan.exercise.snapshot) : 'exercise'}</h2>
       {plan && source && <>
-        <p>{exerciseDisplayName(source)} will get {plan.remaining.length} blank {plan.remaining.length === 1 ? 'set' : 'sets'}.</p>
+        <p>{exerciseDisplayName(source)} will get {plan.remaining.length} new {plan.remaining.length === 1 ? 'set' : 'sets'}.</p>
         {plan.completed > 0 && <p>{plan.completed} completed {plan.completed === 1 ? 'set stays' : 'sets stay'} with {exerciseDisplayName(plan.exercise.snapshot)}.</p>}
         {plan.exercise.supersetGroupId && <p>The substitute takes over the remaining sets in the same superset slot.</p>}
         {plan.entered > 0 && <p role="alert">Replacing discards saved values or drafts in {plan.entered} unfinished {plan.entered === 1 ? 'set' : 'sets'}.</p>}

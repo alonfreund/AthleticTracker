@@ -94,15 +94,26 @@ describe('previous performance', () => {
   it('uses compatible finished exercises, ignores cancelled/incomplete data and keeps set types', async () => {
     const { db, id, exerciseId, set, input } = await setup()
     await changeSetType(id, set.id, 'warm-up', db); await saveInlineSet(id, set.id, input, true, db)
-    const second = await addSet(id, exerciseId, db); input.values.reps = '6'; await saveInlineSet(id, second, input, true, db)
+    const second = await addSet(id, exerciseId, db); input.values.reps = '6'; input.weightUnit = 'lb'; await saveInlineSet(id, second, input, true, db)
     await addSet(id, exerciseId, db); await finishWorkout(id, true, db)
     const cancelled = await startWorkout(db); await addWorkoutExercise(cancelled, STARTER_EXERCISES[0].id, db); await cancelWorkout(cancelled, db)
     const next = await startWorkout(db); const currentExercise = await addWorkoutExercise(next, STARTER_EXERCISES[0].id, db)
     const prior = (await previousPerformance(next, db))[currentExercise]
     expect(prior.sets.map(set => [set.setType, set.reps])).toEqual([['warm-up',8],['normal',6]])
-    const exercise = (await loadWorkout(next, db)).sessionExercises[0]
-    await db.sessionExercises.update(currentExercise, { snapshot: { ...exercise.snapshot, tracking: { ...exercise.snapshot.tracking, load: 'added' } } })
-    expect((await previousPerformance(next, db))[currentExercise]).toBeUndefined()
+    const extra = await addSet(next, currentExercise, db)
+    db.close()
+    const reopened = database(db.name)
+    const recovered = await loadWorkout(next, reopened)
+    expect(recovered.strengthSets.find(row => row.position === 0)).toMatchObject({
+      reps: 6, load: { mode: 'external', weight: { value: 60, unit: 'lb' } }, completed: false, completedAt: null,
+    })
+    expect(recovered.strengthSets.find(row => row.id === extra)).toMatchObject({
+      reps: null, load: { mode: 'external', weight: null }, completed: false,
+    })
+    expect(recovered.restTimers).toEqual([])
+    const exercise = recovered.sessionExercises[0]
+    await reopened.sessionExercises.update(currentExercise, { snapshot: { ...exercise.snapshot, tracking: { ...exercise.snapshot.tracking, load: 'added' } } })
+    expect((await previousPerformance(next, reopened))[currentExercise]).toBeUndefined()
   })
 })
 describe('inline write coordinator', () => {

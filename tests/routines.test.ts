@@ -257,7 +257,7 @@ it('duplicates a pinned, ordered routine without its pin and with independent su
   expect(workout.supersetGroups).toHaveLength(1)
 })
 
-it('copies a finished workout into a new routine with blank measurements and fresh superset members', async () => {
+it('copies a finished workout into a routine with fresh superset members and prefills only when starting it', async () => {
   const { db, id, exercises } = await setup()
   await saveRoutine({ id, title: 'Strength A', notes: 'Original notes', supersets: [exercises.map(row => row.id)] }, exercises, db)
   const workoutId = await startRoutine(id, db)
@@ -276,6 +276,10 @@ it('copies a finished workout into a new routine with blank measurements and fre
   const copiedId = await saveRoutine(draft, draft.exercises, db)
   const copy = await loadWorkout(await startRoutine(copiedId, db), db)
   expect(copy.supersetGroups).toHaveLength(1)
-  expect(copy.strengthSets.every(row => !row.completed && row.reps === null && row.target === null)).toBe(true)
+  expect(copy.strengthSets.every(row => !row.completed && row.target === null)).toBe(true)
+  expect(copy.strengthSets.find(row => row.setType === 'warm-up')).toMatchObject({
+    reps: 8, load: { mode: 'external', weight: { value: 10, unit: 'kg' } },
+  })
+  expect(copy.strengthSets.filter(row => row.setType !== 'warm-up').every(row => row.reps === null)).toBe(true)
   expect(await loadWorkout(workoutId, db)).toEqual(finished)
 })

@@ -119,6 +119,7 @@ export function startRoutine(id: string, database = db): Promise<string> {
       })
       for (const member of members) groups.set(member, id)
     }
+    const plannedSets = new Map<string, typeof plan[number]['sets']>()
     for (const [position, row] of plan.entries()) {
       const source = sources[position]
       if (!source || !matchesRoutineTracking(row, source)) {
@@ -131,9 +132,18 @@ export function startRoutine(id: string, database = db): Promise<string> {
         snapshot: snapshotExercise(source), position, notes: '', restSeconds: await exerciseRest(source.id, database),
         supersetGroupId: groups.get(row.id) ?? null, createdAt: now, updatedAt: now,
       })
-      row.sets.forEach((set, index) => workout.strengthSets.push({
-        ...newSet(exerciseId, source.tracking.load, index, now), setType: set.setType,
-      }))
+      plannedSets.set(exerciseId, row.sets)
+    }
+    const history = await readPreviousPerformance(workout, workout.sessionExercises, database)
+    for (const exercise of workout.sessionExercises) {
+      const sets = plannedSets.get(exercise.id)!
+      for (const [index, { setType }] of sets.entries()) {
+        const ordinal = sets.slice(0, index).filter(row => row.setType === setType).length
+        const set = newSet(exercise.id, exercise.snapshot.tracking.load, index, now)
+        set.setType = setType
+        prefillSet(set, history[exercise.id], ordinal)
+        workout.strengthSets.push(set)
+      }
     }
     if (groups.size) applyExerciseOrder(workout, workoutBlocks(workout).flatMap(block => block.exercises.map(row => row.id)), now)
     validateStrengthData(workout)
@@ -154,6 +164,15 @@ export function saveWorkoutDetails(id: string, title: string, notes: string, dat
 function newSet(exerciseId: string, mode: Parameters<typeof emptyLoad>[0], position: number, now: string): StrengthSet {
   return { id: crypto.randomUUID(), sessionExerciseId: exerciseId, position, setType: 'normal', completed: false, completedAt: null, reps: null, durationSeconds: null, load: emptyLoad(mode), rpe: null, rir: null, target: null, createdAt: now, updatedAt: now }
 }
+function prefillSet(set: StrengthSet, previous: PreviousExercise | undefined, ordinal: number) {
+  const prior = previous?.sets.filter(row => row.setType === set.setType)[ordinal]
+  if (!prior || prior.reps === null) return
+  set.reps = prior.reps
+  const load = prior.load
+  if (load.mode === 'external') set.load = { mode: load.mode, weight: load.weight }
+  if (load.mode === 'added') set.load = { mode: load.mode, addedWeight: load.addedWeight, bodyweight: null }
+  if (load.mode === 'assisted') set.load = { mode: load.mode, assistance: load.assistance, bodyweight: null }
+}
 export function addWorkoutExercise(id: string, sourceId: string, database = db) {
   return mutate(id, async (workout, now) => {
     const source = await database.exercises.get(sourceId)
@@ -164,8 +183,11 @@ export function addWorkoutExercise(id: string, sourceId: string, database = db) 
     const activity = workout.sessionActivities[0]
     if (!activity) throw new Error('This workout has no strength activity.')
     const exerciseId = crypto.randomUUID()
-    workout.sessionExercises.push({ id: exerciseId, sessionActivityId: activity.id, sourceExerciseId: source.id, snapshot: snapshotExercise(source), position: workout.sessionExercises.length ? Math.max(...workout.sessionExercises.map(row => row.position)) + 1 : 0, notes: '', restSeconds: await exerciseRest(source.id, database), supersetGroupId: null, createdAt: now, updatedAt: now })
-    workout.strengthSets.push(newSet(exerciseId, source.tracking.load, 0, now))
+    const exercise = { id: exerciseId, sessionActivityId: activity.id, sourceExerciseId: source.id, snapshot: snapshotExercise(source), position: workout.sessionExercises.length ? Math.max(...workout.sessionExercises.map(row => row.position)) + 1 : 0, notes: '', restSeconds: await exerciseRest(source.id, database), supersetGroupId: null, createdAt: now, updatedAt: now }
+    const set = newSet(exerciseId, source.tracking.load, 0, now)
+    prefillSet(set, (await readPreviousPerformance(workout, [exercise], database))[exerciseId], 0)
+    workout.sessionExercises.push(exercise)
+    workout.strengthSets.push(set)
     return exerciseId
   }, database)
 }
@@ -196,9 +218,11 @@ export function replaceWorkoutExercise(id: string, exerciseId: string, sourceId:
     const removed = new Set(remaining.map(set => set.id))
     workout.strengthSets = workout.strengthSets.filter(set => !removed.has(set.id))
     workout.editorDrafts = workout.editorDrafts.filter(draft => !removed.has(draft.setId))
+    const history = remaining.length ? (await readPreviousPerformance(workout, [replacement], database))[replacement.id] : undefined
     for (const [index, set] of remaining.entries()) {
       const blank = newSet(replacement.id, source.tracking.load, index, now)
       blank.setType = set.setType
+      prefillSet(blank, history, remaining.slice(0, index).filter(row => row.setType === set.setType).length)
       if (set.supersetRoundIndex !== undefined) blank.supersetRoundIndex = set.supersetRoundIndex
       workout.strengthSets.push(blank)
     }
@@ -232,12 +256,13 @@ function clearSupersetMembership(workout: Workout, exercise: Workout['sessionExe
 }
 
 export function addSet(id: string, exerciseId: string, database = db) {
-  return mutate(id, (workout, now) => {
+  return mutate(id, async (workout, now) => {
     const exercise = workout.sessionExercises.find(row => row.id === exerciseId)
     if (!exercise) throw new Error('Exercise no longer exists.')
     stopExerciseTimer(workout, exerciseId, now)
     const rows = workout.strengthSets.filter(row => row.sessionExerciseId === exerciseId)
     const set = newSet(exerciseId, exercise.snapshot.tracking.load, rows.length ? Math.max(...rows.map(row => row.position)) + 1 : 0, now)
+    prefillSet(set, (await readPreviousPerformance(workout, [exercise], database))[exerciseId], rows.filter(row => row.setType === set.setType).length)
     if (exercise.supersetSlotId) set.supersetRoundIndex = nextSlotRound(workout, exercise)
     workout.strengthSets.push(set); return set.id
   }, database)
@@ -546,22 +571,44 @@ export function controlRest(id: string, action: 'pause' | 'resume' | 'skip' | 'a
   }, database)
 }
 export type PreviousExercise = { date: string; sets: StrengthSet[] }
+async function readPreviousPerformance(current: Workout, exercises: Workout['sessionExercises'], database: AthleticDatabase) {
+  const result: Record<string, PreviousExercise> = {}
+  const sourceIds = [...new Set(exercises.flatMap(row => row.sourceExerciseId ? [row.sourceExerciseId] : []))]
+  if (!sourceIds.length) return result
+
+  const matches = await database.sessionExercises.where('sourceExerciseId').anyOf(sourceIds).toArray()
+  const activities = await database.sessionActivities.bulkGet([...new Set(matches.map(row => row.sessionActivityId))])
+  const discipline = current.sessionActivities[0]?.activityType
+  const sessionIds = new Map(activities.flatMap(row => row && row.activityType === discipline ? [[row.id, row.sessionId] as const] : []))
+  const sessions = await database.sessions.bulkGet([...new Set(sessionIds.values())])
+  const eligible = sessions.filter((row): row is Session => !!row && row.status === 'finished' &&
+    row.id !== current.sessions[0].id && row.startedAt <= current.sessions[0].startedAt)
+    .sort((a, b) => b.startedAt.localeCompare(a.startedAt) || b.id.localeCompare(a.id))
+  if (!eligible.length) return result
+  const rank = new Map(eligible.map((row, index) => [row.id, index]))
+  const candidates = matches.flatMap(row => {
+    const index = rank.get(sessionIds.get(row.sessionActivityId) ?? '')
+    return index === undefined ? [] : [{ row, index }]
+  }).sort((a, b) => a.index - b.index || a.row.position - b.row.position)
+  for (const { row, index } of candidates) {
+    const pending = exercises.filter(exercise => !result[exercise.id] && exercise.sourceExerciseId === row.sourceExerciseId &&
+      exercise.snapshot.tracking.load === row.snapshot.tracking.load &&
+      exercise.snapshot.tracking.measurement === row.snapshot.tracking.measurement &&
+      exercise.snapshot.tracking.weightConvention === row.snapshot.tracking.weightConvention)
+    if (!pending.length) continue
+    const sets = await database.strengthSets.where('[sessionExerciseId+position]')
+      .between([row.id, 0], [row.id, Number.MAX_SAFE_INTEGER], true, true).filter(set => set.completed).toArray()
+    if (sets.length) {
+      for (const exercise of pending) result[exercise.id] = { date: eligible[index].startedAt, sets }
+    }
+    if (Object.keys(result).length === exercises.length) break
+  }
+  return result
+}
 export async function previousPerformance(id: string, database = db): Promise<Record<string, PreviousExercise>> {
   return database.transaction('r', tables(database), async () => {
     const current = await readWorkout(id, database)
-    const sessions = (await listWorkouts(database, current.sessionActivities[0]?.activityType === 'calisthenics' ? 'calisthenics' : 'strength')).filter(row => row.status === 'finished')
-      .filter(row => row.id !== id && row.startedAt <= current.sessions[0].startedAt).sort((a, b) => b.startedAt.localeCompare(a.startedAt))
-    const result: Record<string, PreviousExercise> = {}
-    for (const session of sessions) {
-      const previous = await readWorkout(session.id, database)
-      for (const exercise of current.sessionExercises) {
-        if (result[exercise.id] || !exercise.sourceExerciseId) continue
-        const matches = previous.sessionExercises.filter(row => row.sourceExerciseId === exercise.sourceExerciseId && row.snapshot.tracking.load === exercise.snapshot.tracking.load && row.snapshot.tracking.measurement === exercise.snapshot.tracking.measurement && row.snapshot.tracking.weightConvention === exercise.snapshot.tracking.weightConvention)
-        const sets = matches.map(row => previous.strengthSets.filter(set => set.sessionExerciseId === row.id && set.completed).sort((a, b) => a.position - b.position)).find(rows => rows.length) ?? []
-        if (sets.length) result[exercise.id] = { date: session.startedAt, sets }
-      }
-    }
-    return result
+    return readPreviousPerformance(current, current.sessionExercises, database)
   })
 }
 
