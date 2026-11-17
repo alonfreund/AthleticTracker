@@ -26,6 +26,7 @@ import { activeMovementWorkout } from '../data/repositories/workouts'
 import type { Exercise } from '../domain/strength/models'
 import { updateSafety } from './updateSafety'
 import { UpdatePanel } from './UpdatePanel'
+import { cancelEnabledRestAlert } from '../features/workouts/useRestAlerts'
 import { routeFromHash, routeHash, routeTab, navigationDecision, type AppRoute } from './navigation'
 import { BottomNavigation } from '../components/ui/BottomNavigation'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -217,7 +218,10 @@ export function App() {
         {databaseReady && view === 'strength/library' && <ExerciseLibrary onExerciseAnalytics={openExerciseAnalytics} onBackToStrength={() => navigate({ screen: 'strength' })} />}
         <div className="settings-stack" hidden={view !== 'settings'}>
           <AppearancePanel theme={theme} onThemeChange={setTheme} />
-          {databaseReady && view === 'settings' && <Suspense fallback={<p role="status">Opening data settings…</p>}><FoundationPanel onDataRestored={async () => { setActive(await activeMovementWorkout()) }} /></Suspense>}
+          {databaseReady && view === 'settings' && <Suspense fallback={<p role="status">Opening data settings…</p>}><FoundationPanel onDataRestored={async () => {
+            cancelEnabledRestAlert()
+            setActive(await activeMovementWorkout())
+          }} /></Suspense>}
           <details><summary>Device storage</summary><StorageProtection /></details>
           <UpdatePanel onAvailabilityChange={setUpdateAvailable} />
         </div>

@@ -1,0 +1,22 @@
+name = "athletic-tracker-rest-alerts"
+main = "worker.mjs"
+compatibility_date = "2026-11-17"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+preview_urls = false
+
+[vars]
+APP_ORIGIN = "https://alonfreund.github.io"
+
+[[durable_objects.bindings]]
+name = "TIMERS"
+class_name = "RestAlert"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["RestAlert"]
+
+[[ratelimits]]
+name = "REQUEST_LIMIT"
+namespace_id = "1001"
+simple = { limit = 40, period = 60 }

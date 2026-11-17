@@ -25,6 +25,7 @@ import { useAutosave } from './useAutosave'
 import { InlineSetStore } from './InlineSetStore'
 import { ExerciseHistory } from './ExerciseHistory'
 import { InlineSetRow } from './InlineSetRow'
+import { cancelEnabledRestAlert, useRestAlerts } from './useRestAlerts'
 
 const workoutCollision: CollisionDetection = args => {
   const pointed = pointerWithin(args)
@@ -168,6 +169,7 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
   const timer = workout.restTimers[0]
   const remaining = timer ? timerSeconds(timer, now) : 0
   const chime = useRestChime(timer, remaining, paused)
+  const alerts = useRestAlerts(timer, timerExpanded)
   function sessionExerciseName(id: string | number | undefined, fallback = 'exercise') {
     const snapshot = workout.sessionExercises.find(row => row.id === id)?.snapshot
     return snapshot ? exerciseDisplayName(snapshot) : fallback
@@ -321,12 +323,22 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
     </section>}
     {removal && <div className="review-box" role="alert"><p ref={removalMessage} tabIndex={-1}>Remove this {removal.kind} and its saved values and drafts? This cannot be undone here.</p><div className="actions"><button disabled={blocked} onClick={() => invoke(() => removal.kind === 'exercise' ? removeWorkoutExercise(id, removal.id) : removeSet(id, removal.id), () => setRemoval(undefined))}>Confirm removal</button><button className="secondary" disabled={blocked} onClick={() => setRemoval(undefined)}>Keep it</button></div></div>}
     {review && <div className="review-box" role="alert"><h3 ref={reviewHeading} tabIndex={-1}>{review === 'finish' ? 'Finish this workout?' : review === 'delete' ? 'Delete this workout?' : 'Cancel this workout?'}</h3><p>{review === 'finish' ? `Completed sets count toward your results. Incomplete sets stay in history. Complete at least one set and resolve pending edits before finishing.` : review === 'delete' ? 'This permanently removes this workout, its sets and any drafts from this device.' : 'Recorded sets stay in cancelled history. Pending drafts will be discarded.'}</p><div className="actions"><button disabled={blocked} onClick={() => {
-      if (review === 'finish') void run(async () => onFinished(await finishWorkout(id, true)), undefined, false)
-      else if (review === 'delete') void run(() => deleteActiveWorkout(id), () => {
+      if (review === 'finish') void run(async () => {
+        const finished = await finishWorkout(id, true)
+        cancelEnabledRestAlert()
+        onFinished(finished)
+      }, undefined, false)
+      else if (review === 'delete') void run(async () => {
+        await deleteActiveWorkout(id)
+        cancelEnabledRestAlert()
+      }, () => {
         updateSafety.setSafety({ dirty: false, busy: false, restoring: false, loading: false })
         onBack()
       }, false)
-      else invoke(() => cancelWorkout(id), onBack)
+      else invoke(async () => {
+        await cancelWorkout(id)
+        cancelEnabledRestAlert()
+      }, onBack)
     }}>{review === 'finish' ? 'Finish with completed sets' : review === 'delete' ? 'Confirm deletion' : 'Confirm cancellation'}</button><button className="secondary" disabled={blocked} onClick={() => setReview(undefined)}>Keep logging</button></div>{error && <p role="alert" className="error">{error}</p>}</div>}
     {!review && error && <p role="alert" className="error">{error}</p>}
     {showTimer && <aside className={`rest-timer ${timerRound ? 'rest-timer--superset' : ''}`} aria-label="Rest timer">
@@ -348,6 +360,12 @@ export function ActiveWorkout({ initial, library, onBack, onFinished }: { initia
         {timerLabel && <p className="rest-timer__scope">{timerLabel}</p>}
         <button type="button" className="timer-edit-toggle" aria-pressed={chime.enabled}
           onClick={() => chime.toggle(!chime.enabled)}>Rest complete chime · {chime.enabled ? 'On' : 'Off'}</button>
+        {alerts.supported && <>
+          <button type="button" className="timer-edit-toggle" aria-pressed={alerts.enabled}
+            disabled={alerts.busy || (!alerts.enabled && !alerts.ready)}
+            onClick={() => void alerts.toggle()}>Lock Screen rest alerts · {alerts.enabled ? 'On' : 'Off'}</button>
+          <p className="note" role="status">{alerts.message || 'Requires internet and iPhone notification permission.'}</p>
+        </>}
         <div className="rest-timer__controls">
           <button disabled={blocked || !remaining} aria-label="Subtract 15 seconds" onClick={() => invoke(() => controlRest(id, 'adjust', -15))}>−15s</button>
           <button disabled={blocked || !remaining} onClick={() => { if (chime.enabled && timer.status === 'paused') chime.prepare(); invoke(() => controlRest(id, timer.status === 'paused' ? 'resume' : 'pause')) }}>{timer.status === 'paused' ? 'Resume' : 'Pause'}</button>

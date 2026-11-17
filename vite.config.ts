@@ -20,6 +20,6 @@ export default defineConfig({
         { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
       ],
     },
-    workbox: { skipWaiting: false, clientsClaim: true, globPatterns: ['**/*.{js,css,html,png,webmanifest}'] },
+    workbox: { skipWaiting: false, clientsClaim: true, importScripts: ['rest-alert-sw.js'], globPatterns: ['**/*.{js,css,html,png,webmanifest}'] },
   })],
 })
